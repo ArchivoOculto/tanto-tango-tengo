@@ -1,0 +1,160 @@
+[gd_scene format=3 uid="uid://bdylr3vgdo1k8"]
+
+[ext_resource type="PackedScene" uid="uid://w204nbya3vcs" path="res://Scenes/player.tscn" id="2_62tj5"]
+[ext_resource type="Script" uid="uid://r5iago2khjre" path="res://Scripts/game_camera.gd" id="2_pmkc2"]
+[ext_resource type="Script" uid="uid://c7kiqweremmgy" path="res://Scripts/camera_zone_3d.gd" id="3_hvvm8"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_pmkc2"]
+sky_material = SubResource("ProceduralSkyMaterial_62tj5")
+
+[sub_resource type="Environment" id="Environment_hvvm8"]
+background_mode = 2
+sky = SubResource("Sky_pmkc2")
+glow_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mqean"]
+size = Vector3(4, 0.1, 6.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rxs28"]
+size = Vector3(4, 0.1, 6.1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_g24sy"]
+height = 0.099999964
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rxs28"]
+height = 0.099999964
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_62tj5"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_2xxps"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pmkc2"]
+size = Vector3(1, 0.7, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hvvm8"]
+size = Vector3(1, 0.7, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0ac8p"]
+size = Vector3(1, 0.4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xx0be"]
+size = Vector3(1, 0.4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kli7b"]
+size = Vector3(1, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ph32v"]
+size = Vector3(1, 0.1, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
+size = Vector3(4, 1.0524414, 6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rxs28"]
+size = Vector3(1, 1.3972657, 5.5)
+
+[node name="Terrain" type="StaticBody3D" unique_id=1699432919]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1830182651]
+environment = SubResource("Environment_hvvm8")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=904046338]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Rectangle" type="CollisionShape3D" parent="." unique_id=1300406603]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.049999997, -1.05)
+shape = SubResource("BoxShape3D_mqean")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Rectangle" unique_id=762880531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.049999952)
+mesh = SubResource("BoxMesh_rxs28")
+
+[node name="Cylinder" type="CollisionShape3D" parent="." unique_id=1324732389]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.050000012, 0)
+shape = SubResource("CylinderShape3D_g24sy")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Cylinder" unique_id=1207650461]
+mesh = SubResource("CylinderMesh_rxs28")
+
+[node name="Cylinder2" type="CollisionShape3D" parent="." unique_id=1732478407]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4000001, 1.25, 0)
+shape = SubResource("CylinderShape3D_g24sy")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Cylinder2" unique_id=1853573295]
+mesh = SubResource("CylinderMesh_rxs28")
+
+[node name="Cylinder3" type="CollisionShape3D" parent="." unique_id=530879533]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4000001, 1.25, -1.5)
+shape = SubResource("CylinderShape3D_g24sy")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Cylinder3" unique_id=1351168830]
+mesh = SubResource("CylinderMesh_rxs28")
+
+[node name="Cylinder4" type="CollisionShape3D" parent="." unique_id=471712629]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4000001, 1.25, -3.0000002)
+shape = SubResource("CylinderShape3D_g24sy")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Cylinder4" unique_id=998979237]
+mesh = SubResource("CylinderMesh_rxs28")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1496534244]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0.5, 1.5)
+shape = SubResource("BoxShape3D_62tj5")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CollisionShape3D" unique_id=1682924722]
+mesh = SubResource("BoxMesh_2xxps")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=177846438]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.35, 1.5)
+shape = SubResource("BoxShape3D_pmkc2")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="CollisionShape3D2" unique_id=887155392]
+mesh = SubResource("BoxMesh_hvvm8")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="." unique_id=1804106464]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.2, 1.5)
+shape = SubResource("BoxShape3D_0ac8p")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="CollisionShape3D3" unique_id=689519071]
+mesh = SubResource("BoxMesh_xx0be")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="." unique_id=1634793956]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.049999997, 1.5)
+shape = SubResource("BoxShape3D_kli7b")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="CollisionShape3D4" unique_id=1450546740]
+mesh = SubResource("BoxMesh_ph32v")
+
+[node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0.33270168, 0)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=2072088570]
+transform = Transform3D(0.18429959, -0.60787255, 0.7723501, 0, 0.78581095, 0.6184668, -0.9828701, -0.113983184, 0.14482464, 0, 0, 0)
+script = ExtResource("2_pmkc2")
+
+[node name="CamTriggerZone1" type="Area3D" parent="." unique_id=218639143 node_paths=PackedStringArray("camera_anchor")]
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CamTriggerZone1" unique_id=1623651448]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.47622073, -0.99999994)
+shape = SubResource("BoxShape3D_hvvm8")
+
+[node name="CamAnchor" type="Marker3D" parent="CamTriggerZone1" unique_id=1713219977]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9609685, 1.5376205, -2.5)
+
+[node name="CamTriggerZone2" type="Area3D" parent="." unique_id=1872797997 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8000001, 0)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CamTriggerZone2" unique_id=1888160265]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, -0.09863293, -0.74999994)
+shape = SubResource("BoxShape3D_rxs28")
+
+[node name="CamAnchor" type="Marker3D" parent="CamTriggerZone2" unique_id=753848474]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5390315, 0.7376207, 2.9)
