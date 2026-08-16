@@ -129,9 +129,6 @@ shape = SubResource("BoxShape3D_kli7b")
 [node name="MeshInstance3D4" type="MeshInstance3D" parent="CollisionShape3D4" unique_id=1450546740]
 mesh = SubResource("BoxMesh_ph32v")
 
-[node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
-transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0.33270168, 0)
-
 [node name="Camera3D" type="Camera3D" parent="." unique_id=2072088570]
 transform = Transform3D(0.18429959, -0.60787255, 0.7723501, 0, 0.78581095, 0.6184668, -0.9828701, -0.113983184, 0.14482464, 0, 0, 0)
 script = ExtResource("2_pmkc2")
@@ -158,3 +155,6 @@ shape = SubResource("BoxShape3D_rxs28")
 
 [node name="CamAnchor" type="Marker3D" parent="CamTriggerZone2" unique_id=753848474]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5390315, 0.7376207, 2.9)
+
+[node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12655056, 0.3329258, -1.5946714)

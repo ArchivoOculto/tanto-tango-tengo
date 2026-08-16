@@ -8,10 +8,10 @@ class_name Player
 ## eso desde el input).
 
 @export_group("Movimiento")
-@export var move_speed: float = 2.5
+@export var move_speed: float = 2.0
 @export var acceleration: float = 3.0
-@export var friction: float = 7.0
-@export var rotation_speed: float = 6.0
+@export var friction: float = 10.0
+@export var rotation_speed: float = 3.0
 
 @export_group("Salto y gravedad")
 @export var jump_velocity: float = 2.5
@@ -22,8 +22,26 @@ class_name Player
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
-func _ready() -> void:
+func _enter_tree() -> void:
+	# _enter_tree corre de arriba hacia abajo apenas el nodo entra al arbol,
+	# ANTES de que empiece la pasada de _ready() de toda la escena. Por eso
+	# va aca y no en _ready(): asi GameCamera (u otro script que busque
+	# el grupo "player" en su propio _ready) siempre lo encuentra, sin
+	# importar el orden de los nodos hermanos en la escena.
 	add_to_group("player")
+
+
+## Altura del personaje leida directamente de su CapsuleShape3D. Busca el
+## nodo en el momento (no cachea con @onready) para poder llamarse desde
+## el _ready() de OTRO nodo (como la camara) sin importar el orden en que
+## arrancan los scripts — el CollisionShape3D y su Shape3D ya existen con
+## sus valores del .tscn apenas el nodo entra al arbol, aunque su propio
+## _ready() todavia no haya corrido.
+func get_body_height() -> float:
+	var col: CollisionShape3D = get_node_or_null("CollisionShape3D")
+	if col and col.shape is CapsuleShape3D:
+		return col.shape.height
+	return 1.8  # fallback razonable si el shape no esta listo o no es capsula
 
 
 func _physics_process(delta: float) -> void:

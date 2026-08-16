@@ -1,20 +1,18 @@
 [gd_scene format=3 uid="uid://w204nbya3vcs"]
 
 [ext_resource type="Script" uid="uid://deqpx3lux0aft" path="res://Scripts/player.gd" id="1_cvnsp"]
-[ext_resource type="ArrayMesh" uid="uid://ddarggsl7evms" path="res://Hostage.obj" id="3_6t5aa"]
+[ext_resource type="PackedScene" uid="uid://b1cfv0a48twi3" path="res://Scenes/player_model.tscn" id="2_cvnsp"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rxs28"]
-radius = 0.2
-height = 1.8
+radius = 0.03955078
+height = 0.4
 
 [node name="Player" type="CharacterBody3D" unique_id=2045517250]
 script = ExtResource("1_cvnsp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=649393266]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02000916, -0.01992184, 0)
 shape = SubResource("CapsuleShape3D_rxs28")
 
-[node name="Visuals" type="Node3D" parent="." unique_id=48167981]
-
-[node name="placeholdermesh" type="MeshInstance3D" parent="Visuals" unique_id=389892840]
-transform = Transform3D(0.019, 0, 0, 0, 0.019, 0, 0, 0, 0.019, 0, 0.1, -0.085)
-mesh = ExtResource("3_6t5aa")
+[node name="Visuals" parent="." unique_id=271692919 instance=ExtResource("2_cvnsp")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
