@@ -1,13 +1,18 @@
 [gd_scene format=3 uid="uid://b1cfv0a48twi3"]
 
 [ext_resource type="PackedScene" uid="uid://cl6xjh0ehqf62" path="res://Assets/3D/player_model.glb" id="1_dluh4"]
+[ext_resource type="PackedScene" uid="uid://bgyu2bikwoegk" path="res://Assets/3D/Guitar.glb" id="2_waurb"]
+[ext_resource type="Script" uid="uid://d1pk8snbvc38w" path="res://Scripts/guitar_hitbox.gd" id="3_tywhj"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3v0ji"]
+height = 2.3554688
 
 [node name="player_model" unique_id=1769203798 instance=ExtResource("1_dluh4")]
 
-[node name="Armature" parent="." index="0" unique_id=1569570640]
+[node name="Armature" parent="." index="0" unique_id=282721447]
 transform = Transform3D(0.01, 0, 0, 0, 0, -0.01, 0, 0.01, 0, 0, -0.4, 0)
 
-[node name="Skeleton3D" parent="Armature" index="0" unique_id=1552512829]
+[node name="Skeleton3D" parent="Armature" index="0" unique_id=1441188957]
 bones/0/position = Vector3(-0.8022976, 1.0681031, -41.076214)
 bones/0/rotation = Quaternion(-0.5990865, -0.27421314, 0.32768416, 0.67714524)
 bones/1/rotation = Quaternion(0.38392937, 0.41639012, 0.8038412, -0.18181582)
@@ -42,5 +47,21 @@ bones/29/rotation = Quaternion(0.3211859, -0.06621777, -0.0143514, 0.9445893)
 bones/30/rotation = Quaternion(0.43789282, -0.12674561, 0.17226808, 0.8732177)
 bones/31/rotation = Quaternion(0.60020435, -0.18030843, -0.046511043, 0.7778691)
 
-[node name="AnimationPlayer" parent="." index="1" unique_id=1455965535]
+[node name="Weapon" type="BoneAttachment3D" parent="Armature/Skeleton3D" index="1" unique_id=308918845]
+transform = Transform3D(-0.06968085, -0.6569146, 0.75073814, 0.5094814, 0.6235813, 0.5929375, -0.8576554, 0.42380363, 0.29123387, -25.197758, -3.7607532, -38.934826)
+bone_name = "mixamorig_RightHand"
+bone_idx = 28
+
+[node name="Guitar" parent="Armature/Skeleton3D/Weapon" index="0" unique_id=455010514 instance=ExtResource("2_waurb")]
+transform = Transform3D(4.3934293, 0.945417, 29.661493, -13.891263, 26.562489, 1.2109146, -26.224613, -13.911846, 4.3277817, 12.801047, 3.0703201, 3.5549278)
+
+[node name="GuitarHitbox" type="Area3D" parent="Armature/Skeleton3D/Weapon/Guitar" index="1" unique_id=471198630]
+script = ExtResource("3_tywhj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Armature/Skeleton3D/Weapon/Guitar/GuitarHitbox" index="0" unique_id=968297925]
+transform = Transform3D(0.41454226, 0.0035535358, 0.91001874, 0.9100086, -0.008485081, -0.41450417, 0.006248925, 0.9999526, -0.0067513734, -0.0014306307, -0.010409415, 0.3789782)
+shape = SubResource("CapsuleShape3D_3v0ji")
+debug_color = Color(0.9843137, 0, 0.34117648, 0.7764706)
+
+[node name="AnimationPlayer" parent="." index="1" unique_id=1643053289]
 autoplay = &"player_idle"
