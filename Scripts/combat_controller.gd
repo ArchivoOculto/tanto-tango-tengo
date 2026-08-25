@@ -1,8 +1,6 @@
 extends Node
 class_name CombatController
 
-## Gestiona los estados de combate y activa/desactiva la hitbox.
-
 signal attack_started
 signal block_started
 signal block_stopped
@@ -20,9 +18,9 @@ var _taunting: bool = false
 
 
 func _ready() -> void:
-	# Búsqueda automática de la Hitbox dentro del modelo 3D
 	var parent_player = get_parent()
 	if parent_player:
+		# La hitbox se mantiene en la guitarra de combate (righthand_grip)
 		hitbox = parent_player.get_node_or_null("Visuals/Armature/Skeleton3D/righthand_grip/Guitar/GuitarHitbox")
 
 
@@ -39,7 +37,7 @@ func _process(_delta: float) -> void:
 	elif _blocking and not Input.is_action_pressed("block"):
 		stop_block()
 
-	# 3. TAUNT / GUITARRA
+	# 3. TAUNT / TOCAR GUITARRA
 	if Input.is_action_pressed("taunt") and not _attacking and not _blocking:
 		if not _taunting:
 			start_taunt()
@@ -77,6 +75,10 @@ func start_taunt() -> void:
 	taunt_started.emit()
 
 
+func stop_stop() -> void: # Alias opcional por seguridad de firma
+	stop_taunt()
+
+
 func stop_taunt() -> void:
 	if _taunting:
 		_taunting = false
@@ -92,7 +94,7 @@ func on_attack_finished() -> void:
 func interrupt_actions() -> void:
 	_attacking = false
 	_blocking = false
-	_taunting = false
+	stop_taunt()
 	if is_instance_valid(hitbox):
 		hitbox.deactivate_hitbox()
 

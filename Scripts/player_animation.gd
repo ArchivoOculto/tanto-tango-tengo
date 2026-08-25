@@ -1,8 +1,6 @@
 extends Node
 class_name PlayerAnimationController
 
-## Controlador de animaciones. Se sincroniza con CombatController y Player.
-
 const ANIM_IDLE: StringName = &"player_idle"
 const ANIM_WALK: StringName = &"player_walk"
 const ANIM_JUMP: StringName = &"player_jump"
@@ -16,20 +14,39 @@ var anim_player: AnimationPlayer
 var combat_controller: CombatController
 @onready var player: CharacterBody3D = get_parent()
 
+# Referencias a los nodos visuales de las dos guitarras
+var normal_guitar: Node3D
+var playing_guitar: Node3D
+
 
 func _ready() -> void:
 	if player:
-		# Búsqueda de componentes según la escena del Player
 		anim_player = player.get_node_or_null("Visuals/AnimationPlayer")
 		combat_controller = player.get_node_or_null("CombatController")
+		
+		# Nodos de las guitarras dentro del Skeleton3D
+		normal_guitar = player.get_node_or_null("Visuals/Armature/Skeleton3D/righthand_grip")
+		playing_guitar = player.get_node_or_null("Visuals/Armature/Skeleton3D/Guitar_playing_grip")
 
 	if anim_player:
 		anim_player.animation_finished.connect(_on_animation_finished)
 
 	if combat_controller:
-		combat_controller.attack_started.connect(func(): if anim_player: anim_player.play(ANIM_ATTACK, -1, 2))
-		combat_controller.block_started.connect(func(): _play_if_not_playing(ANIM_BLOCK))
-		combat_controller.taunt_started.connect(func(): _play_if_not_playing(ANIM_GUITAR))
+		combat_controller.attack_started.connect(func(): 
+			_set_guitar_mode_playing(false)
+			if anim_player: anim_player.play(ANIM_ATTACK, -1, 2)
+		)
+		combat_controller.block_started.connect(func(): 
+			_set_guitar_mode_playing(false)
+			_play_if_not_playing(ANIM_BLOCK)
+		)
+		combat_controller.taunt_started.connect(func(): 
+			_set_guitar_mode_playing(true)
+			_play_if_not_playing(ANIM_GUITAR)
+		)
+		combat_controller.taunt_stopped.connect(func(): 
+			_set_guitar_mode_playing(false)
+		)
 
 
 func update_locomotion(is_on_floor: bool, horizontal_speed: float) -> void:
@@ -58,9 +75,17 @@ func update_locomotion(is_on_floor: bool, horizontal_speed: float) -> void:
 
 
 func play_jump() -> void:
+	_set_guitar_mode_playing(false)
 	if anim_player:
 		anim_player.seek(0.0, true)
 		anim_player.play(ANIM_JUMP)
+
+
+func _set_guitar_mode_playing(is_playing: bool) -> void:
+	if normal_guitar:
+		normal_guitar.visible = not is_playing
+	if playing_guitar:
+		playing_guitar.visible = is_playing
 
 
 func _play_if_not_playing(anim_name: StringName) -> void:
