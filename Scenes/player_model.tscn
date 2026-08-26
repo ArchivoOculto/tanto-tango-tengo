@@ -58,7 +58,7 @@ transform = Transform3D(4.3934293, 0.945417, 29.661493, -13.891263, 26.562489, 1
 
 [node name="GuitarHitbox" type="Area3D" parent="Armature/Skeleton3D/righthand_grip/Guitar" index="1" unique_id=471198630]
 collision_layer = 0
-collision_mask = 4
+collision_mask = 12
 script = ExtResource("3_tywhj")
 knockback_upward = 2.5
 

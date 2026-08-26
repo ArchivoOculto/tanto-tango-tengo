@@ -21,6 +21,7 @@ sky_material = SubResource("ProceduralSkyMaterial_62tj5")
 background_mode = 2
 sky = SubResource("Sky_pmkc2")
 glow_enabled = true
+volumetric_fog_enabled = true
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_rxs28"]
 
