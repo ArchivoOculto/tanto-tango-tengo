@@ -1,33 +1,37 @@
 extends Camera3D
 class_name GameCamera
 
-## La camara real de juego. No la mueve el jugador: se reubica sola segun
-## que CameraZone3D este activa (via CameraDirector), y mientras tanto
-## sigue encuadrando al jugador desde donde este parada.
-##
-## Las distancias NO son numeros fijos: se calculan como proporcion de la
-## altura real del personaje (player.get_body_height()), asi que si
-## cambias el tamaño del Player esto se reajusta solo, sin tocar nada aca.
+## Cámara del juego. Modos:
+## 1. Tercera Persona: Sigue suavemente la espalda del personaje.
+## 2. Cámara Fija: Se desplaza hacia el anchor de la CameraZone3D activa.
 
 @export var look_ahead: float = 0.35
 
-@export_group("Proporciones (fraccion de la altura del personaje)")
-@export var look_height_ratio: float = 0.55     ## donde apunta la mira: 0.55 = mas o menos el pecho
-@export var min_distance_ratio: float = 1.0     ## nunca mas cerca que 1x la altura del personaje
-@export var collision_margin_ratio: float = 0.2 ## margen al esquivar paredes, como fraccion de la altura
+@export_group("Modo 3ra Persona")
+@export var default_distance: float = 0.33      ## Distancia detrás del jugador
+@export var default_height: float = 0.25        ## Altura sobre el suelo
+@export var default_smoothing: float = 1.0       ## Velocidad de suavizado en 3ra persona
 
-@export_group("Colision de camara")
-@export var collision_mask: int = 1  ## capas que bloquean la camara (terreno, paredes, props)
+@export_group("Proporciones (fracción de la altura del personaje)")
+@export var look_height_ratio: float = 0.55     ## Punto al que apunta la mira (pecho/cabeza)
+@export var min_distance_ratio: float = 0.1     ## Distancia mínima reducida para evitar tirones
+@export var collision_margin_ratio: float = 0.05 ## Margen de colisión fino
+
+@export_group("Colisión de cámara")
+@export var collision_mask: int = 1  ## Capas del terreno/paredes
 
 @onready var player: Node3D = get_tree().get_first_node_in_group("player")
 
 var _player_height: float = 1.8
+var _current_look_target: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
 	current = true
 	if player and player.has_method("get_body_height"):
 		_player_height = player.get_body_height()
+	if player:
+		_current_look_target = player.global_position + Vector3.UP * (_player_height * look_height_ratio)
 
 
 func _process(delta: float) -> void:
@@ -38,23 +42,43 @@ func _process(delta: float) -> void:
 	var min_distance: float = _player_height * min_distance_ratio
 	var collision_margin: float = _player_height * collision_margin_ratio
 
-	var zone: CameraZone3D = CameraDirector.current_zone
-	var desired_position: Vector3 = global_position
-	if zone and zone.camera_anchor:
-		desired_position = global_position.lerp(zone.camera_anchor.global_position, zone.follow_smoothing * delta)
-
+	# 1. Calcular el punto hacia donde debe mirar la cámara
+	var target_look: Vector3 = player.global_position + Vector3.UP * look_height
+	
 	var horizontal_velocity: Vector3 = Vector3(player.velocity.x, 0.0, player.velocity.z)
-	var look_target: Vector3 = player.global_position + Vector3.UP * look_height
 	if horizontal_velocity.length() > 0.1:
-		look_target += horizontal_velocity.normalized() * min(horizontal_velocity.length() * 0.15, look_ahead)
+		target_look += horizontal_velocity.normalized() * min(horizontal_velocity.length() * 0.15, look_ahead)
 
-	desired_position = _avoid_scenery(look_target, desired_position, collision_margin)
-	desired_position = _enforce_min_distance(look_target, desired_position, min_distance)
+	# Suavizamos el punto de mira para evitar tirones de rotación bruscos
+	_current_look_target = _current_look_target.lerp(target_look, 10.0 * delta)
+
+	var zone: CameraZone3D = CameraDirector.current_zone
+	var target_position: Vector3
+
+	if zone and zone.camera_anchor:
+		# MODO 1: Cámara fija guiada por la zona actual
+		target_position = zone.camera_anchor.global_position
+		global_position = global_position.lerp(target_position, zone.follow_smoothing * delta)
+	else:
+		# MODO 2: 3ra Persona basada en la orientación del Visuals (evita loops vectoriales)
+		var visuals_node: Node3D = player.get_node_or_null("Visuals")
+		var facing_basis: Basis = visuals_node.global_transform.basis if visuals_node else player.global_transform.basis
+		
+		# Calculamos la posición deseada detrás del modelo visual actual
+		var player_back: Vector3 = facing_basis.z.normalized()
+		target_position = player.global_position + Vector3.UP * default_height + player_back * default_distance
+		
+		global_position = global_position.lerp(target_position, default_smoothing * delta)
+
+	# 2. Resguardo de geometrías
+	var desired_position: Vector3 = _avoid_scenery(_current_look_target, global_position, collision_margin)
+	desired_position = _enforce_min_distance(_current_look_target, desired_position, min_distance)
 
 	global_position = desired_position
 
-	if global_position.distance_to(look_target) > 0.01:
-		look_at(look_target, Vector3.UP)
+	# 3. Orientar la cámara asegurando que no haya distancia cero
+	if global_position.distance_to(_current_look_target) > 0.01:
+		look_at(_current_look_target, Vector3.UP)
 
 
 func _avoid_scenery(from: Vector3, to: Vector3, margin: float) -> Vector3:
