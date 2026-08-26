@@ -3,17 +3,17 @@
 [ext_resource type="Script" uid="uid://dufa5c241ye6r" path="res://Scripts/enemy.gd" id="1_hghv2"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rxs28"]
-radius = 0.4
-height = 1.8
+radius = 0.35
+height = 1.7
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2xxps"]
 transparency = 1
-albedo_color = Color(0, 1, 0, 0.5294118)
+albedo_color = Color(0, 0.8156863, 0.14117648, 0.5294118)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_rxs28"]
 material = SubResource("StandardMaterial3D_2xxps")
-radius = 0.4
-height = 1.8
+radius = 0.35
+height = 1.7
 
 [node name="enemy" type="CharacterBody3D" unique_id=1534867834]
 collision_layer = 4
