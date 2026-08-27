@@ -9,6 +9,8 @@
 [ext_resource type="Texture2D" uid="uid://lvs0rx5jy5sp" path="res://Assets/2D/Poster.png" id="4_xx0be"]
 [ext_resource type="PackedScene" uid="uid://bsa6e7nt867h4" path="res://Scenes/farolito.tscn" id="5_0ac8p"]
 [ext_resource type="Texture2D" uid="uid://c6h1guqotls4r" path="res://Assets/2D/256x256/Misc/Horror_Misc_13-256x256.png" id="5_aaxyt"]
+[ext_resource type="Texture2D" uid="uid://obip3ugu2tcf" path="res://Assets/2D/256x256/Metal/Horror_Metal_02-256x256.png" id="6_gppgl"]
+[ext_resource type="PackedScene" uid="uid://djpcrt3q7qbxu" path="res://Scenes/alambrado.tscn" id="10_aaxyt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -68,7 +70,7 @@ material = SubResource("StandardMaterial3D_lu725")
 size = Vector3(1, 0.7, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0ac8p"]
-size = Vector3(1, 0.4, 1)
+size = Vector3(1, 0.4059082, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rgptw"]
 albedo_texture = ExtResource("5_aaxyt")
@@ -78,11 +80,22 @@ uv1_scale = Vector3(2.5, 2.5, 2.5)
 material = SubResource("StandardMaterial3D_rgptw")
 size = Vector3(1, 0.4, 1)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_lu725"]
+size = Vector3(0.3, 0.8, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o33xq"]
+albedo_texture = ExtResource("6_gppgl")
+uv1_scale = Vector3(2.5, 2.5, 2.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sehdd"]
+material = SubResource("StandardMaterial3D_o33xq")
+size = Vector3(0.308, 0.7, 0.05)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
-size = Vector3(4.3, 0.9, 4.5)
+size = Vector3(3.2935548, 0.9, 4.65448)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ph32v"]
-size = Vector3(3.335547, 0.90000004, 2.446289)
+size = Vector3(3.335547, 0.90000004, 2.3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_rxs28"]
 size = Vector3(1, 1.75, 1.5)
@@ -91,6 +104,9 @@ size = Vector3(1, 1.75, 1.5)
 size = Vector3(1, 1.7, 2.9816895)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_xx0be"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gppgl"]
+size = Vector3(2.593628, 0.6612549, 7.030016)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
@@ -110,7 +126,7 @@ current = true
 script = ExtResource("2_pmkc2")
 
 [node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6744056, 0.4, -3.039309)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.088075, 0.4, -3.147938)
 
 [node name="Terrain" type="StaticBody3D" parent="." unique_id=394980261]
 
@@ -167,6 +183,14 @@ shape = SubResource("BoxShape3D_0ac8p")
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="Terrain/box3" unique_id=689519071]
 mesh = SubResource("BoxMesh_xx0be")
 
+[node name="door" type="CollisionShape3D" parent="Terrain" unique_id=1128381217]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4931408, 0.49095702, 1.9811552)
+shape = SubResource("BoxShape3D_lu725")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Terrain/door" unique_id=844671106]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.050000012, 0.044743538)
+mesh = SubResource("BoxMesh_sehdd")
+
 [node name="Decorations" type="Node3D" parent="." unique_id=1258876808]
 
 [node name="Farolito" parent="Decorations" unique_id=1590147781 instance=ExtResource("5_0ac8p")]
@@ -181,21 +205,84 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -2)
 [node name="Farolito6" parent="Decorations" unique_id=271767001 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4992846, 1.5993392, -2.9962258)
 
+[node name="tutorialtxt_00" type="Label3D" parent="Decorations" unique_id=1762912861]
+transform = Transform3D(-0.9992465, -0.038736224, 0.0024436265, -0.026896616, 0.7364699, 0.67593545, -0.027982801, 0.67536044, -0.7369567, 1.3241265, 0.1956445, -2.4820256)
+text = "'w' 'a' 's' 'd'
+para moverte"
+font_size = 20
+
 [node name="tutorialtxt_01" type="Label3D" parent="Decorations" unique_id=473564421]
 transform = Transform3D(-4.371139e-08, -0.24794817, 0.9687733, 0, 0.9687733, 0.24794817, -1, 1.0838159e-08, -4.2346425e-08, 1.0229424, 0.2427684, 1.4733086)
 text = "'k' para saltar"
 font_size = 20
 
 [node name="tutorialtxt_02" type="Label3D" parent="Decorations" unique_id=262492336]
-transform = Transform3D(1, 3.2661333e-08, 3.804763e-08, -4.1075268e-08, 0.09834492, 0.9951524, 2.8761212e-08, -0.9951524, 0.09834492, -1.4732381, 1.0141171, 1.4733086)
+transform = Transform3D(1, 3.2661333e-08, 3.804763e-08, -4.339575e-08, 0.18353227, 0.9830137, 2.512357e-08, -0.9830137, 0.18353227, -1.4732381, 1.0237038, 1.8085995)
 text = "'k' x2
 para doble salto"
 font_size = 20
 
+[node name="tutorialtxt_03" type="Label3D" parent="Decorations" unique_id=36561785]
+transform = Transform3D(0.64336896, -0.60281867, 0.47189605, 0.08578634, 0.6692961, 0.73802656, -0.76073444, -0.43434125, 0.48231804, -1.8952957, 1.7680055, -3.2779999)
+text = "'j' para atacar
+"
+font_size = 20
+
 [node name="Sprite3D" type="Sprite3D" parent="Decorations" unique_id=1714941756]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4969796, 0.5241772, 2.011752)
+transform = Transform3D(0.013092801, 0, -0.9999144, 0, 1, 0, 0.9999144, 0, 0.013092801, -2.0096612, 0.5241772, 1.5066099)
 pixel_size = 0.0015
 texture = ExtResource("4_xx0be")
+
+[node name="Alambrado" parent="Decorations" unique_id=1317907355 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, 2.478668)
+
+[node name="Alambrado2" parent="Decorations" unique_id=1494642769 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, 0.5289781)
+
+[node name="Alambrado3" parent="Decorations" unique_id=558553504 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -0.4237134)
+
+[node name="Alambrado4" parent="Decorations" unique_id=1016267234 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -1.373301)
+
+[node name="Alambrado5" parent="Decorations" unique_id=1804746032 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -2.3126378)
+
+[node name="Alambrado6" parent="Decorations" unique_id=1223507419 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -3.2653294)
+
+[node name="Alambrado7" parent="Decorations" unique_id=796152889 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-1.4242626e-08, 0, -0.9000001, 0, 0.9, 0, 0.32583326, 0, -3.934025e-08, -1.0212878, 0.6654534, -3.8812685)
+
+[node name="Alambrado8" parent="Decorations" unique_id=492993870 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, 2.478668)
+
+[node name="Alambrado16" parent="Decorations" unique_id=393356825 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(0.1895772, 0.0031425578, -0.87980145, -0.8747239, -0.09593106, -0.18882577, -0.09443742, 0.8948672, -0.017152745, -3.5962467, 0.58227575, 1.5038705)
+
+[node name="Alambrado17" parent="Decorations" unique_id=231954173 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.0136377e-08, 0.78428113, 0.38847446, -2.5287422e-08, 0.65808994, -0.4629659, -0.89999986, -4.4752e-08, 1.1547406e-15, -2.5107577, 0.5040312, 1.5038705)
+
+[node name="Alambrado9" parent="Decorations" unique_id=18049155 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, 0.5289781)
+
+[node name="Alambrado10" parent="Decorations" unique_id=1146057763 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -0.4237134)
+
+[node name="Alambrado11" parent="Decorations" unique_id=1269190317 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -1.373301)
+
+[node name="Alambrado12" parent="Decorations" unique_id=1813266097 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -2.3126378)
+
+[node name="Alambrado13" parent="Decorations" unique_id=2129652955 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -3.2653294)
+
+[node name="Alambrado15" parent="Decorations" unique_id=90987238 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-2.4625254, 0, 7.8680486e-08, 0, 0.9, 0, -2.152808e-07, 0, -0.8999998, -2.3090897, 0.6586938, -4.0283217)
+
+[node name="Alambrado14" parent="Decorations" unique_id=290598042 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-1.4242626e-08, 0, -0.9000001, 0, 0.9, 0, 0.32583326, 0, -3.934025e-08, -3.634495, 0.6654534, -3.8812685)
 
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 
@@ -207,25 +294,25 @@ visible = false
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.30000004, -1.7)
 
 [node name="enemy3" parent="Enemies" unique_id=14609056 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -1.6000001, 1.3000003, 1.5)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.3341706, 0.47622633, 1.5)
 
 [node name="enemy4" parent="Enemies" unique_id=957438640 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 1, 0.96722853, -4.2295203)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.4103296, 1.0969888, -1.761976)
 
 [node name="enemy5" parent="Enemies" unique_id=958582147 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.96722853, -4.2295203)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.96722853, -0.06203842)
 
 [node name="enemy6" parent="Enemies" unique_id=1073073934 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -1.6000001, 1.9672288, -1.0295203)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.9704452, 0.79438186, -1.0295203)
 
 [node name="enemy7" parent="Enemies" unique_id=1801862524 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 1, 0.96722853, 1.0674729)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.7497153, 0.55366504, -1.745414)
 
 [node name="enemy8" parent="Enemies" unique_id=1531772174 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.96722853, 1.0674729)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.47009218, 0.56219816)
 
 [node name="enemy9" parent="Enemies" unique_id=1110767978 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -1.6000001, 1.9672288, 4.267473)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.613318, 0.74421346, 0.52744913)
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
 
@@ -236,7 +323,7 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_01" unique_id=284652046]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0017578602, 0.5590488, -0.51319146)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.50498056, 0.5590488, -0.43595147)
 shape = SubResource("BoxShape3D_hvvm8")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_01" unique_id=565556295]
@@ -249,7 +336,7 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_02" unique_id=691414832]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6641762, -1.25, 1.7229981)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6641762, -1.25, 1.7961427)
 shape = SubResource("BoxShape3D_ph32v")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_02" unique_id=2076046546]
@@ -266,7 +353,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -0.265)
 shape = SubResource("BoxShape3D_rxs28")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_03" unique_id=1127736982]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 1.515)
+transform = Transform3D(0.98750514, 0, 0.15758686, 0, 1, 0, -0.15758686, 0, 0.98750514, 0.04357934, -0.42125452, 1.5797217)
 
 [node name="CamZone_04" type="Area3D" parent="CamZones" unique_id=367030191 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5043977, 1.7591963, -0.6868231)
@@ -292,3 +379,16 @@ shape = SubResource("BoxShape3D_xx0be")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_05" unique_id=1168870445]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.81860113)
+
+[node name="CamZone_06" type="Area3D" parent="CamZones" unique_id=874466137 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4907697, 2.081294, -2.997676)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+follow_smoothing = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_06" unique_id=277393503]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8773624, -1.632838, 2.511219)
+shape = SubResource("BoxShape3D_gppgl")
+
+[node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06" unique_id=2109779032]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90033185, -0.17360938, 6.7241907)

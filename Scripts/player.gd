@@ -8,6 +8,7 @@ class_name Player
 @export var acceleration: float = 3.0
 @export var friction: float = 10.0
 @export var rotation_speed: float = 3.0
+@export var push_force: float = 1.5 ## Fuerza aplicada a objetos RigidBody3D al empujarlos
 
 @export_group("Velocidad de Acciones")
 @export var attack_move_speed_multiplier: float = 0.3
@@ -42,6 +43,7 @@ func _physics_process(delta: float) -> void:
 	_handle_jump()
 	_handle_movement(delta)
 	move_and_slide()
+	_handle_rigid_push()
 
 	# Actualización visual de la locomoción
 	var horizontal_speed: float = Vector2(velocity.x, velocity.z).length()
@@ -110,3 +112,19 @@ func _rotate_visuals_towards(direction: Vector3, delta: float) -> void:
 	if visuals:
 		var target_angle: float = atan2(direction.x, direction.z)
 		visuals.rotation.y = lerp_angle(visuals.rotation.y, target_angle, rotation_speed * delta)
+
+
+func _handle_rigid_push() -> void:
+	for i in get_slide_collision_count():
+		var collision: KinematicCollision3D = get_slide_collision(i)
+		var collider: Object = collision.get_collider()
+
+		if collider is RigidBody3D:
+			if collider.freeze:
+				continue
+
+			var push_dir: Vector3 = -collision.get_normal()
+			push_dir.y = 0.0
+
+			var impulse: Vector3 = push_dir * push_force
+			collider.apply_impulse(impulse, collision.get_position() - collider.global_position)

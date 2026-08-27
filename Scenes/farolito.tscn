@@ -9,7 +9,7 @@ radius = 0.04
 
 [node name="Farolito" unique_id=1590147781 instance=ExtResource("1_hgu1p")]
 script = ExtResource("2_sjasy")
-variance_factor = 0.75
+variance_factor = 0.5
 
 [node name="Light_LampPost_Posters_LOD0" parent="." index="0" unique_id=1625410195]
 layers = 512
