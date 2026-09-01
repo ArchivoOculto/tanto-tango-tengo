@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvx3c04douw4r"
-path.s3tc="res://.godot/imported/Farolito_Lights_LampPost_norm.png-e448b8d68527c1c59d4919d046624e1c.s3tc.ctex"
+uid="uid://pxms8waivegx"
+path.s3tc="res://.godot/imported/Farolito_Lights_LampPost_Emission_tex.png-e9ab66de1d8fe84db49e2f9bb635dd33.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "77b770d996f6be7f9db79d3c9202f370"
+"md5": "d2f22e679f465d831027098659e4db08"
 }
 
 [deps]
 
-source_file="res://Assets/3D/Farolito_Lights_LampPost_norm.png"
-dest_files=["res://.godot/imported/Farolito_Lights_LampPost_norm.png-e448b8d68527c1c59d4919d046624e1c.s3tc.ctex"]
+source_file="res://Assets/3D/Farolito/Farolito_Lights_LampPost_Emission_tex.png"
+dest_files=["res://.godot/imported/Farolito_Lights_LampPost_Emission_tex.png-e9ab66de1d8fe84db49e2f9bb635dd33.s3tc.ctex"]
 
 [params]
 
@@ -25,12 +25,12 @@ compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=1
+compress/normal_map=0
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
-roughness/mode=1
-roughness/src_normal="res://Assets/3D/Farolito_Lights_LampPost_norm.png"
+roughness/mode=0
+roughness/src_normal=""
 process/channel_remap/red=0
 process/channel_remap/green=1
 process/channel_remap/blue=2

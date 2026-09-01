@@ -33,6 +33,7 @@ transform = Transform3D(4.3934293, 0.945417, 29.661493, -13.891263, 26.562489, 1
 collision_layer = 0
 collision_mask = 12
 script = ExtResource("3_tywhj")
+damage = 50.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Armature/Skeleton3D/righthand_grip/Guitar/GuitarHitbox" index="0" unique_id=968297925]
 transform = Transform3D(0.41454226, 0.0035535358, 0.91001874, 0.9100086, -0.008485081, -0.41450417, 0.006248925, 0.9999526, -0.0067513734, -0.0014306307, -0.010409415, 0.3789782)

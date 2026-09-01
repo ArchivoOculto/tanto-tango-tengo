@@ -2,21 +2,23 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d1x3ldcmojici"
-path.s3tc="res://.godot/imported/Horror_Metal_08-256x256.png-0077bd4aba7b8094e9fced19280fc657.s3tc.ctex"
+uid="uid://0ourynwesy7p"
+path="res://.godot/imported/Farolito_Lights_LampPost_spec.png-3434ed7e8b81fe03379c64fc683cf9fc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
+}
+generator_parameters={
+"md5": "4505e1fd44bee1cc91c7b1f58a906d6b"
 }
 
 [deps]
 
-source_file="res://Assets/2D/256x256/Metal/Horror_Metal_08-256x256.png"
-dest_files=["res://.godot/imported/Horror_Metal_08-256x256.png-0077bd4aba7b8094e9fced19280fc657.s3tc.ctex"]
+source_file="res://Assets/3D/Farolito/Farolito_Lights_LampPost_spec.png"
+dest_files=["res://.godot/imported/Farolito_Lights_LampPost_spec.png-3434ed7e8b81fe03379c64fc683cf9fc.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -38,4 +40,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

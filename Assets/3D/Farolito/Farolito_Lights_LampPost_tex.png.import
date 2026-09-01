@@ -2,23 +2,24 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0ourynwesy7p"
-path="res://.godot/imported/Farolito_Lights_LampPost_spec.png-dbfddc267022138882d000e9bc2d1260.ctex"
+uid="uid://demx1bjs38ocb"
+path.s3tc="res://.godot/imported/Farolito_Lights_LampPost_tex.png-c04ddc6d643092ca969fa70b5ee06f22.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
-"md5": "4505e1fd44bee1cc91c7b1f58a906d6b"
+"md5": "5ac3d3d05b036eee37caa5c572d6794c"
 }
 
 [deps]
 
-source_file="res://Assets/3D/Farolito_Lights_LampPost_spec.png"
-dest_files=["res://.godot/imported/Farolito_Lights_LampPost_spec.png-dbfddc267022138882d000e9bc2d1260.ctex"]
+source_file="res://Assets/3D/Farolito/Farolito_Lights_LampPost_tex.png"
+dest_files=["res://.godot/imported/Farolito_Lights_LampPost_tex.png-c04ddc6d643092ca969fa70b5ee06f22.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

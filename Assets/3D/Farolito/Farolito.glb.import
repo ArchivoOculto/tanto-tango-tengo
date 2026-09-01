@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://bpggcgvneuriv"
-path="res://.godot/imported/Farolito.glb-7fa4a99fa8e45c75a16a451522eb7f39.scn"
+path="res://.godot/imported/Farolito.glb-1b80e1f9c988de26286c33b22535d1ca.scn"
 
 [deps]
 
-source_file="res://Assets/3D/Farolito.glb"
-dest_files=["res://.godot/imported/Farolito.glb-7fa4a99fa8e45c75a16a451522eb7f39.scn"]
+source_file="res://Assets/3D/Farolito/Farolito.glb"
+dest_files=["res://.godot/imported/Farolito.glb-1b80e1f9c988de26286c33b22535d1ca.scn"]
 
 [params]
 

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bsa6e7nt867h4"]
 
-[ext_resource type="PackedScene" uid="uid://bpggcgvneuriv" path="res://Assets/3D/Farolito.glb" id="1_hgu1p"]
+[ext_resource type="PackedScene" uid="uid://bpggcgvneuriv" path="res://Assets/3D/Farolito/Farolito.glb" id="1_hgu1p"]
 [ext_resource type="Script" uid="uid://fadge3iahk14" path="res://Scripts/farolito.gd" id="2_sjasy"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_rxs28"]

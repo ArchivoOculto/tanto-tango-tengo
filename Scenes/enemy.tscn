@@ -1,17 +1,9 @@
 [gd_scene format=3 uid="uid://haf07b5k3of4"]
 
 [ext_resource type="Script" uid="uid://dufa5c241ye6r" path="res://Scripts/enemy.gd" id="1_hghv2"]
+[ext_resource type="PackedScene" uid="uid://b3psonbqsw7x6" path="res://Scenes/enemy_visual.tscn" id="2_1f0kj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rxs28"]
-radius = 0.35
-height = 1.7
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2xxps"]
-transparency = 1
-albedo_color = Color(0, 0.8156863, 0.14117648, 0.5294118)
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_rxs28"]
-material = SubResource("StandardMaterial3D_2xxps")
 radius = 0.35
 height = 1.7
 
@@ -19,11 +11,29 @@ height = 1.7
 collision_layer = 4
 collision_mask = 15
 script = ExtResource("1_hghv2")
-wander_radius = 10.0
-min_wait_time = 1.0
+speed = 0.75
+idle_time = 1.0
+health = 150
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=505153133]
 shape = SubResource("CapsuleShape3D_rxs28")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1884314036]
-mesh = SubResource("CapsuleMesh_rxs28")
+[node name="Visuals" parent="." unique_id=946458339 instance=ExtResource("2_1f0kj")]
+transform = Transform3D(4.06, 0, 0, 0, 4.06, 0, 0, 0, 4.06, 0, 0.2213782, -0.085811734)
+
+[node name="Skeleton3D" parent="Visuals/Mesh" parent_id_path=PackedInt32Array(946458339, 415492619) index="0" unique_id=1116083536]
+bones/1/rotation = Quaternion(-0.5541532, 0.30301595, 0.68112814, -0.3703513)
+bones/2/rotation = Quaternion(-0.36095583, 0.5095173, 0.6454557, 0.43987495)
+bones/3/rotation = Quaternion(0.34829366, 0.6517248, -0.20295669, 0.6424601)
+bones/4/rotation = Quaternion(0.0049097533, -0.008234481, -0.10559845, 0.99436265)
+bones/5/rotation = Quaternion(-0.0026925802, -0.010735571, -0.0007957667, 0.9999385)
+bones/6/rotation = Quaternion(0.07302687, 0.023727972, -0.10828763, 0.99114984)
+bones/7/rotation = Quaternion(0.004590463, -0.11990829, -0.23999697, 0.9633289)
+bones/8/rotation = Quaternion(-0.41422266, 0.55948967, -0.61072206, -0.37737176)
+bones/9/rotation = Quaternion(-0.27333143, -0.6749533, -0.18634011, 0.6595495)
+bones/10/rotation = Quaternion(-0.0041459934, -0.09460081, 0.0041459864, 0.99549806)
+bones/11/rotation = Quaternion(0.0018561163, 0.0122809205, 0.0049615004, 0.99991053)
+bones/12/rotation = Quaternion(-0.5597545, -0.43033037, 0.5517072, 0.44397068)
+bones/13/rotation = Quaternion(-0.09654791, -0.114732206, 0.009198825, 0.98865086)
+
+[editable path="Visuals"]
