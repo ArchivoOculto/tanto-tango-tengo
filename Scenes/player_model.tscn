@@ -4,6 +4,11 @@
 [ext_resource type="PackedScene" uid="uid://bgyu2bikwoegk" path="res://Assets/3D/Guitar.glb" id="2_waurb"]
 [ext_resource type="Script" uid="uid://d1pk8snbvc38w" path="res://Scripts/guitar_hitbox.gd" id="3_tywhj"]
 [ext_resource type="PackedScene" uid="uid://bh42e028b045y" path="res://Assets/3D/Fedora.glb" id="4_2bmg7"]
+[ext_resource type="PackedScene" uid="uid://cq5bwlurwv61f" path="res://Assets/3D/skull.glb" id="4_mqtts"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mqtts"]
+albedo_color = Color(0.7373294, 0.7373294, 0.735357, 1)
+metallic = 1.0
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3v0ji"]
 height = 2.3554688
@@ -12,6 +17,9 @@ height = 2.3554688
 
 [node name="Armature" parent="." index="0" unique_id=89224042]
 transform = Transform3D(0.01, 0, 0, 0, 0, -0.01, 0, 0.01, 0, 0, -0.4, 0)
+
+[node name="Hostage" parent="Armature/Skeleton3D" parent_id_path=PackedInt32Array(1366982786) index="0" unique_id=385824780]
+surface_material_override/0 = SubResource("StandardMaterial3D_mqtts")
 
 [node name="righthand_grip" type="BoneAttachment3D" parent="Armature/Skeleton3D" parent_id_path=PackedInt32Array(1366982786) index="1" unique_id=308918845]
 transform = Transform3D(-0.02743889, -0.9919443, 0.12366727, 0.9946916, -0.014820061, 0.10182607, -0.09917303, 0.12580474, 0.9870852, -35.70991, 4.431754, -16.372108)
@@ -40,7 +48,15 @@ bone_idx = 11
 [node name="Guitar_playing" parent="Armature/Skeleton3D/Guitar_playing_grip" index="0" unique_id=621622540 instance=ExtResource("2_waurb")]
 transform = Transform3D(6.149083, -9.975252, -27.616674, -25.793068, 11.648838, -9.950674, 14.032153, 25.783613, -6.18882, 7.1249843, 3.3668957, 7.5490904)
 
-[node name="Hat" type="BoneAttachment3D" parent="Armature/Skeleton3D" parent_id_path=PackedInt32Array(1366982786) index="3" unique_id=131934725]
+[node name="Face" type="BoneAttachment3D" parent="Armature/Skeleton3D" parent_id_path=PackedInt32Array(1366982786) index="3" unique_id=187882173]
+transform = Transform3D(1, 0, 0, 0, -1.0658139e-14, 0.9999999, 0, -0.99999976, -2.9802333e-08, 0.2811744, 3.849152, -24.052849)
+bone_name = "mixamorig_Head"
+bone_idx = 23
+
+[node name="skull2" parent="Armature/Skeleton3D/Face" index="0" unique_id=1858074999 instance=ExtResource("4_mqtts")]
+transform = Transform3D(1.0944505, 0, 0, 0, 0.9705712, 0.3230936, 0, -0.24081115, 1.3022048, 0, 4.8668146, 2.3156655)
+
+[node name="Hat" type="BoneAttachment3D" parent="Armature/Skeleton3D" parent_id_path=PackedInt32Array(1366982786) index="4" unique_id=131934725]
 transform = Transform3D(1, 0, 0, 0, -1.7763565e-14, 0.9999999, 0, -0.99999976, -2.980234e-08, 0.28117442, 8.617545, -35.487762)
 bone_name = "mixamorig_HeadTop_End"
 bone_idx = 24

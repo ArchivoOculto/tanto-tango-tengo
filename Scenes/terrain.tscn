@@ -3,13 +3,15 @@
 [ext_resource type="PackedScene" uid="uid://w204nbya3vcs" path="res://Scenes/player.tscn" id="2_62tj5"]
 [ext_resource type="Script" uid="uid://r5iago2khjre" path="res://Scripts/game_camera.gd" id="2_pmkc2"]
 [ext_resource type="Script" uid="uid://c7kiqweremmgy" path="res://Scripts/camera_zone_3d.gd" id="3_hvvm8"]
-[ext_resource type="Texture2D" uid="uid://itjihqhhcqvh" path="res://Assets/2D/256x256/Brick/Horror_Brick_08-256x256.png" id="3_kli7b"]
+[ext_resource type="Texture2D" uid="uid://bnvhcvakoqsrf" path="res://Assets/2D/256x256/Brick/Horror_Brick_07-256x256.png" id="3_lu725"]
 [ext_resource type="PackedScene" uid="uid://haf07b5k3of4" path="res://Scenes/enemy.tscn" id="4_0ac8p"]
 [ext_resource type="Texture2D" uid="uid://miseachftepx" path="res://Assets/2D/256x256/Misc/Horror_Misc_11-256x256.png" id="4_4glq7"]
 [ext_resource type="Texture2D" uid="uid://lvs0rx5jy5sp" path="res://Assets/2D/Poster.png" id="4_xx0be"]
 [ext_resource type="PackedScene" uid="uid://bsa6e7nt867h4" path="res://Scenes/farolito.tscn" id="5_0ac8p"]
 [ext_resource type="Texture2D" uid="uid://c6h1guqotls4r" path="res://Assets/2D/256x256/Misc/Horror_Misc_13-256x256.png" id="5_aaxyt"]
 [ext_resource type="Texture2D" uid="uid://obip3ugu2tcf" path="res://Assets/2D/256x256/Metal/Horror_Metal_02-256x256.png" id="6_gppgl"]
+[ext_resource type="Script" uid="uid://c3iq7ecpd6lb8" path="res://Scripts/door.gd" id="6_rgptw"]
+[ext_resource type="Script" uid="uid://7dtsd4qr6k0n" path="res://Scripts/farolito_cam_trigger.gd" id="8_lu725"]
 [ext_resource type="PackedScene" uid="uid://djpcrt3q7qbxu" path="res://Scenes/alambrado.tscn" id="10_aaxyt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
@@ -31,7 +33,7 @@ volumetric_fog_enabled = true
 size = Vector3(3, 0.1, 3.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ph32v"]
-albedo_texture = ExtResource("3_kli7b")
+albedo_texture = ExtResource("3_lu725")
 uv1_scale = Vector3(60, 60, 60)
 
 [sub_resource type="BoxMesh" id="BoxMesh_rxs28"]
@@ -70,18 +72,14 @@ material = SubResource("StandardMaterial3D_lu725")
 size = Vector3(1, 0.7, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0ac8p"]
-size = Vector3(1, 0.4059082, 1)
+size = Vector3(1, 0.35041505, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rgptw"]
-albedo_texture = ExtResource("5_aaxyt")
-uv1_scale = Vector3(2.5, 2.5, 2.5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_xx0be"]
-material = SubResource("StandardMaterial3D_rgptw")
-size = Vector3(1, 0.4, 1)
+[sub_resource type="BoxMesh" id="BoxMesh_o33xq"]
+material = SubResource("StandardMaterial3D_lu725")
+size = Vector3(1, 0.26655275, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lu725"]
-size = Vector3(0.3, 0.8, 0.02)
+size = Vector3(0.3, 0.7, 0.082)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o33xq"]
 albedo_texture = ExtResource("6_gppgl")
@@ -177,18 +175,25 @@ shape = SubResource("BoxShape3D_pmkc2")
 mesh = SubResource("BoxMesh_hvvm8")
 
 [node name="box3" type="CollisionShape3D" parent="Terrain" unique_id=1804106464]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.2, 1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.1999825, 1.5)
 shape = SubResource("BoxShape3D_0ac8p")
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="Terrain/box3" unique_id=689519071]
-mesh = SubResource("BoxMesh_xx0be")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.037185356, 0)
+mesh = SubResource("BoxMesh_o33xq")
 
-[node name="door" type="CollisionShape3D" parent="Terrain" unique_id=1128381217]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4931408, 0.49095702, 1.9811552)
+[node name="Door" type="AnimatableBody3D" parent="." unique_id=1671746386]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, -1.6740786, 0.45664817, 2)
+script = ExtResource("6_rgptw")
+open_angle_y = -90.0
+open_duration = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Door" unique_id=764183746]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15782285, 0, 0)
 shape = SubResource("BoxShape3D_lu725")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Terrain/door" unique_id=844671106]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.050000012, 0.044743538)
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Door" unique_id=277364748]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0, 0)
 mesh = SubResource("BoxMesh_sehdd")
 
 [node name="Decorations" type="Node3D" parent="." unique_id=1258876808]
@@ -202,8 +207,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -1)
 [node name="Farolito3" parent="Decorations" unique_id=483262661 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -2)
 
+[node name="Farolito4" parent="Decorations" unique_id=388542422 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -3)
+
 [node name="Farolito6" parent="Decorations" unique_id=271767001 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4992846, 1.5993392, -2.9962258)
+is_on = false
+
+[node name="FarolitoCamTrigger" type="Node" parent="Decorations/Farolito6" unique_id=1895482232 node_paths=PackedStringArray("farolito", "target_cam_zone", "door")]
+script = ExtResource("8_lu725")
+farolito = NodePath("..")
+target_cam_zone = NodePath("../../../CamZones/CamZone_06")
+door = NodePath("../../../Door")
+is_permanent_camera = true
+override_camera_speed = true
+custom_smoothing = 2.0
+door_action_delay = 2.5
 
 [node name="tutorialtxt_00" type="Label3D" parent="Decorations" unique_id=1762912861]
 transform = Transform3D(-0.9992465, -0.038736224, 0.0024436265, -0.026896616, 0.7364699, 0.67593545, -0.027982801, 0.67536044, -0.7369567, 1.3241265, 0.1956445, -2.4820256)
@@ -287,8 +306,7 @@ transform = Transform3D(-1.4242626e-08, 0, -0.9000001, 0, 0.9, 0, 0.32583326, 0,
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 
 [node name="enemy" parent="Enemies" unique_id=1534867834 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 1, 0.30000004, -1.7)
-visible = false
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.411773, 0.591499, -1.7)
 
 [node name="enemy2" parent="Enemies" unique_id=2023733705 instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.30000004, -1.7)
@@ -315,6 +333,7 @@ transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.47009218,
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.613318, 0.74421346, 0.52744913)
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
+visible = false
 
 [node name="CamZone_01" type="Area3D" parent="CamZones" unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -1.2558405)

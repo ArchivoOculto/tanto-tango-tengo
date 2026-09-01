@@ -1,8 +1,10 @@
 extends Node3D
 class_name Farolito
 
-@onready var light: SpotLight3D = $SpotLight3D
-@onready var mesh: MeshInstance3D = $Light_LampPost_Posters_LOD0
+signal toggled(is_on: bool)
+
+@export_group("Estado Inicial")
+@export var is_on: bool = true ## Determina si la farola arranca encendida o apagada
 
 @export_group("Sacudida")
 @export var shake_duration: float = 0.35
@@ -13,10 +15,17 @@ class_name Farolito
 @export var strobo_speed: float = 0.04
 
 @export_group("Aleatoriedad (%)")
-@export_range(0.0, 1.0) var variance_factor: float = 0.75 ## Porcentaje de variación aleatoria (+/- 25% por defecto)
+@export_range(0.0, 1.0) var variance_factor: float = 0.75 ## Porcentaje de variación aleatoria (+/- 75%)
+
+@export_group("Interacciones / Eventos")
+## Puedes asignarle un Callable por código para ejecutar eventos personalizados al ser golpeada.
+## Ej: farol.on_hit_callback = func(farol_state): mi_camzone_manager.forzar_camara(...)
+@export var on_hit_callback: Callable
+
+@onready var light: SpotLight3D = $SpotLight3D
+@onready var mesh: MeshInstance3D = $Light_LampPost_Posters_LOD0
 
 var _is_shaking: bool = false
-var _is_on: bool = true
 var _original_rotation: Vector3
 var _off_material: StandardMaterial3D
 
@@ -30,16 +39,26 @@ func _ready() -> void:
 	_off_material.metallic = 0.1
 	_off_material.roughness = 0.8
 
+	# Aplicar el estado inicial configurado desde el Inspector
+	if light:
+		light.visible = is_on
+	_set_mesh_on_state(is_on)
+
 
 func take_hit(_damage: float = 0.0) -> void:
-	_is_on = not _is_on
+	is_on = not is_on
+	toggled.emit(is_on)
+
+	# Ejecutar el callback de interacción personalizada si fue asignado
+	if on_hit_callback.is_valid():
+		on_hit_callback.call(is_on)
 
 	# Randomizamos los parámetros en el instante exacto del impacto
 	var current_shake_duration: float = shake_duration * randf_range(1.0 - variance_factor, 1.0 + variance_factor)
 	var current_shake_strength: float = shake_strength * randf_range(1.0 - variance_factor, 1.0 + variance_factor)
 	var current_strobo_speed: float = strobo_speed * randf_range(1.0 - variance_factor, 1.0 + variance_factor)
 
-	# Variación de flashes (+/- 1 ó 2 destellos)
+	# Variación de flashes (+/- destellos)
 	var flash_variation: int = int(round(strobo_flashes * variance_factor))
 	var current_flashes: int = max(1, strobo_flashes + randi_range(-flash_variation, flash_variation))
 
@@ -67,8 +86,8 @@ func _play_strobo_effect(flashes: int, speed: float) -> void:
 
 	# Asegurar estado final correcto al terminar la animación
 	tween.finished.connect(func():
-		light.visible = _is_on
-		_set_mesh_on_state(_is_on)
+		light.visible = is_on
+		_set_mesh_on_state(is_on)
 	)
 
 
