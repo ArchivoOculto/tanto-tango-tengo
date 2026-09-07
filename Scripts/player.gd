@@ -10,6 +10,11 @@ class_name Player
 @export var rotation_speed: float = 3.0
 @export var push_force: float = 1.5 ## Fuerza aplicada a objetos RigidBody3D al empujarlos
 
+@export_group("Stats & Daño")
+@export var max_health: float = 100.0
+@export var flash_duration: float = 0.15 ## Duración del destello rojo
+@export var invulnerability_duration: float = 0.8 ## Tiempo de invulnerabilidad tras ser golpeado
+
 @export_group("Velocidad de Acciones")
 @export var attack_move_speed_multiplier: float = 0.3
 @export var block_move_speed_multiplier: float = 0.4
@@ -25,10 +30,21 @@ class_name Player
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var jump_count: int = 0
+var current_health: float
+var is_invulnerable: bool = false
+
+# Materiales para el efecto rojo
+var player_materials: Array[StandardMaterial3D] = []
+var original_albedo_colors: Array[Color] = []
 
 
 func _enter_tree() -> void:
 	add_to_group("player")
+
+
+func _ready() -> void:
+	current_health = max_health
+	_setup_materials()
 
 
 func get_body_height() -> float:
@@ -45,10 +61,91 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_handle_rigid_push()
 
-	# Actualización visual de la locomoción
 	var horizontal_speed: float = Vector2(velocity.x, velocity.z).length()
 	if anim_controller:
 		anim_controller.update_locomotion(is_on_floor(), horizontal_speed)
+
+
+func take_damage(amount: float, knockback_impulse: Vector3 = Vector3.ZERO) -> void:
+	if is_invulnerable:
+		return
+
+	# Si está bloqueando, reducimos el impacto
+	if combat_controller and combat_controller.is_blocking():
+		amount *= 0.2
+		knockback_impulse *= 0.3
+
+	current_health -= amount
+
+	# Aplicar empuje
+	if knockback_impulse != Vector3.ZERO:
+		velocity = knockback_impulse
+
+	# Cancelar acciones en curso
+	if combat_controller:
+		combat_controller.interrupt_actions()
+
+	_flash_red()
+	_start_invulnerability()
+
+
+# --- EFECTO DE DESTELLO ROJO ---
+func _flash_red() -> void:
+	for i in range(player_materials.size()):
+		var mat = player_materials[i]
+		if is_instance_valid(mat):
+			var orig_col = original_albedo_colors[i]
+			mat.albedo_color = Color(1.0, 0.1, 0.1, orig_col.a)
+			mat.emission_enabled = true
+			mat.emission = Color(1.0, 0.0, 0.0)
+
+	get_tree().create_timer(flash_duration).timeout.connect(func():
+		for i in range(player_materials.size()):
+			var mat = player_materials[i]
+			if is_instance_valid(mat):
+				mat.albedo_color = original_albedo_colors[i]
+				mat.emission_enabled = false
+	)
+
+
+func _start_invulnerability() -> void:
+	is_invulnerable = true
+	
+	# Efecto de parpadeo de visibilidad durante la invulnerabilidad
+	var tween = create_tween()
+	var loops = int(invulnerability_duration / 0.1)
+	for i in range(loops):
+		tween.tween_property(visuals, "visible", false, 0.05)
+		tween.tween_property(visuals, "visible", true, 0.05)
+		
+	tween.finished.connect(func():
+		if is_instance_valid(visuals):
+			visuals.visible = true
+		is_invulnerable = false
+	)
+
+
+# --- BUSQUEDA Y CONFIGURACIÓN AUTOMÁTICA DE MATERIALES ---
+func _setup_materials() -> void:
+	player_materials.clear()
+	original_albedo_colors.clear()
+	
+	# Busca todos los MeshInstance3D dentro del modelo visual
+	var mesh_nodes = visuals.find_children("*", "MeshInstance3D", true, false)
+	
+	for mesh_node in mesh_nodes:
+		if mesh_node is MeshInstance3D:
+			for surface_idx in range(mesh_node.get_surface_override_material_count()):
+				var base_mat = mesh_node.get_surface_override_material(surface_idx)
+				
+				if not base_mat and mesh_node.mesh and mesh_node.mesh.get_surface_count() > surface_idx:
+					base_mat = mesh_node.mesh.surface_get_material(surface_idx)
+				
+				if base_mat is StandardMaterial3D:
+					var dup_mat = base_mat.duplicate() as StandardMaterial3D
+					mesh_node.set_surface_override_material(surface_idx, dup_mat)
+					player_materials.append(dup_mat)
+					original_albedo_colors.append(dup_mat.albedo_color)
 
 
 func _apply_gravity(delta: float) -> void:

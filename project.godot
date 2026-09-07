@@ -27,6 +27,7 @@ window/stretch/aspect="expand"
 [global_group]
 
 enemy_zone="enemies navigation zone"
+player=""
 
 [input]
 

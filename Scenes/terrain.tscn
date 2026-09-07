@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://c3iq7ecpd6lb8" path="res://Scripts/door.gd" id="6_rgptw"]
 [ext_resource type="Script" uid="uid://7dtsd4qr6k0n" path="res://Scripts/farolito_cam_trigger.gd" id="8_lu725"]
 [ext_resource type="PackedScene" uid="uid://djpcrt3q7qbxu" path="res://Scenes/alambrado.tscn" id="10_aaxyt"]
+[ext_resource type="Script" uid="uid://pbxw6wcddk1v" path="res://Scripts/enemy_patrol_zone.gd" id="13_o33xq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -94,6 +95,9 @@ size = Vector3(1, 0.35041505, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_o33xq"]
 material = SubResource("StandardMaterial3D_lu725")
 size = Vector3(1, 0.26655275, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
+size = Vector3(2.8568726, 1, 4.7130127)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
 size = Vector3(3.2935548, 0.9, 4.4)
@@ -349,7 +353,17 @@ transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.47009218,
 [node name="enemy9" parent="Enemies" unique_id=1110767978 instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.613318, 0.567855, -0.4068327)
 
+[node name="EnemyPatrolZone" type="Area3D" parent="Enemies" unique_id=1330319728]
+collision_layer = 0
+collision_mask = 6
+script = ExtResource("13_o33xq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Enemies/EnemyPatrolZone" unique_id=1108543497]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 0.67459595, -1.607605)
+shape = SubResource("BoxShape3D_2xxps")
+
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
+visible = false
 
 [node name="CamZone_01" type="Area3D" parent="CamZones" unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -1.2558405)
@@ -362,7 +376,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.50498056, 0.5590488, -0.563
 shape = SubResource("BoxShape3D_hvvm8")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_01" unique_id=565556295]
-transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.85, 0.6, -1.6359999)
+transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.65, 0.6, -1.6359999)
 
 [node name="CamZone_02" type="Area3D" parent="CamZones" unique_id=1656975373 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8000001, 0)
@@ -375,7 +389,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6641762, -1.25, 1.668457)
 shape = SubResource("BoxShape3D_ph32v")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_02" unique_id=2076046546]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.99, -1.3620001, 1.555)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.79, -1.3620001, 1.555)
 
 [node name="CamZone_03" type="Area3D" parent="CamZones" unique_id=1378709618 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5043977, 1.7591963, 1.5111821)

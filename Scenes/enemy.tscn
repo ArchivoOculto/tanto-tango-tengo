@@ -7,12 +7,29 @@
 radius = 0.35
 height = 1.7
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_rxs28"]
+radius = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1f0kj"]
+transparency = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_rxs28"]
+material = SubResource("StandardMaterial3D_1f0kj")
+radius = 1.2
+height = 2.2
+radial_segments = 8
+rings = 8
+
 [node name="enemy" type="CharacterBody3D" unique_id=1534867834]
 collision_layer = 4
 collision_mask = 15
 script = ExtResource("1_hghv2")
-move_speed = 0.75
+base_speed = 0.75
+chase_speed_mult = 1.5
+flee_speed_mult = 1.75
+retreat_speed_mult = 3.0
 wander_radius = 2.0
+base_attack_color = Color(1.353256, 1.353256, 1.353256, 1)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=505153133]
 shape = SubResource("CapsuleShape3D_rxs28")
@@ -21,18 +38,30 @@ shape = SubResource("CapsuleShape3D_rxs28")
 transform = Transform3D(4.06, 0, 0, 0, 4.06, 0, 0, 0, 4.06, 0, 0.2213782, -0.085811734)
 
 [node name="Skeleton3D" parent="Visuals/Mesh" parent_id_path=PackedInt32Array(946458339, 975408455) index="0" unique_id=518640232]
-bones/1/rotation = Quaternion(-0.5541532, 0.30301595, 0.68112814, -0.3703513)
-bones/2/rotation = Quaternion(-0.36095583, 0.5095173, 0.6454557, 0.43987495)
-bones/3/rotation = Quaternion(0.34829366, 0.6517248, -0.20295669, 0.6424601)
-bones/4/rotation = Quaternion(0.0049097533, -0.008234481, -0.10559845, 0.99436265)
-bones/5/rotation = Quaternion(-0.0026925802, -0.010735571, -0.0007957667, 0.9999385)
-bones/6/rotation = Quaternion(0.07302687, 0.023727972, -0.10828763, 0.99114984)
-bones/7/rotation = Quaternion(0.004590463, -0.11990829, -0.23999697, 0.9633289)
-bones/8/rotation = Quaternion(-0.41422266, 0.55948967, -0.61072206, -0.37737176)
-bones/9/rotation = Quaternion(-0.27333143, -0.6749533, -0.18634011, 0.6595495)
-bones/10/rotation = Quaternion(-0.0041459934, -0.09460081, 0.0041459864, 0.99549806)
-bones/11/rotation = Quaternion(0.0018561163, 0.0122809205, 0.0049615004, 0.99991053)
-bones/12/rotation = Quaternion(-0.5597545, -0.43033037, 0.5517072, 0.44397068)
-bones/13/rotation = Quaternion(-0.09654791, -0.114732206, 0.009198825, 0.98865086)
+bones/1/rotation = Quaternion(-0.4767595, 0.44282678, 0.5801944, -0.4898769)
+bones/2/rotation = Quaternion(-0.41254395, 0.58194685, 0.62346095, 0.32006547)
+bones/3/rotation = Quaternion(0.65033054, 0.25653866, 0.3935673, 0.5969614)
+bones/4/rotation = Quaternion(0.07628619, -0.14139171, -0.19917184, 0.96670544)
+bones/5/rotation = Quaternion(-0.024982177, 0.31268838, 0.079536125, 0.9461903)
+bones/6/rotation = Quaternion(0.057720702, 0.055575814, -0.343945, 0.9355649)
+bones/7/rotation = Quaternion(0, 0, -0.06820913, 0.99767107)
+bones/8/rotation = Quaternion(-0.43278408, 0.66572213, -0.5395046, -0.28008378)
+bones/9/rotation = Quaternion(-0.63335496, -0.27403986, 0.29957998, 0.65879864)
+bones/10/rotation = Quaternion(-0.08764685, 0.13522618, -0.12440993, 0.9790578)
+bones/11/rotation = Quaternion(-0.10335207, -0.45039505, 0.02636693, 0.8864353)
+bones/12/rotation = Quaternion(-0.4867232, -0.51739764, 0.49762428, 0.4977654)
+bones/13/rotation = Quaternion(0.121385634, -0.028045718, 0.14552285, 0.9814795)
+
+[node name="AttackArea" type="Area3D" parent="." unique_id=364351869]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackArea" unique_id=2070522814]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13783729, 0)
+shape = SubResource("SphereShape3D_rxs28")
+debug_color = Color(1, 0, 0, 0.41960785)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="AttackArea" unique_id=458699463]
+mesh = SubResource("SphereMesh_rxs28")
 
 [editable path="Visuals"]
