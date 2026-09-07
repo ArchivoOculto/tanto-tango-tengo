@@ -24,8 +24,11 @@ sky_material = SubResource("ProceduralSkyMaterial_62tj5")
 [sub_resource type="Environment" id="Environment_hvvm8"]
 background_mode = 2
 sky = SubResource("Sky_pmkc2")
-glow_enabled = true
+ambient_light_sky_contribution = 0.7
+fog_enabled = true
+fog_light_energy = 1.5
 volumetric_fog_enabled = true
+volumetric_fog_density = 0.06
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lu725"]
 size = Vector3(0.3, 0.7, 0.082)
@@ -92,14 +95,11 @@ size = Vector3(1, 0.35041505, 1)
 material = SubResource("StandardMaterial3D_lu725")
 size = Vector3(1, 0.26655275, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
-size = Vector3(2.3, 0.1, 4.5)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
-size = Vector3(3.2935548, 0.9, 4.65448)
+size = Vector3(3.2935548, 0.9, 4.4)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ph32v"]
-size = Vector3(3.335547, 0.90000004, 2.3)
+size = Vector3(3.335547, 0.90000004, 2.5553713)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_rxs28"]
 size = Vector3(1, 1.75, 1.5)
@@ -119,18 +119,19 @@ environment = SubResource("Environment_hvvm8")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=904046338]
 transform = Transform3D(1, 0, 0, 0, 0.03489931, 0.99939084, 0, -0.99939084, 0.034899313, 0, 4.260251, 0)
-light_color = Color(0.004019165, 0.004077159, 0.0038480829, 1)
+light_color = Color(0.012617188, 0.012617188, 0.012617188, 1)
+light_energy = 0.75
 light_cull_mask = 4294966783
 shadow_enabled = true
 shadow_caster_mask = 4294966783
 
 [node name="GameCamara" type="Camera3D" parent="." unique_id=2072088570]
-transform = Transform3D(0.18429959, -0.60787255, 0.7723501, 0, 0.78581095, 0.6184668, -0.9828701, -0.113983184, 0.14482464, 1.3915024, 0.6, -3.5058405)
+transform = Transform3D(0.32538345, -0.58481115, 0.7430487, -1.2815509e-08, 0.78581095, 0.6184668, -0.9455821, -0.20123886, 0.25568986, 1.9873594, 0.6, -2.8921545)
 current = true
 script = ExtResource("2_pmkc2")
 
 [node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.088075, 0.57362175, -3.147938)
+transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.6350739, 0.57362175, -2.5822232)
 
 [node name="InteractiveProps" type="Node3D" parent="." unique_id=1539688944]
 
@@ -177,7 +178,7 @@ custom_smoothing = 2.0
 door_action_delay = 2.5
 
 [node name="tutorialtxt_00" type="Label3D" parent="InteractiveProps" unique_id=259107111]
-transform = Transform3D(-0.9992465, -0.038736224, 0.0024436265, -0.026896616, 0.7364699, 0.67593545, -0.027982801, 0.67536044, -0.7369567, 1.3241265, 0.1956445, -2.4820256)
+transform = Transform3D(-0.9845343, -0.13661523, 0.10967373, -0.026896615, 0.73646986, 0.6759354, -0.17311445, 0.6625318, -0.72875434, 1.7716956, 0.1956445, -1.8890464)
 text = "'w' 'a' 's' 'd'
 para moverte"
 font_size = 20
@@ -290,7 +291,7 @@ transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08
 transform = Transform3D(-1.4242626e-08, 0, -0.9000001, 0, 0.9, 0, 0.32583326, 0, -3.934025e-08, -1.0212878, 0.6654534, -3.8812685)
 
 [node name="Alambrado8" parent="Terrain/Decorations" unique_id=492993870 instance=ExtResource("10_aaxyt")]
-transform = Transform3D(0.89999986, -5.9766947e-10, -8.940695e-08, 5.976659e-10, 0.9, 6.831369e-09, 1.19209275e-07, -6.831362e-09, 0.90000004, -3.2231078, 0.6870477, 2.0937724)
+transform = Transform3D(0.89999986, -2.988347e-10, -8.9406946e-08, 1.3251576e-08, 0.4474562, 0.09555936, 1.1847194e-07, -0.04777967, 0.8949124, -3.2231078, 0.3870477, 2.1059804)
 
 [node name="Alambrado16" parent="Terrain/Decorations" unique_id=393356825 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(0.1895772, 0.0031425578, -0.87980145, -0.8747239, -0.09593106, -0.18882577, -0.09443742, 0.8948672, -0.017152745, -3.5962467, 0.58227575, 1.5038705)
@@ -322,13 +323,13 @@ transform = Transform3D(-1.4242626e-08, 0, -0.9000001, 0, 0.9, 0, 0.32583326, 0,
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 
 [node name="enemy" parent="Enemies" unique_id=1534867834 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.411773, 0.591499, -1.7)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -3.1637936, 0.591499, -1.0284445)
 
 [node name="enemy2" parent="Enemies" unique_id=2023733705 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.30000004, -1.7)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.30000004, -0.9636663)
 
 [node name="enemy3" parent="Enemies" unique_id=14609056 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.3341706, 0.47622633, -1.8553572)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.3341706, 0.47622633, -3.1463363)
 
 [node name="enemy4" parent="Enemies" unique_id=957438640 instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.811871, 0.5442436, -2.2247493)
@@ -340,24 +341,15 @@ transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.38322985,
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.9704452, 0.79438186, -2.6311767)
 
 [node name="enemy7" parent="Enemies" unique_id=1801862524 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.7497153, 0.55366504, -1.745414)
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -1.7587423, 0.55366504, -0.40380657)
 
 [node name="enemy8" parent="Enemies" unique_id=1531772174 instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.47009218, -1.6924458)
 
 [node name="enemy9" parent="Enemies" unique_id=1110767978 instance=ExtResource("4_0ac8p")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.613318, 0.74421346, -1.5552666)
-
-[node name="Enemy_Zone" type="Area3D" parent="Enemies" unique_id=1757243787 groups=["enemy_zone"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4725556, 0.87251854, -1.4177203)
-collision_mask = 4
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Enemies/Enemy_Zone" unique_id=926671369]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.054840088, -0.71430635, -0.22304773)
-shape = SubResource("BoxShape3D_2xxps")
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.613318, 0.567855, -0.4068327)
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
-visible = false
 
 [node name="CamZone_01" type="Area3D" parent="CamZones" unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -1.2558405)
@@ -366,11 +358,11 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_01" unique_id=284652046]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.50498056, 0.5590488, -0.43595147)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.50498056, 0.5590488, -0.5631914)
 shape = SubResource("BoxShape3D_hvvm8")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_01" unique_id=565556295]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 0.6, -2.25)
+transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.85, 0.6, -1.6359999)
 
 [node name="CamZone_02" type="Area3D" parent="CamZones" unique_id=1656975373 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8000001, 0)
@@ -379,11 +371,11 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_02" unique_id=691414832]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6641762, -1.25, 1.7961427)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6641762, -1.25, 1.668457)
 shape = SubResource("BoxShape3D_ph32v")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_02" unique_id=2076046546]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5391455, -1.3623794, 1.5545365)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.99, -1.3620001, 1.555)
 
 [node name="CamZone_03" type="Area3D" parent="CamZones" unique_id=1378709618 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5043977, 1.7591963, 1.5111821)

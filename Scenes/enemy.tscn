@@ -11,9 +11,8 @@ height = 1.7
 collision_layer = 4
 collision_mask = 15
 script = ExtResource("1_hghv2")
-speed = 0.75
-idle_time = 1.0
-health = 150
+move_speed = 0.75
+wander_radius = 2.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=505153133]
 shape = SubResource("CapsuleShape3D_rxs28")
@@ -21,7 +20,7 @@ shape = SubResource("CapsuleShape3D_rxs28")
 [node name="Visuals" parent="." unique_id=946458339 instance=ExtResource("2_1f0kj")]
 transform = Transform3D(4.06, 0, 0, 0, 4.06, 0, 0, 0, 4.06, 0, 0.2213782, -0.085811734)
 
-[node name="Skeleton3D" parent="Visuals/Mesh" parent_id_path=PackedInt32Array(946458339, 415492619) index="0" unique_id=1116083536]
+[node name="Skeleton3D" parent="Visuals/Mesh" parent_id_path=PackedInt32Array(946458339, 975408455) index="0" unique_id=518640232]
 bones/1/rotation = Quaternion(-0.5541532, 0.30301595, 0.68112814, -0.3703513)
 bones/2/rotation = Quaternion(-0.36095583, 0.5095173, 0.6454557, 0.43987495)
 bones/3/rotation = Quaternion(0.34829366, 0.6517248, -0.20295669, 0.6424601)

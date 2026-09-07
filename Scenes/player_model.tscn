@@ -13,6 +13,71 @@ metallic = 1.0
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3v0ji"]
 height = 2.3554688
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_rxs28"]
+height = 5.5981445
+
+[sub_resource type="Animation" id="Animation_mqtts"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("OmniLight3D:light_color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 0.4666667, 0, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("OmniLight3D:light_energy")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.01]
+}
+
+[sub_resource type="Animation" id="Animation_31ovn"]
+resource_name = "pucho_burn"
+length = 5.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("OmniLight3D:light_color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2.5, 5),
+"transitions": PackedFloat32Array(-2, -2, -2),
+"update": 0,
+"values": [Color(1, 0.4666667, 0, 1), Color(1, 0, 0, 1), Color(1, 0.39723614, 0, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("OmniLight3D:light_energy")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.033333335, 2.5),
+"transitions": PackedFloat32Array(-2, -2),
+"update": 0,
+"values": [0.02, 0.001]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_740jx"]
+_data = {
+&"RESET": SubResource("Animation_mqtts"),
+&"pucho_burn": SubResource("Animation_31ovn")
+}
+
 [node name="player_model" unique_id=1769203798 instance=ExtResource("1_dluh4")]
 
 [node name="Armature" parent="." index="0" unique_id=89224042]
@@ -54,8 +119,21 @@ transform = Transform3D(1, 0, 0, 0, -1.0658139e-14, 0.9999999, 0, -0.99999976, -
 bone_name = "mixamorig_Head"
 bone_idx = 23
 
-[node name="skull2" parent="Armature/Skeleton3D/Face" index="0" unique_id=1858074999 instance=ExtResource("4_mqtts")]
+[node name="skull" parent="Armature/Skeleton3D/Face" index="0" unique_id=1858074999 instance=ExtResource("4_mqtts")]
 transform = Transform3D(1.0944505, 0, 0, 0, 0.9705712, 0.3230936, 0, -0.24081115, 1.3022048, 0, 4.8668146, 2.3156655)
+
+[node name="puchito" type="MeshInstance3D" parent="Armature/Skeleton3D/Face" index="1" unique_id=613285206]
+transform = Transform3D(0.99296707, -0.11839282, -8.703499e-09, 3.5283834e-09, -4.3920977e-08, 0.9999996, -0.118392825, -0.9929666, -4.3194362e-08, 1.3900647, 3.4852467, 10.310259)
+mesh = SubResource("CylinderMesh_rxs28")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Armature/Skeleton3D/Face/puchito" index="0" unique_id=1047995362]
+transform = Transform3D(99.99998, 6.67572e-06, 3.5283938e-07, 0, 100.00003, 2.9592607e-06, -7.3896445e-13, 8.6402e-12, 100.00005, 0.12023091, -3.1058292, -0.026495934)
+light_color = Color(1, 0.4666667, 0, 1)
+light_energy = 0.01
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Armature/Skeleton3D/Face/puchito" index="1" unique_id=2079417980]
+libraries/ = SubResource("AnimationLibrary_740jx")
+autoplay = &"pucho_burn"
 
 [node name="Hat" type="BoneAttachment3D" parent="Armature/Skeleton3D" parent_id_path=PackedInt32Array(1366982786) index="4" unique_id=131934725]
 transform = Transform3D(1, 0, 0, 0, -1.7763565e-14, 0.9999999, 0, -0.99999976, -2.980234e-08, 0.28117442, 8.617545, -35.487762)
