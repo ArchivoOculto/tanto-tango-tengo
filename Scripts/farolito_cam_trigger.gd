@@ -54,7 +54,7 @@ func _execute_open_trigger() -> void:
 		await get_tree().create_timer(door_action_delay).timeout
 
 	# Verificar si el farol sigue encendido antes de abrir (por si lo apagaron volando)
-	if farolito and not farolito.is_on:
+	if farolito and farolito.current_state != Farolito.State.ON:
 		return
 
 	# 3. Abrir la puerta

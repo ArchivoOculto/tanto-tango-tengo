@@ -31,19 +31,44 @@ fog_light_energy = 1.5
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.06
 
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sehdd"]
+emission_shape_scale = Vector3(1.5, 1, 1.5)
+emission_shape = 3
+emission_box_extents = Vector3(3, 1, 3)
+direction = Vector3(0, -1, 0)
+spread = 5.0
+initial_velocity_max = 10.0
+collision_mode = 1
+collision_friction = 0.0
+collision_bounce = 0.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sehdd"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.8, 0.8, 0.8, 0.039215688)
+
+[sub_resource type="RibbonTrailMesh" id="RibbonTrailMesh_gml2b"]
+material = SubResource("StandardMaterial3D_sehdd")
+shape = 0
+size = 0.005
+sections = 2
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_rgptw"]
+load_path = "res://.godot/imported/Horror_Metal_14-256x256.png-f8355ba4c490b1937aa218591273af05.s3tc.ctex"
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_lu725"]
 size = Vector3(0.3, 0.7, 0.082)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o33xq"]
+albedo_color = Color(1.5720325, 1.5720325, 1.5720325, 1)
 albedo_texture = ExtResource("6_gppgl")
 uv1_scale = Vector3(2.5, 2.5, 2.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_sehdd"]
 material = SubResource("StandardMaterial3D_o33xq")
 size = Vector3(0.308, 0.7, 0.05)
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_rgptw"]
-load_path = "res://.godot/imported/Horror_Metal_14-256x256.png-f8355ba4c490b1937aa218591273af05.s3tc.ctex"
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_rxs28"]
 
@@ -69,14 +94,21 @@ uv1_scale = Vector3(5, 5, 5)
 material = SubResource("StandardMaterial3D_kli7b")
 height = 0.099999964
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_62tj5"]
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gppgl"]
 albedo_texture = ExtResource("5_aaxyt")
 uv1_scale = Vector3(2.5, 2.5, 2.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_2xxps"]
 material = SubResource("StandardMaterial3D_gppgl")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_62tj5"]
+size = Vector3(1, 0.2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_o33xq"]
+size = Vector3(0.7, 0.33, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sehdd"]
+size = Vector3(0.7, 0.33, 0.33)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_pmkc2"]
 size = Vector3(1, 0.7, 1)
@@ -97,7 +129,7 @@ material = SubResource("StandardMaterial3D_lu725")
 size = Vector3(1, 0.26655275, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
-size = Vector3(2.8568726, 1, 4.7130127)
+size = Vector3(2.8568726, 1, 4.3179016)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
 size = Vector3(3.2935548, 0.9, 4.4)
@@ -114,7 +146,7 @@ size = Vector3(1, 1.7, 2.9816895)
 [sub_resource type="BoxShape3D" id="BoxShape3D_xx0be"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gppgl"]
-size = Vector3(2.593628, 0.6612549, 7.030016)
+size = Vector3(2.593628, 0.6612549, 7.0768423)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
@@ -129,6 +161,17 @@ light_cull_mask = 4294966783
 shadow_enabled = true
 shadow_caster_mask = 4294966783
 
+[node name="GPUParticles3D" type="GPUParticles3D" parent="." unique_id=1286893355]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7106104, 3.1812925, -0.8086641)
+amount = 150
+lifetime = 0.2
+randomness = 1.0
+visibility_aabb = AABB(-4.02, -3, -4, 8, 8, 8)
+trail_enabled = true
+trail_lifetime = 0.1
+process_material = SubResource("ParticleProcessMaterial_sehdd")
+draw_pass_1 = SubResource("RibbonTrailMesh_gml2b")
+
 [node name="GameCamara" type="Camera3D" parent="." unique_id=2072088570]
 transform = Transform3D(0.32538345, -0.58481115, 0.7430487, -1.2815509e-08, 0.78581095, 0.6184668, -0.9455821, -0.20123886, 0.25568986, 1.9873594, 0.6, -2.8921545)
 current = true
@@ -137,10 +180,47 @@ script = ExtResource("2_pmkc2")
 [node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
 transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.6350739, 0.57362175, -2.5822232)
 
+[node name="Text and Sprites" type="Node3D" parent="." unique_id=386532345]
+
+[node name="tutorialtxt_00" type="Label3D" parent="Text and Sprites" unique_id=259107111]
+transform = Transform3D(-0.9845343, -0.13661523, 0.10967373, -0.026896615, 0.73646986, 0.6759354, -0.17311445, 0.6625318, -0.72875434, 1.7716956, 0.1956445, -1.8890464)
+double_sided = false
+text = "'w' 'a' 's' 'd'
+para moverte"
+font_size = 20
+
+[node name="tutorialtxt_01" type="Label3D" parent="Text and Sprites" unique_id=1807424420]
+transform = Transform3D(-4.371139e-08, -0.24794817, 0.9687733, 0, 0.9687733, 0.24794817, -1, 1.0838159e-08, -4.2346425e-08, 1.0229424, 0.2427684, 1.4733086)
+text = "'k' para saltar"
+font_size = 20
+
+[node name="tutorialtxt_02" type="Label3D" parent="Text and Sprites" unique_id=1011112214]
+transform = Transform3D(1, 3.2661333e-08, 3.804763e-08, -4.339575e-08, 0.18353227, 0.9830137, 2.512357e-08, -0.9830137, 0.18353227, -1.4732381, 1.0237038, 1.8085995)
+text = "'k' x2
+para doble salto"
+font_size = 20
+
+[node name="tutorialtxt_03" type="Label3D" parent="Text and Sprites" unique_id=879385856]
+transform = Transform3D(0.64336896, -0.60281867, 0.47189605, 0.08578634, 0.6692961, 0.73802656, -0.76073444, -0.43434125, 0.48231804, -1.8952957, 1.692906, -3.1506646)
+text = "'j' para atacar
+"
+font_size = 20
+
+[node name="Sprite3D" type="Sprite3D" parent="Text and Sprites" unique_id=496788869]
+transform = Transform3D(0.013092801, 0, -0.9999144, 0, 1, 0, 0.9999144, 0, 0.013092801, -2.0096612, 0.5241772, 1.5066099)
+pixel_size = 0.0015
+texture = ExtResource("4_xx0be")
+
 [node name="InteractiveProps" type="Node3D" parent="." unique_id=1539688944]
 
+[node name="DoorPortal" type="Sprite3D" parent="InteractiveProps" unique_id=1166441583]
+transform = Transform3D(0.7751726, 0, 2.682209e-07, 0, 1.8378295, 0, -2.9802322e-08, 0, 0.99999976, -1.5161479, 0.44365996, 2.002765)
+modulate = Color(0.9086792, 0, 2.3331382, 0.90588236)
+pixel_size = 0.0015
+texture = SubResource("CompressedTexture2D_rgptw")
+
 [node name="Door" type="AnimatableBody3D" parent="InteractiveProps" unique_id=1671746386]
-transform = Transform3D(0.9999999, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 0.9999999, -1.6740786, 0.45664817, 2)
+transform = Transform3D(0.9999732, 0, -0.0073120594, 0, 1, 0, 0.0073120594, 0, 0.9999732, -1.6740786, 0.45664817, 2)
 script = ExtResource("6_rgptw")
 open_angle_y = -90.0
 open_duration = 1.0
@@ -167,9 +247,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -2)
 [node name="Farolito4" parent="InteractiveProps/Faroles" unique_id=100758714 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -3)
 
+[node name="Farolito5" parent="InteractiveProps/Faroles" unique_id=470153184 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3921163, 0.09548479, 2.4515853)
+
+[node name="Farolito7" parent="InteractiveProps/Faroles" unique_id=1978028834 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.007883787, 0.09548479, 2.4515853)
+
 [node name="Farolito6" parent="InteractiveProps/Faroles" unique_id=917698834 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4992846, 1.5993392, -2.9962258)
-is_on = false
+initial_state = 0
+min_flicker_pause = 0.2
+max_flicker_pause = 1.5
 
 [node name="FarolitoCamTrigger" type="Node" parent="InteractiveProps/Faroles/Farolito6" unique_id=1914763581 node_paths=PackedStringArray("farolito", "target_cam_zone", "door")]
 script = ExtResource("8_lu725")
@@ -180,40 +268,6 @@ is_permanent_camera = true
 override_camera_speed = true
 custom_smoothing = 2.0
 door_action_delay = 2.5
-
-[node name="tutorialtxt_00" type="Label3D" parent="InteractiveProps" unique_id=259107111]
-transform = Transform3D(-0.9845343, -0.13661523, 0.10967373, -0.026896615, 0.73646986, 0.6759354, -0.17311445, 0.6625318, -0.72875434, 1.7716956, 0.1956445, -1.8890464)
-text = "'w' 'a' 's' 'd'
-para moverte"
-font_size = 20
-
-[node name="tutorialtxt_01" type="Label3D" parent="InteractiveProps" unique_id=1807424420]
-transform = Transform3D(-4.371139e-08, -0.24794817, 0.9687733, 0, 0.9687733, 0.24794817, -1, 1.0838159e-08, -4.2346425e-08, 1.0229424, 0.2427684, 1.4733086)
-text = "'k' para saltar"
-font_size = 20
-
-[node name="tutorialtxt_02" type="Label3D" parent="InteractiveProps" unique_id=1011112214]
-transform = Transform3D(1, 3.2661333e-08, 3.804763e-08, -4.339575e-08, 0.18353227, 0.9830137, 2.512357e-08, -0.9830137, 0.18353227, -1.4732381, 1.0237038, 1.8085995)
-text = "'k' x2
-para doble salto"
-font_size = 20
-
-[node name="tutorialtxt_03" type="Label3D" parent="InteractiveProps" unique_id=879385856]
-transform = Transform3D(0.64336896, -0.60281867, 0.47189605, 0.08578634, 0.6692961, 0.73802656, -0.76073444, -0.43434125, 0.48231804, -1.8952957, 1.7680055, -3.2779999)
-text = "'j' para atacar
-"
-font_size = 20
-
-[node name="Sprite3D" type="Sprite3D" parent="InteractiveProps" unique_id=496788869]
-transform = Transform3D(0.013092801, 0, -0.9999144, 0, 1, 0, 0.9999144, 0, 0.013092801, -2.0096612, 0.5241772, 1.5066099)
-pixel_size = 0.0015
-texture = ExtResource("4_xx0be")
-
-[node name="Sprite3D2" type="Sprite3D" parent="InteractiveProps" unique_id=595042881]
-transform = Transform3D(0.7751727, 0, 0, 0, 1.8378295, 0, 0, 0, 1, -1.5180631, 0.44364727, 2.0038996)
-modulate = Color(0.19966345, 0.19966345, 0.19966345, 0.90400004)
-pixel_size = 0.0015
-texture = SubResource("CompressedTexture2D_rgptw")
 
 [node name="Terrain" type="StaticBody3D" parent="." unique_id=394980261]
 
@@ -249,12 +303,25 @@ shape = SubResource("CylinderShape3D_g24sy")
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="Terrain/Cylinder4" unique_id=998979237]
 mesh = SubResource("CylinderMesh_rxs28")
 
-[node name="box" type="CollisionShape3D" parent="Terrain" unique_id=1496534244]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Terrain" unique_id=1682924722]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0.5, 1.5)
+mesh = SubResource("BoxMesh_2xxps")
+
+[node name="box" type="CollisionShape3D" parent="Terrain" unique_id=1496534244]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0.9022827, 1.5)
 shape = SubResource("BoxShape3D_62tj5")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Terrain/box" unique_id=1682924722]
-mesh = SubResource("BoxMesh_2xxps")
+[node name="box4" type="CollisionShape3D" parent="Terrain" unique_id=1915339466]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -1.8371159, 0.44798583, 1.5)
+shape = SubResource("BoxShape3D_o33xq")
+
+[node name="box5" type="CollisionShape3D" parent="Terrain" unique_id=2077893879]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -1.1640716, 0.44798583, 1.5)
+shape = SubResource("BoxShape3D_o33xq")
+
+[node name="box6" type="CollisionShape3D" parent="Terrain" unique_id=56621117]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -1.499546, 0.44798583, 1.171646)
+shape = SubResource("BoxShape3D_sehdd")
 
 [node name="box2" type="CollisionShape3D" parent="Terrain" unique_id=177846438]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.35, 1.5)
@@ -359,7 +426,7 @@ collision_mask = 6
 script = ExtResource("13_o33xq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Enemies/EnemyPatrolZone" unique_id=1108543497]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 0.67459595, -1.607605)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 0.67459595, -1.8051605)
 shape = SubResource("BoxShape3D_2xxps")
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
@@ -389,7 +456,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6641762, -1.25, 1.668457)
 shape = SubResource("BoxShape3D_ph32v")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_02" unique_id=2076046546]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.79, -1.3620001, 1.555)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3899999, -1.3620001, 2.4383988)
 
 [node name="CamZone_03" type="Area3D" parent="CamZones" unique_id=1378709618 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5043977, 1.7591963, 1.5111821)
@@ -436,7 +503,7 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_06" unique_id=277393503]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8773624, -1.632838, 2.511219)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8773624, -1.632838, 2.4878058)
 shape = SubResource("BoxShape3D_gppgl")
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06" unique_id=2109779032]

@@ -24,6 +24,10 @@ CameraDirector="*uid://sfh3t8sbpe01"
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[editor]
+
+movie_writer/movie_file="C:/Users/Pedro/Documents/GitHub/tanto-tango-tengo/TTT.avi"
+
 [global_group]
 
 enemy_zone="enemies navigation zone"
