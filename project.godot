@@ -18,11 +18,15 @@ config/icon="res://icon.svg"
 [autoload]
 
 CameraDirector="*uid://sfh3t8sbpe01"
+WarpManager="*uid://ctxicy5hvqyyr"
 
 [display]
 
-window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/size/viewport_width=845
+window/size/viewport_height=480
+window/size/mode=4
+window/size/resizable=false
+window/stretch/mode="viewport"
 
 [editor]
 
@@ -90,4 +94,5 @@ taunt={
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
