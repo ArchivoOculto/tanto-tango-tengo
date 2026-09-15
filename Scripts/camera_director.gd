@@ -30,6 +30,17 @@ func release_zone(zone: CameraZone3D) -> void:
 	_recompute_current_zone()
 
 
+## Descarta cualquier zona activa previa y deja 'zone' como la única/actual.
+## Pensado para warps: el destino queda "dentro" de su CameraZone3D de forma
+## inmediata, sin esperar al frame de detección física y sin competir en
+## prioridad con zonas de las que el jugador acaba de desaparecer.
+func reset_to_zone(zone: CameraZone3D) -> void:
+	_active_zones.clear()
+	if zone:
+		_active_zones.append(zone)
+	current_zone = zone
+
+
 func _recompute_current_zone() -> void:
 	var best: CameraZone3D = null
 	for zone in _active_zones:

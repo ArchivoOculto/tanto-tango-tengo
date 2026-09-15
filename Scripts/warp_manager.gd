@@ -3,8 +3,10 @@ extends Node
 ## Autoload (Project Settings > Autoload, nombre "WarpManager").
 ## Responsable de:
 ##  1) el fundido a negro compartido por todos los warps (local y externo),
-##  2) el cambio de escena para los warps externos, y
-##  3) ubicar al jugador en el SpawnPoint3D correspondiente tras cargar.
+##  2) el cambio de escena para los warps externos,
+##  3) ubicar al jugador en el SpawnPoint3D correspondiente tras cargar, y
+##  4) sincronizar la GameCamera con la CameraZone3D del destino de forma
+##     instantánea, para que no se vea el smoothing normal de seguimiento.
 
 @export var fade_color: Color = Color.BLACK
 
@@ -14,6 +16,28 @@ var _fade_rect: ColorRect
 
 func _ready() -> void:
 	_build_fade_layer()
+
+
+# --- REUBICACIÓN DEL JUGADOR (compartida por warp local y externo) ---
+
+## Mueve al jugador a 'target_transform' y, si se indica 'camera_zone',
+## fuerza a la GameCamera a asentarse ahí de forma inmediata (sin
+## smoothing), en vez de esperar a que la detección física de la Area3D
+## la alcance un frame después con un desplazamiento visible.
+func relocate_player(player: Node3D, target_transform: Transform3D, camera_zone: CameraZone3D = null) -> void:
+	player.global_transform = target_transform
+	if player is CharacterBody3D:
+		player.velocity = Vector3.ZERO
+
+	if camera_zone == null:
+		push_warning("WarpManager: relocate_player() sin 'camera_zone' — la cámara puede deslizarse visiblemente tras el warp.")
+		return
+
+	CameraDirector.reset_to_zone(camera_zone)
+
+	var cam: GameCamera = get_tree().get_first_node_in_group("game_camera")
+	if is_instance_valid(cam):
+		cam.snap_to_zone(camera_zone)
 
 
 # --- WARP EXTERNO (cambio de escena) ---
@@ -48,9 +72,7 @@ func _place_player_at_pending_spawn() -> void:
 		push_warning("WarpManager: no se encontró un SpawnPoint3D con id '%s'." % _pending_spawn_id)
 		return
 
-	player.global_transform = spawn_point.global_transform
-	if player is CharacterBody3D:
-		player.velocity = Vector3.ZERO
+	relocate_player(player, spawn_point.global_transform, spawn_point.camera_zone)
 
 
 func _find_spawn_point(spawn_id: StringName) -> SpawnPoint3D:

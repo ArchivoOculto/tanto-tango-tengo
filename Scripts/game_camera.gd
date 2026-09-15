@@ -25,6 +25,7 @@ var _last_known_anchor_pos: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	current = true
+	add_to_group("game_camera") # permite que WarpManager la encuentre para hacer snap_to_zone()
 
 	if player and player.has_method("get_body_height"):
 		_player_height = player.get_body_height()
@@ -75,6 +76,27 @@ func _process(delta: float) -> void:
 	global_position = desired_position
 
 	# --- 4. ORIENTACIÓN ---
+	if global_position.distance_to(_current_look_target) > 0.01:
+		look_at(_current_look_target, Vector3.UP)
+
+
+## Coloca la cámara de forma INSTANTÁNEA en el anchor de 'zone', sin el
+## smoothing normal de seguimiento, y actualiza el punto de mira acorde a la
+## posición actual del jugador. Pensado para usarse justo después de un warp,
+## mientras la pantalla sigue en negro, para que el fade-in revele la cámara
+## ya asentada en su lugar final (sin que se la vea deslizar hasta ahí).
+func snap_to_zone(zone: CameraZone3D) -> void:
+	if zone == null or not is_instance_valid(zone.camera_anchor):
+		return
+
+	var target_position: Vector3 = zone.camera_anchor.global_position
+	_last_known_anchor_pos = target_position
+	global_position = target_position
+
+	if player:
+		var look_height: float = _player_height * look_height_ratio
+		_current_look_target = player.global_position + Vector3.UP * look_height
+
 	if global_position.distance_to(_current_look_target) > 0.01:
 		look_at(_current_look_target, Vector3.UP)
 

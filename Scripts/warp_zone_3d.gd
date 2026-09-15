@@ -3,7 +3,7 @@ extends Area3D
 class_name WarpZone3D
 
 ## Área que teletransporta al jugador. Dos modos:
-##  - LOCAL: mueve al jugador a un Marker3D dentro de esta misma escena.
+##  - LOCAL: mueve al jugador a un WarpTarget3D dentro de esta misma escena.
 ##  - EXTERNAL_SCENE: carga otra escena y lo ubica en el SpawnPoint3D indicado.
 
 enum WarpMode { LOCAL, EXTERNAL_SCENE }
@@ -14,7 +14,7 @@ enum WarpMode { LOCAL, EXTERNAL_SCENE }
 		notify_property_list_changed() # refresca qué campos se ven en el Inspector
 
 @export_group("Warp Local")
-@export var local_target: Marker3D ## Punto de destino dentro de esta misma escena
+@export var local_target: WarpTarget3D ## Punto de destino dentro de esta misma escena
 
 @export_group("Warp Externo")
 @export var target_scene: PackedScene ## Escena a cargar
@@ -77,11 +77,7 @@ func _do_local_warp(player: Node3D) -> void:
 		return
 
 	await WarpManager.fade_out(fade_duration)
-
-	player.global_transform = local_target.global_transform
-	if player is CharacterBody3D:
-		player.velocity = Vector3.ZERO
-
+	WarpManager.relocate_player(player, local_target.global_transform, local_target.camera_zone)
 	await WarpManager.fade_in(fade_duration)
 
 
