@@ -19,6 +19,8 @@
 [ext_resource type="PackedScene" uid="uid://c2q6ct23ekrbw" path="res://Skull.tscn" id="13_15siy"]
 [ext_resource type="Script" uid="uid://pbxw6wcddk1v" path="res://Scripts/enemy_patrol_zone.gd" id="13_o33xq"]
 [ext_resource type="AudioStream" uid="uid://c7no06wkl6pcb" path="res://Assets/Audio/rain_sound.wav" id="19_4rn8p"]
+[ext_resource type="PackedScene" uid="uid://crufdju3qkiab" path="res://Scenes/interactable_picture.tscn" id="20_8hd5e"]
+[ext_resource type="Texture2D" uid="uid://bg4040y3gogcg" path="res://Assets/2D/farolito_puzzle_hint.png" id="21_yplex"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -71,6 +73,12 @@ uv1_scale = Vector3(2.5, 2.5, 2.5)
 [sub_resource type="BoxMesh" id="BoxMesh_sehdd"]
 material = SubResource("StandardMaterial3D_o33xq")
 size = Vector3(0.308, 0.7, 0.05)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_yvib1"]
+size = Vector3(0.45635986, 0.52490234, 0.31799316)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gim56"]
+size = Vector3(0.7513672, 0.7, 0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_elrmp"]
 size = Vector3(0.25, 0.4, 0.25)
@@ -279,11 +287,6 @@ text = "'L' para interactuar
 "
 font_size = 20
 
-[node name="Sprite3D" type="Sprite3D" parent="Text and Sprites" unique_id=496788869]
-transform = Transform3D(0.013092801, 0, -0.9999144, 0, 1, 0, 0.9999144, 0, 0.013092801, -2.0096612, 0.5241772, 1.5066099)
-pixel_size = 0.0015
-texture = ExtResource("4_xx0be")
-
 [node name="InteractiveProps" type="Node3D" parent="." unique_id=1539688944]
 
 [node name="Door1" type="AnimatableBody3D" parent="InteractiveProps" unique_id=1671746386]
@@ -335,6 +338,38 @@ is_permanent_camera = true
 override_camera_speed = true
 custom_smoothing = 2.0
 door_action_delay = 2.5
+
+[node name="Poster" type="Sprite3D" parent="InteractiveProps" unique_id=496788869]
+transform = Transform3D(0.9999144, 0, 0.013092843, -0.00039591317, 0.9995427, 0.030236311, -0.013086855, -0.0302389, 0.9994572, -3.067117, 0.41591424, 2.1232142)
+pixel_size = 0.0015
+texture = ExtResource("4_xx0be")
+
+[node name="interactable_picture" parent="InteractiveProps/Poster" unique_id=203141606 instance=ExtResource("20_8hd5e")]
+
+[node name="Area3D" type="Area3D" parent="InteractiveProps/Poster" unique_id=1494110581]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractiveProps/Poster/Area3D" unique_id=991459754]
+transform = Transform3D(1.0000145, -1.4842954e-09, -2.9522926e-07, -1.4551915e-10, 1.0000099, 7.636845e-08, 2.7939677e-07, -2.477318e-07, 1.0000145, 0.030551195, -0.053955168, 0.1581378)
+shape = SubResource("BoxShape3D_yvib1")
+debug_color = Color(0, 1, 0.70000815, 0.42000002)
+
+[node name="Puzzle_Hint" type="Sprite3D" parent="InteractiveProps" unique_id=179779781]
+transform = Transform3D(0.79807377, 0.60255986, -2.6338732e-08, 0, -4.3711385e-08, -1.0000001, -0.60256, 0.79807353, -3.488491e-08, 0.036686897, 30.120642, -1.1756883)
+pixel_size = 0.0015
+texture = ExtResource("21_yplex")
+
+[node name="interactable_picture" parent="InteractiveProps/Puzzle_Hint" unique_id=1843131871 instance=ExtResource("20_8hd5e")]
+
+[node name="Area3D" type="Area3D" parent="InteractiveProps/Puzzle_Hint" unique_id=2104877107]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractiveProps/Puzzle_Hint/Area3D" unique_id=1558283978]
+transform = Transform3D(0.70710677, -0.70710677, -1.7763568e-15, 0.70710677, 0.70710677, -1.7763568e-15, 0, 0, 1, -0.029088318, 0.032021582, -0.2685547)
+shape = SubResource("BoxShape3D_gim56")
+debug_color = Color(0, 1, 0.70000815, 0.42000002)
 
 [node name="Area 002" type="StaticBody3D" parent="." unique_id=1220581979]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
@@ -480,9 +515,10 @@ transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 [node name="AreaLight3D" type="AreaLight3D" parent="Area 002" unique_id=1527448540]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.8960819, -0.5597986)
 light_color = Color(0.40443814, 1, 0.3491902, 1)
-light_energy = 3.0
+light_energy = 0.5
 light_negative = true
 light_specular = 7.5
+area_attenuation = 0.1
 area_size = Vector2(1, 2)
 
 [node name="AreaLight3D2" type="AreaLight3D" parent="Area 002" unique_id=417482778]

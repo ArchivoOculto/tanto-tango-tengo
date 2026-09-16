@@ -9,7 +9,7 @@
 radius = 0.03955078
 height = 0.4
 
-[node name="Player" type="CharacterBody3D" unique_id=2045517250]
+[node name="Player" type="CharacterBody3D" unique_id=2045517250 groups=["player"]]
 collision_layer = 2
 collision_mask = 13
 script = ExtResource("1_cvnsp")
