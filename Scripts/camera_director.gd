@@ -2,6 +2,8 @@ extends Node
 
 ## Autoload (Project Settings > Autoload, nombre "CameraDirector").
 
+signal zone_changed(previous_zone: CameraZone3D, new_zone: CameraZone3D)
+
 var current_zone: CameraZone3D = null
 var _active_zones: Array[CameraZone3D] = []
 
@@ -38,7 +40,7 @@ func reset_to_zone(zone: CameraZone3D) -> void:
 	_active_zones.clear()
 	if zone:
 		_active_zones.append(zone)
-	current_zone = zone
+	_set_current_zone(zone)
 
 
 func _recompute_current_zone() -> void:
@@ -46,4 +48,12 @@ func _recompute_current_zone() -> void:
 	for zone in _active_zones:
 		if best == null or zone.priority > best.priority:
 			best = zone
-	current_zone = best
+	_set_current_zone(best)
+
+
+func _set_current_zone(zone: CameraZone3D) -> void:
+	if zone == current_zone:
+		return
+	var previous: CameraZone3D = current_zone
+	current_zone = zone
+	zone_changed.emit(previous, zone)

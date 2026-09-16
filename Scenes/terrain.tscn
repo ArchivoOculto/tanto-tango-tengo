@@ -18,6 +18,7 @@
 [ext_resource type="Script" uid="uid://gbidupxohnhi" path="res://Scripts/warp_zone_3d.gd" id="11_gml2b"]
 [ext_resource type="PackedScene" uid="uid://c2q6ct23ekrbw" path="res://Skull.tscn" id="13_15siy"]
 [ext_resource type="Script" uid="uid://pbxw6wcddk1v" path="res://Scripts/enemy_patrol_zone.gd" id="13_o33xq"]
+[ext_resource type="AudioStream" uid="uid://c7no06wkl6pcb" path="res://Assets/Audio/rain_sound.wav" id="19_4rn8p"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -75,7 +76,7 @@ size = Vector3(0.308, 0.7, 0.05)
 size = Vector3(0.25, 0.4, 0.25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_15siy"]
-size = Vector3(1.4241028, 0.9, 2.5)
+size = Vector3(1.4241028, 0.9, 2.9882813)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gppgl"]
 albedo_texture = ExtResource("5_aaxyt")
@@ -88,7 +89,7 @@ material = SubResource("StandardMaterial3D_gppgl")
 load_path = "res://.godot/imported/Horror_Metal_14-256x256.png-f8355ba4c490b1937aa218591273af05.s3tc.ctex"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gml2b"]
-size = Vector3(1, 0.1, 2)
+size = Vector3(1, 0.1, 2.3867188)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gml2b"]
 albedo_texture = ExtResource("8_sehdd")
@@ -97,7 +98,16 @@ uv1_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_bp2wt"]
 material = SubResource("StandardMaterial3D_gml2b")
-size = Vector3(1, 0.1, 2)
+size = Vector3(1, 0.1, 2.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4rn8p"]
+albedo_color = Color(0, 0, 0, 1)
+uv1_scale = Vector3(3, 3, 3)
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_8hd5e"]
+material = SubResource("StandardMaterial3D_4rn8p")
+size = Vector3(1, 0.1, 2.4)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4rn8p"]
 size = Vector3(2, 0.2, 4)
@@ -122,6 +132,10 @@ size = Vector3(0.7, 1.3632617, 0.33)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_15siy"]
 radius = 2.5
+
+[sub_resource type="FogMaterial" id="FogMaterial_2xxps"]
+density = 7.77
+emission = Color(0.5540059, 0.12935098, 0.4418329, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3v0ji"]
 size = Vector3(0.25, 0.4, 0.25)
@@ -238,30 +252,30 @@ transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98
 [node name="tutorialtxt_00" type="Label3D" parent="Text and Sprites" unique_id=259107111]
 transform = Transform3D(-0.9845343, -0.13661523, 0.10967373, -0.026896615, 0.73646986, 0.6759354, -0.17311445, 0.6625318, -0.72875434, 1.7716956, 0.1956445, -1.8890464)
 double_sided = false
-text = "'w' 'a' 's' 'd'
+text = "'W' 'A' 'S' 'D'
 para moverte"
 font_size = 20
 
 [node name="tutorialtxt_01" type="Label3D" parent="Text and Sprites" unique_id=1807424420]
 transform = Transform3D(-4.371139e-08, -0.24794817, 0.9687733, 0, 0.9687733, 0.24794817, -1, 1.0838159e-08, -4.2346425e-08, 1.0229424, 0.2427684, 1.4733086)
-text = "'k' para saltar"
+text = "'K' para saltar"
 font_size = 20
 
 [node name="tutorialtxt_02" type="Label3D" parent="Text and Sprites" unique_id=1011112214]
 transform = Transform3D(1, 3.2661333e-08, 3.804763e-08, -4.339575e-08, 0.18353227, 0.9830137, 2.512357e-08, -0.9830137, 0.18353227, -1.4732381, 1.0237038, 1.8085995)
-text = "'k' x2
+text = "'K' x2
 para doble salto"
 font_size = 20
 
 [node name="tutorialtxt_03" type="Label3D" parent="Text and Sprites" unique_id=879385856]
 transform = Transform3D(0.64336896, -0.60281867, 0.47189605, 0.08578634, 0.6692961, 0.73802656, -0.76073444, -0.43434125, 0.48231804, -1.8952957, 1.692906, -3.1506646)
-text = "'j' para atacar
+text = "'J' para atacar
 "
 font_size = 20
 
 [node name="tutorialtxt_04" type="Label3D" parent="Text and Sprites" unique_id=739729457]
-transform = Transform3D(-0.9994807, 0.025011824, 0.020316994, 0.03030289, 0.9439743, 0.32862478, -0.010959089, 0.32907027, -0.94424194, 0.023626119, 30.162, -0.89024734)
-text = "Gracias x Jugar 
+transform = Transform3D(-0.99948066, 0.025011823, 0.020316994, 0.032206316, 0.79607797, 0.60433626, -0.0010582497, 0.60467726, -0.79647005, 0.08074251, 30.162, -0.89024734)
+text = "'L' para interactuar
 "
 font_size = 20
 
@@ -348,14 +362,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.76187044, 0.03236866, -0.4
 script = ExtResource("3_hvvm8")
 camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 5.0
+force_4_3 = true
+aspect_transition_duration = 1.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area 002/CamZone_07" unique_id=681421571]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.79371643, 0.53065777, 0.14357924)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.79371643, 0.5306587, 0.38771987)
 shape = SubResource("BoxShape3D_15siy")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="Area 002/CamZone_07" unique_id=52469569]
-transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 0.8250257, 0.44734716, -1.6359999)
+transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 0.8250257, 0.44734764, -1.6359999)
 
 [node name="RoomMesh02" type="MeshInstance3D" parent="Area 002" unique_id=1818173155]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0.012443155, 0.50501966, 1.4870588)
@@ -368,11 +384,19 @@ pixel_size = 0.0015
 texture = SubResource("CompressedTexture2D_rgptw")
 
 [node name="Base2" type="CollisionShape3D" parent="Area 002" unique_id=2005682110]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, -0.38671875)
 shape = SubResource("BoxShape3D_gml2b")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Area 002/Base2" unique_id=283340885]
 mesh = SubResource("BoxMesh_bp2wt")
+
+[node name="Roof" type="CollisionShape3D" parent="Area 002" unique_id=121003620]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1.1128464, 0)
+shape = SubResource("BoxShape3D_gml2b")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Area 002/Roof" unique_id=771920129]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+mesh = SubResource("BoxMesh_8hd5e")
 
 [node name="roomcollision" type="CollisionShape3D" parent="Area 002" unique_id=831841051]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0.012443036, 0.9073024, -0.012941182)
@@ -433,7 +457,7 @@ shape = SubResource("SphereShape3D_15siy")
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 
 [node name="RigidBody3D4" parent="Area 002" unique_id=832974458 instance=ExtResource("13_15siy")]
-transform = Transform3D(0.48996934, -3.69484e-09, -0.8717398, 0.28934407, -0.94330925, 0.1626285, -0.82231987, -0.33191562, -0.46219248, 0.36316723, 0.32769203, -0.89017475)
+transform = Transform3D(0.48996934, -3.69484e-09, -0.8717398, 0.28934407, -0.94330925, 0.1626285, -0.82231987, -0.33191562, -0.46219248, 0.36316723, 0.20954514, -0.8262619)
 
 [node name="CollisionShape3D" parent="Area 002/RigidBody3D4" index="0" unique_id=860921925]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
@@ -452,6 +476,32 @@ shape = SubResource("SphereShape3D_15siy")
 
 [node name="skull2" parent="Area 002/RigidBody3D5" index="1" unique_id=1156010277]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
+
+[node name="AreaLight3D" type="AreaLight3D" parent="Area 002" unique_id=1527448540]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.8960819, -0.5597986)
+light_color = Color(0.40443814, 1, 0.3491902, 1)
+light_energy = 3.0
+light_negative = true
+light_specular = 7.5
+area_size = Vector2(1, 2)
+
+[node name="AreaLight3D2" type="AreaLight3D" parent="Area 002" unique_id=417482778]
+transform = Transform3D(-1, 3.821371e-15, -8.742278e-08, 8.742278e-08, 4.371139e-08, -1, 0, -1, -4.371139e-08, 0, -0.33123207, -0.5597986)
+light_color = Color(0.40443814, 1, 0.3491902, 1)
+light_energy = 3.0
+light_negative = true
+light_specular = 7.5
+area_size = Vector2(1, 2)
+
+[node name="FogVolume" type="FogVolume" parent="Area 002" unique_id=1243738532]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6865981, 0.86780167, -0.7355346)
+size = Vector3(0.31308594, 1.4901612, 4.052954)
+material = SubResource("FogMaterial_2xxps")
+
+[node name="FogVolume2" type="FogVolume" parent="Area 002" unique_id=1404854132]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.63430244, 0.8348923, -0.7492218)
+size = Vector3(0.3, 1.4243408, 4.073944)
+material = SubResource("FogMaterial_2xxps")
 
 [node name="Area 001" type="StaticBody3D" parent="." unique_id=394980261]
 
@@ -722,6 +772,11 @@ debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06" unique_id=2109779032]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90033185, -0.17360938, 6.7241907)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=400223615]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2189108, 0, -0.856882)
+stream = ExtResource("19_4rn8p")
+autoplay = true
 
 [editable path="Area 002/RigidBody3D"]
 [editable path="Area 002/RigidBody3D2"]

@@ -2,6 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://bpggcgvneuriv" path="res://Assets/3D/Farolito/Farolito.glb" id="1_hgu1p"]
 [ext_resource type="Script" uid="uid://fadge3iahk14" path="res://Scripts/farolito.gd" id="2_sjasy"]
+[ext_resource type="AudioStream" uid="uid://dft5rmctqrenm" path="res://Assets/Audio/BulbSound.wav" id="3_51kkn"]
+[ext_resource type="AudioStream" uid="uid://bh8ud2b80h8ko" path="res://Assets/Audio/farolito_bang.wav" id="4_fmfmw"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_rxs28"]
 height = 0.75
@@ -9,20 +11,24 @@ radius = 0.04
 
 [node name="Farolito" unique_id=1590147781 instance=ExtResource("1_hgu1p")]
 script = ExtResource("2_sjasy")
+flicker_audio = ExtResource("3_51kkn")
+flicker_audio_duration = 0.15
+hit_audio = ExtResource("4_fmfmw")
+hit_duration_min = 0.33
 variance_factor = 0.5
 
-[node name="Light_LampPost_Posters_LOD0" parent="." index="0" unique_id=1625410195]
+[node name="Light_LampPost_Posters_LOD0" parent="." index="0" unique_id=370474306]
 layers = 512
 
 [node name="SpotLight3D" type="SpotLight3D" parent="." index="1" unique_id=1793264573]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.7, 0)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.78020406, 0)
 light_color = Color(0.84313726, 0.8117647, 0.7176471, 1)
 light_energy = 1.085
 light_volumetric_fog_energy = 5.655
 shadow_bias = 10.0
 shadow_caster_mask = 4294966783
-spot_range = 1.1
-spot_angle = 50.0
+spot_range = 0.9471878
+spot_angle = 35.0
 
 [node name="StaticBody3D" type="StaticBody3D" parent="." index="2" unique_id=1248631760]
 collision_layer = 8
@@ -31,3 +37,10 @@ collision_mask = 0
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" index="0" unique_id=995857666]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.39108276, 0)
 shape = SubResource("CylinderShape3D_rxs28")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." index="3" unique_id=796656207]
+attenuation_model = 2
+unit_size = 15.0
+max_db = 0.0
+max_distance = 5.0
+bus = &"Reverb"

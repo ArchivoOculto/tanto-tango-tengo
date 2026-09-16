@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 CameraDirector="*uid://sfh3t8sbpe01"
 WarpManager="*uid://ctxicy5hvqyyr"
+LetterboxController="*uid://do3evwpiq5l6s"
 
 [display]
 

@@ -12,6 +12,24 @@ enum State { FLICKERING, ON, OFF }
 @export var min_flicker_pause: float = 0.4 ## Pausa mínima apagada entre chispazos
 @export var max_flicker_pause: float = 1.8 ## Pausa máxima apagada entre chispazos
 
+@export_group("Audio")
+@export var flicker_audio: AudioStream ## WAV largo utilizado durante el FLICKERING.
+@export var flicker_audio_duration: float = 0.5 ## Duración de cada fragmento aleatorio.
+
+@export var hit_audio: AudioStream ## Sonido reproducido al golpear el farol.
+
+@export_range(0.8, 1.2, 0.01)
+var hit_pitch_min: float = 0.95 ## Pitch mínimo aleatorio del golpe.
+
+@export_range(0.8, 1.2, 0.01)
+var hit_pitch_max: float = 1.05 ## Pitch máximo aleatorio del golpe.
+
+@export_range(0.1, 1.0, 0.01)
+var hit_duration_min: float = 0.45 ## Duración mínima del sonido de golpe.
+
+@export_range(0.1, 1.0, 0.01)
+var hit_duration_max: float = 0.55 ## Duración máxima del sonido de golpe.
+
 @export_group("Sacudida")
 @export var shake_duration: float = 0.35
 @export var shake_strength: float = 0.15
@@ -21,25 +39,34 @@ enum State { FLICKERING, ON, OFF }
 @export var strobo_speed: float = 0.04
 
 @export_group("Aleatoriedad (%)")
-@export_range(0.0, 1.0) var variance_factor: float = 0.75 ## Porcentaje de variación aleatoria (+/- 75%)
+@export_range(0.0, 1.0)
+var variance_factor: float = 0.75 ## Porcentaje de variación aleatoria (+/- 75%).
 
 @export_group("Interacciones / Eventos")
 @export var on_hit_callback: Callable
 
+
 @onready var light: SpotLight3D = $SpotLight3D
 @onready var mesh: MeshInstance3D = $Light_LampPost_Posters_LOD0
+@onready var audio_player: AudioStreamPlayer3D = $AudioStreamPlayer3D
+
 
 var current_state: State
+
 var _is_shaking: bool = false
 var _original_rotation: Vector3
 var _off_material: StandardMaterial3D
 
 var _flicker_tween: Tween
 var _hit_strobo_tween: Tween
+var _audio_tween: Tween
 
-# Getter para mantener compatibilidad total con FarolitoPuzzleTrigger y otros scripts
+
+# Getter para mantener compatibilidad total con FarolitoPuzzleTrigger
+# y otros scripts que consulten is_on.
 var is_on: bool:
-	get: return current_state == State.ON
+	get:
+		return current_state == State.ON
 
 
 func _ready() -> void:
@@ -58,33 +85,52 @@ func _ready() -> void:
 func take_hit(_damage: float = 0.0) -> void:
 	_kill_flicker_tween()
 
+	# El golpe SIEMPRE pisa/cancela el audio anterior.
+	_play_hit_audio()
+
 	# --- LÓGICA DE TRANSICIÓN SEGÚN DISEÑO ---
 	if initial_state == State.FLICKERING:
-		# Faroles de puzzle: solo alternan entre FLICKERING y ON
+		# Faroles de puzzle: alternan entre FLICKERING y ON.
 		if current_state == State.FLICKERING:
 			current_state = State.ON
 		else:
 			current_state = State.FLICKERING
 	else:
-		# Faroles normales (ON u OFF inicial): solo alternan entre ON y OFF
+		# Faroles normales: alternan entre ON y OFF.
 		if current_state == State.ON:
 			current_state = State.OFF
 		else:
 			current_state = State.ON
 
 	var is_active: bool = (current_state == State.ON)
+
 	toggled.emit(is_active)
 
 	if on_hit_callback.is_valid():
 		on_hit_callback.call(is_active)
 
-	# Variación aleatoria del impacto
-	var current_shake_duration: float = shake_duration * randf_range(1.0 - variance_factor, 1.0 + variance_factor)
-	var current_shake_strength: float = shake_strength * randf_range(1.0 - variance_factor, 1.0 + variance_factor)
-	var current_strobo_speed: float = strobo_speed * randf_range(1.0 - variance_factor, 1.0 + variance_factor)
+	# Variación aleatoria del impacto.
+	var current_shake_duration: float = shake_duration * randf_range(
+		1.0 - variance_factor,
+		1.0 + variance_factor
+	)
+
+	var current_shake_strength: float = shake_strength * randf_range(
+		1.0 - variance_factor,
+		1.0 + variance_factor
+	)
+
+	var current_strobo_speed: float = strobo_speed * randf_range(
+		1.0 - variance_factor,
+		1.0 + variance_factor
+	)
 
 	var flash_variation: int = int(round(strobo_flashes * variance_factor))
-	var current_flashes: int = max(1, strobo_flashes + randi_range(-flash_variation, flash_variation))
+
+	var current_flashes: int = max(
+		1,
+		strobo_flashes + randi_range(-flash_variation, flash_variation)
+	)
 
 	_play_hit_strobo_effect(current_flashes, current_strobo_speed)
 	_play_shake_animation(current_shake_duration, current_shake_strength)
@@ -96,44 +142,158 @@ func _apply_current_state() -> void:
 	match current_state:
 		State.ON:
 			_set_light_and_mesh(true)
+
 		State.OFF:
 			_set_light_and_mesh(false)
+
 		State.FLICKERING:
 			_trigger_next_flicker_step()
 
 
-# --- BUCLE AMBIENTAL ALEATORIO (RECURSIVO) ---
+# ============================================================
+# FLICKERING
+# ============================================================
+
 func _trigger_next_flicker_step() -> void:
 	if current_state != State.FLICKERING:
 		return
 
 	_kill_flicker_tween()
+
 	_flicker_tween = create_tween()
 
-	var flash_variation: int = int(round(strobo_flashes * variance_factor))
-	var current_flashes: int = max(1, strobo_flashes + randi_range(-flash_variation, flash_variation))
-	var current_strobo_speed: float = strobo_speed * randf_range(1.0 - variance_factor, 1.0 + variance_factor)
+	# Cada ciclo de flickering reproduce un fragmento
+	# aleatorio del WAV largo.
+	_play_random_flicker_audio()
 
-	# 1. Ráfaga de chispazos
+	var flash_variation: int = int(round(strobo_flashes * variance_factor))
+
+	var current_flashes: int = max(
+		1,
+		strobo_flashes + randi_range(-flash_variation, flash_variation)
+	)
+
+	var current_strobo_speed: float = strobo_speed * randf_range(
+		1.0 - variance_factor,
+		1.0 + variance_factor
+	)
+
+	# 1. Ráfaga de chispazos.
 	for i in range(current_flashes):
 		_flicker_tween.tween_callback(func():
 			_set_light_and_mesh(not light.visible)
 		)
+
 		var micro_speed: float = current_strobo_speed * randf_range(0.8, 1.2)
+
 		_flicker_tween.tween_interval(micro_speed)
 
-	# 2. Queda apagada al terminar la ráfaga
+	# 2. Queda apagada al terminar la ráfaga.
 	_flicker_tween.tween_callback(func():
 		_set_light_and_mesh(false)
 	)
 
-	# 3. Pausa aleatoria corta entre ráfagas
-	var random_pause: float = randf_range(min_flicker_pause, max_flicker_pause)
+	# 3. Pausa aleatoria entre ráfagas.
+	var random_pause: float = randf_range(
+		min_flicker_pause,
+		max_flicker_pause
+	)
+
 	_flicker_tween.tween_interval(random_pause)
+
 	_flicker_tween.finished.connect(_trigger_next_flicker_step)
 
 
-# --- EFECTO VISUAL AL GOLPEAR ---
+# ============================================================
+# AUDIO
+# ============================================================
+
+func _play_random_flicker_audio() -> void:
+	if not audio_player or not flicker_audio:
+		return
+
+	# Si por alguna razón todavía queda audio anterior,
+	# lo cortamos antes de iniciar el nuevo fragmento.
+	_kill_audio_tween()
+	audio_player.stop()
+
+	audio_player.stream = flicker_audio
+	audio_player.pitch_scale = 1.0
+
+	var stream_length: float = flicker_audio.get_length()
+
+	if stream_length <= 0.0:
+		return
+
+	# Nunca elegimos un punto tan cercano al final que
+	# no queden los 0.5 segundos completos.
+	var max_start_position: float = max(
+		0.0,
+		stream_length - flicker_audio_duration
+	)
+
+	var random_start: float = randf_range(
+		0.0,
+		max_start_position
+	)
+
+	audio_player.play(random_start)
+
+	# Cortamos exactamente después de la duración indicada.
+	_audio_tween = create_tween()
+
+	_audio_tween.tween_interval(flicker_audio_duration)
+
+	_audio_tween.tween_callback(func():
+		if audio_player:
+			audio_player.stop()
+	)
+
+
+func _play_hit_audio() -> void:
+	if not audio_player or not hit_audio:
+		return
+
+	# El bang reemplaza cualquier audio de flickering
+	# que estuviera reproduciéndose.
+	_kill_audio_tween()
+	audio_player.stop()
+
+	audio_player.stream = hit_audio
+
+	# Cada golpe tiene una pequeña diferencia de pitch.
+	audio_player.pitch_scale = randf_range(
+		hit_pitch_min,
+		hit_pitch_max
+	)
+
+	# Cada golpe tiene una pequeña diferencia de duración.
+	var random_duration: float = randf_range(
+		hit_duration_min,
+		hit_duration_max
+	)
+
+	audio_player.play()
+
+	_audio_tween = create_tween()
+
+	_audio_tween.tween_interval(random_duration)
+
+	_audio_tween.tween_callback(func():
+		if audio_player:
+			audio_player.stop()
+	)
+
+
+func _kill_audio_tween() -> void:
+	if _audio_tween and _audio_tween.is_valid():
+		_audio_tween.kill()
+
+
+# ============================================================
+# EFECTO VISUAL AL GOLPEAR
+# ============================================================
+
 func _play_hit_strobo_effect(flashes: int, speed: float) -> void:
 	if _hit_strobo_tween and _hit_strobo_tween.is_valid():
 		_hit_strobo_tween.kill()
@@ -144,7 +304,9 @@ func _play_hit_strobo_effect(flashes: int, speed: float) -> void:
 		_hit_strobo_tween.tween_callback(func():
 			_set_light_and_mesh(not light.visible)
 		)
+
 		var micro_speed: float = speed * randf_range(0.8, 1.2)
+
 		_hit_strobo_tween.tween_interval(micro_speed)
 
 	_hit_strobo_tween.finished.connect(func():
@@ -166,28 +328,73 @@ func _set_light_and_mesh(is_light_on: bool) -> void:
 			mesh.material_override = _off_material
 
 
+# ============================================================
+# SACUDIDA
+# ============================================================
+
 func _play_shake_animation(duration: float, strength: float) -> void:
 	if not mesh or _is_shaking:
 		return
 
 	_is_shaking = true
-	var tween: Tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	var tween: Tween = create_tween().set_trans(
+		Tween.TRANS_SINE
+	).set_ease(
+		Tween.EASE_IN_OUT
+	)
+
 	var step_time: float = duration / 4.0
 
 	var rot_x1: float = randf_range(-strength, strength)
 	var rot_z1: float = randf_range(-strength, strength)
+
 	var rot_x2: float = -rot_x1 * randf_range(0.3, 0.6)
 	var rot_z2: float = -rot_z1 * randf_range(0.3, 0.6)
 
-	tween.tween_property(mesh, "rotation:x", _original_rotation.x + rot_x1, step_time)
-	tween.parallel().tween_property(mesh, "rotation:z", _original_rotation.z + rot_z1, step_time)
+	tween.tween_property(
+		mesh,
+		"rotation:x",
+		_original_rotation.x + rot_x1,
+		step_time
+	)
 
-	tween.tween_property(mesh, "rotation:x", _original_rotation.x + rot_x2, step_time)
-	tween.parallel().tween_property(mesh, "rotation:z", _original_rotation.z + rot_z2, step_time)
+	tween.parallel().tween_property(
+		mesh,
+		"rotation:z",
+		_original_rotation.z + rot_z1,
+		step_time
+	)
 
-	tween.tween_property(mesh, "rotation", _original_rotation, step_time)
-	tween.finished.connect(func(): _is_shaking = false)
+	tween.tween_property(
+		mesh,
+		"rotation:x",
+		_original_rotation.x + rot_x2,
+		step_time
+	)
 
+	tween.parallel().tween_property(
+		mesh,
+		"rotation:z",
+		_original_rotation.z + rot_z2,
+		step_time
+	)
+
+	tween.tween_property(
+		mesh,
+		"rotation",
+		_original_rotation,
+		step_time
+	)
+
+	tween.finished.connect(func():
+		_is_shaking = false
+	)
+
+
+# ============================================================
+# CONTROL DEL FLICKERING
+# ============================================================
 
 func _kill_flicker_tween() -> void:
 	if _flicker_tween and _flicker_tween.is_valid():
