@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://dllrldbu76owi" path="res://Assets/2D/256x256/Floor/Horror_Floor_05-256x256.png" id="8_sehdd"]
 [ext_resource type="Script" uid="uid://wwihsoq3paxe" path="res://Scripts/warp_target_3d.gd" id="9_bp2wt"]
 [ext_resource type="PackedScene" uid="uid://djpcrt3q7qbxu" path="res://Scenes/alambrado.tscn" id="10_aaxyt"]
+[ext_resource type="Script" uid="uid://c3qsjkhcaxps" path="res://Scripts/puzzle_manager.gd" id="11_7e5pg"]
 [ext_resource type="Script" uid="uid://gbidupxohnhi" path="res://Scripts/warp_zone_3d.gd" id="11_gml2b"]
 [ext_resource type="PackedScene" uid="uid://c2q6ct23ekrbw" path="res://Skull.tscn" id="13_15siy"]
 [ext_resource type="Script" uid="uid://pbxw6wcddk1v" path="res://Scripts/enemy_patrol_zone.gd" id="13_o33xq"]
@@ -224,18 +225,20 @@ size = Vector3(3.9, 0.6612549, 9.1)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1830182651]
+[node name="Enviroment" type="Node3D" parent="." unique_id=1603349986]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Enviroment" unique_id=1830182651]
 environment = SubResource("Environment_hvvm8")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=904046338]
-transform = Transform3D(1, 0, 0, 0, 0.03489931, 0.99939084, 0, -0.99939084, 0.034899313, 0, 4.260251, 0)
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Enviroment" unique_id=904046338]
+transform = Transform3D(1, 0, 0, 0, 0.03489931, 0.99939084, 0, -0.99939084, 0.03489931, 0, 4.260251, 0)
 light_color = Color(0.012617188, 0.012617188, 0.012617188, 1)
 light_energy = 0.75
 light_cull_mask = 4294966783
 shadow_enabled = true
 shadow_caster_mask = 4294966783
 
-[node name="GPUParticles3D" type="GPUParticles3D" parent="." unique_id=1286893355]
+[node name="GPUParticles3D" type="GPUParticles3D" parent="Enviroment" unique_id=1286893355]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7106104, 3.1812925, -0.8086641)
 amount = 150
 lifetime = 0.2
@@ -245,6 +248,11 @@ trail_enabled = true
 trail_lifetime = 0.1
 process_material = SubResource("ParticleProcessMaterial_sehdd")
 draw_pass_1 = SubResource("RibbonTrailMesh_gml2b")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="Enviroment" unique_id=400223615]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2189108, 0, -0.856882)
+stream = ExtResource("19_4rn8p")
+autoplay = true
 
 [node name="GameCamara" type="Camera3D" parent="." unique_id=2072088570]
 transform = Transform3D(0.32538345, -0.58481115, 0.7430487, -1.2815509e-08, 0.78581095, 0.6184668, -0.9455821, -0.20123886, 0.25568986, 1.9873594, 0.6, -2.8921545)
@@ -305,31 +313,31 @@ mesh = SubResource("BoxMesh_sehdd")
 
 [node name="Faroles" type="Node3D" parent="InteractiveProps" unique_id=1219370576]
 
-[node name="Farolito" parent="InteractiveProps/Faroles" unique_id=1590147781 instance=ExtResource("5_0ac8p")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, 0)
-
-[node name="Farolito2" parent="InteractiveProps/Faroles" unique_id=1857230009 instance=ExtResource("5_0ac8p")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -1)
-
-[node name="Farolito3" parent="InteractiveProps/Faroles" unique_id=567662537 instance=ExtResource("5_0ac8p")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -2)
-
-[node name="Farolito4" parent="InteractiveProps/Faroles" unique_id=100758714 instance=ExtResource("5_0ac8p")]
+[node name="Farolito01" parent="InteractiveProps/Faroles" unique_id=100758714 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -3)
 
-[node name="Farolito5" parent="InteractiveProps/Faroles" unique_id=470153184 instance=ExtResource("5_0ac8p")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3921163, 0.09548479, 2.4515853)
+[node name="Farolito02" parent="InteractiveProps/Faroles" unique_id=567662537 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -2)
 
-[node name="Farolito7" parent="InteractiveProps/Faroles" unique_id=1978028834 instance=ExtResource("5_0ac8p")]
+[node name="Farolito03" parent="InteractiveProps/Faroles" unique_id=1857230009 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, -1)
+
+[node name="Farolito04" parent="InteractiveProps/Faroles" unique_id=1590147781 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09548479, 0)
+
+[node name="Farolito05" parent="InteractiveProps/Faroles" unique_id=1978028834 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.007883787, 0.09548479, 2.4515853)
 
-[node name="Farolito6" parent="InteractiveProps/Faroles" unique_id=917698834 instance=ExtResource("5_0ac8p")]
+[node name="Farolito06" parent="InteractiveProps/Faroles" unique_id=470153184 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3921163, 0.09548479, 2.4515853)
+
+[node name="Farolito07" parent="InteractiveProps/Faroles" unique_id=917698834 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4992846, 1.5993392, -2.9962258)
 initial_state = 0
 min_flicker_pause = 0.2
 max_flicker_pause = 1.5
 
-[node name="FarolitoCamTrigger" type="Node" parent="InteractiveProps/Faroles/Farolito6" unique_id=1914763581 node_paths=PackedStringArray("farolito", "target_cam_zone", "door")]
+[node name="FarolitoCamTrigger" type="Node" parent="InteractiveProps/Faroles/Farolito07" unique_id=1914763581 node_paths=PackedStringArray("farolito", "target_cam_zone", "door")]
 script = ExtResource("8_lu725")
 farolito = NodePath("..")
 target_cam_zone = NodePath("../../../../CamZones/CamZone_06")
@@ -357,6 +365,7 @@ debug_color = Color(0, 1, 0.70000815, 0.42000002)
 
 [node name="Puzzle_Hint" type="Sprite3D" parent="InteractiveProps" unique_id=179779781]
 transform = Transform3D(0.79807377, 0.60255986, -2.6338732e-08, 0, -4.3711385e-08, -1.0000001, -0.60256, 0.79807353, -3.488491e-08, 0.036686897, 30.120642, -1.1756883)
+flip_h = true
 pixel_size = 0.0015
 texture = ExtResource("21_yplex")
 
@@ -370,6 +379,11 @@ collision_mask = 2
 transform = Transform3D(0.70710677, -0.70710677, -1.7763568e-15, 0.70710677, 0.70710677, -1.7763568e-15, 0, 0, 1, -0.029088318, 0.032021582, -0.2685547)
 shape = SubResource("BoxShape3D_gim56")
 debug_color = Color(0, 1, 0.70000815, 0.42000002)
+
+[node name="PuzzleManager" type="Node" parent="InteractiveProps" unique_id=1104756749 node_paths=PackedStringArray("farolitos")]
+script = ExtResource("11_7e5pg")
+farolitos = [NodePath("../Faroles/Farolito01"), NodePath("../Faroles/Farolito02"), NodePath("../Faroles/Farolito03"), NodePath("../Faroles/Farolito04"), NodePath("../Faroles/Farolito05"), NodePath("../Faroles/Farolito06"), NodePath("../Faroles/Farolito07")]
+target_password = Array[bool]([true, false, false, true, true, false, true])
 
 [node name="Area 002" type="StaticBody3D" parent="." unique_id=1220581979]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
@@ -808,11 +822,6 @@ debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06" unique_id=2109779032]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90033185, -0.17360938, 6.7241907)
-
-[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=400223615]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2189108, 0, -0.856882)
-stream = ExtResource("19_4rn8p")
-autoplay = true
 
 [editable path="Area 002/RigidBody3D"]
 [editable path="Area 002/RigidBody3D2"]

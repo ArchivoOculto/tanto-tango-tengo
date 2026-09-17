@@ -18,10 +18,16 @@ func _ready() -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
+	if not is_inside_tree() or not is_instance_valid(body) or body.is_queued_for_deletion():
+		return
+
 	if body.is_in_group("player"):
 		CameraDirector.register_zone_enter(self)
 
 
 func _on_body_exited(body: Node3D) -> void:
+	if not is_inside_tree() or not is_instance_valid(body) or body.is_queued_for_deletion():
+		return
+
 	if body.is_in_group("player"):
 		CameraDirector.register_zone_exit(self)

@@ -52,7 +52,8 @@ func _on_body_entered(body: Node3D) -> void:
 
 
 func _start_warp(player: Node3D) -> void:
-	monitoring = false # evita retriggers mientras se resuelve el warp
+	# Usamos set_deferred para evitar modificar la física durante la emisión de la señal body_entered
+	set_deferred("monitoring", false)
 
 	if warp_mode == WarpMode.EXTERNAL_SCENE:
 		# La escena (y este nodo) se destruyen al cambiar de escena;
@@ -66,14 +67,14 @@ func _start_warp(player: Node3D) -> void:
 	if not one_shot:
 		await get_tree().create_timer(reactivate_delay).timeout
 		if is_instance_valid(self):
-			monitoring = true
+			set_deferred("monitoring", true)
 			_consumed = false
 
 
 func _do_local_warp(player: Node3D) -> void:
 	if not is_instance_valid(local_target):
 		push_warning("WarpZone3D (%s): no se asignó 'local_target'." % name)
-		monitoring = true
+		set_deferred("monitoring", true)
 		return
 
 	await WarpManager.fade_out(fade_duration)
@@ -84,7 +85,7 @@ func _do_local_warp(player: Node3D) -> void:
 func _do_external_warp() -> void:
 	if target_scene == null:
 		push_warning("WarpZone3D (%s): no se asignó 'target_scene'." % name)
-		monitoring = true
+		set_deferred("monitoring", true)
 		return
 
 	WarpManager.warp_to_scene(target_scene, target_spawn_id, fade_duration)
