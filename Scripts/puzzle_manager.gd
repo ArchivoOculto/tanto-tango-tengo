@@ -10,6 +10,10 @@ signal puzzle_completed
 ## Clave de combinación: true = Encendido (ON), false = Apagado / Titilando (OFF / FLICKERING)
 @export var target_password: Array[bool] = []
 
+@export_group("Pistas / UI")
+## Asignar desde el Inspector el nodo Sprite2D que contiene a RedCross0, RedCross1, etc.
+@export var red_crosses_parent: Node
+
 @export_group("Transición de Escena")
 ## Duración en segundos del fundido a negro
 @export var fade_duration: float = 1.0
@@ -18,11 +22,53 @@ var is_solved: bool = false
 
 
 func _ready() -> void:
+	_generate_random_password()
+	_update_puzzle_hint()
+
 	for farol in farolitos:
 		if farol:
 			farol.toggled.connect(_on_farolito_toggled)
 
 	_check_puzzle.call_deferred()
+
+
+func _generate_random_password() -> void:
+	var total: int = farolitos.size()
+	if total < 3:
+		push_warning("PuzzleManager: Se necesitan al menos 3 faroles para cumplir las condiciones de la contraseña.")
+		return
+
+	target_password.clear()
+	target_password.resize(total)
+
+	# El último farol nunca debe ir apagado (siempre true)
+	target_password[total - 1] = true
+
+	# Asignación aleatoria para las posiciones de 0 a total - 2
+	var off_count: int = 0
+	for i in range(total - 1):
+		var is_on: bool = randf() > 0.5
+		target_password[i] = is_on
+		if not is_on:
+			off_count += 1
+
+	# Garantizar como mínimo 2 faroles apagados (false)
+	while off_count < 2:
+		var rand_idx: int = randi() % (total - 1)
+		if target_password[rand_idx]:
+			target_password[rand_idx] = false
+			off_count += 1
+
+
+func _update_puzzle_hint() -> void:
+	if not red_crosses_parent:
+		return
+
+	for i in range(target_password.size()):
+		var cross_node: Control = red_crosses_parent.get_node_or_null("RedCross" + str(i)) as Control
+		if cross_node:
+			# Si el farol está apagado (false en la contraseña), la cruz se hace visible
+			cross_node.visible = not target_password[i]
 
 
 func _on_farolito_toggled(_is_on: bool) -> void:
@@ -57,7 +103,6 @@ func _check_puzzle() -> void:
 
 
 func _fade_out_and_reload() -> void:
-	# Creamos una capa superior y un lienzo negro dinámico
 	var canvas := CanvasLayer.new()
 	canvas.layer = 100
 
@@ -68,10 +113,8 @@ func _fade_out_and_reload() -> void:
 	canvas.add_child(color_rect)
 	add_child(canvas)
 
-	# Transición de alfa (0.0 a 1.0)
 	var tween := create_tween()
 	tween.tween_property(color_rect, "color:a", 1.0, fade_duration)
 	await tween.finished
 
-	# Reinicia la escena actual
 	get_tree().reload_current_scene()

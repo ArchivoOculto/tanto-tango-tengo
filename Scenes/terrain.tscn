@@ -371,6 +371,79 @@ texture = ExtResource("21_yplex")
 
 [node name="interactable_picture" parent="InteractiveProps/Puzzle_Hint" unique_id=1843131871 instance=ExtResource("20_8hd5e")]
 
+[node name="SpriteOnScreen" parent="InteractiveProps/Puzzle_Hint/interactable_picture" index="0" unique_id=678351855]
+visible = true
+
+[node name="RedCross0" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="1" unique_id=399167171]
+visible = false
+offset_left = 67.423615
+offset_top = 10.324406
+offset_right = 89.5611
+offset_bottom = 35.05805
+text = "❌"
+fit_content = true
+scroll_active = false
+
+[node name="RedCross1" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="2" unique_id=797122784]
+visible = false
+offset_left = 43.75131
+offset_top = 10.324406
+offset_right = 65.888794
+offset_bottom = 35.05805
+text = "❌"
+fit_content = true
+scroll_active = false
+
+[node name="RedCross2" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="3" unique_id=1941275442]
+visible = false
+offset_left = 19.049778
+offset_top = 10.324406
+offset_right = 41.187263
+offset_bottom = 35.05805
+text = "❌"
+fit_content = true
+scroll_active = false
+
+[node name="RedCross3" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="4" unique_id=2020315380]
+visible = false
+offset_left = -2.564062
+offset_top = 10.324406
+offset_right = 19.573423
+offset_bottom = 35.05805
+text = "❌"
+fit_content = true
+scroll_active = false
+
+[node name="RedCross4" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="5" unique_id=479717885]
+visible = false
+offset_left = -72.551735
+offset_top = 10.324406
+offset_right = -50.41425
+offset_bottom = 35.05805
+text = "❌"
+fit_content = true
+scroll_active = false
+
+[node name="RedCross5" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="6" unique_id=1961360640]
+visible = false
+offset_left = -72.551735
+offset_top = -112.15402
+offset_right = -50.41425
+offset_bottom = -87.42038
+text = "❌"
+fit_content = true
+scroll_active = false
+
+[node name="RedCross6" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="7" unique_id=408007197]
+visible = false
+offset_left = 33.459007
+offset_top = -112.15402
+offset_right = 55.596493
+offset_bottom = -87.42038
+text = "❌"
+fit_content = true
+scroll_active = false
+
 [node name="Area3D" type="Area3D" parent="InteractiveProps/Puzzle_Hint" unique_id=2104877107]
 collision_layer = 0
 collision_mask = 2
@@ -380,10 +453,11 @@ transform = Transform3D(0.70710677, -0.70710677, -1.7763568e-15, 0.70710677, 0.7
 shape = SubResource("BoxShape3D_gim56")
 debug_color = Color(0, 1, 0.70000815, 0.42000002)
 
-[node name="PuzzleManager" type="Node" parent="InteractiveProps" unique_id=1104756749 node_paths=PackedStringArray("farolitos")]
+[node name="PuzzleManager" type="Node" parent="InteractiveProps" unique_id=1104756749 node_paths=PackedStringArray("farolitos", "red_crosses_parent")]
 script = ExtResource("11_7e5pg")
 farolitos = [NodePath("../Faroles/Farolito01"), NodePath("../Faroles/Farolito02"), NodePath("../Faroles/Farolito03"), NodePath("../Faroles/Farolito04"), NodePath("../Faroles/Farolito05"), NodePath("../Faroles/Farolito06"), NodePath("../Faroles/Farolito07")]
 target_password = Array[bool]([true, false, false, true, true, false, true])
+red_crosses_parent = NodePath("../Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D")
 
 [node name="Area 002" type="StaticBody3D" parent="." unique_id=1220581979]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
@@ -823,6 +897,7 @@ debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06" unique_id=2109779032]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90033185, -0.17360938, 6.7241907)
 
+[editable path="InteractiveProps/Puzzle_Hint/interactable_picture"]
 [editable path="Area 002/RigidBody3D"]
 [editable path="Area 002/RigidBody3D2"]
 [editable path="Area 002/RigidBody3D3"]
