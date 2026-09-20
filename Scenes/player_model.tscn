@@ -7,7 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://cq5bwlurwv61f" path="res://Assets/3D/skull.glb" id="4_mqtts"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mqtts"]
-albedo_color = Color(0.7373294, 0.7373294, 0.735357, 1)
+transparency = 1
+albedo_color = Color(0.7373294, 0.7373294, 0.735357, 0.75900006)
 metallic = 1.0
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_3v0ji"]
