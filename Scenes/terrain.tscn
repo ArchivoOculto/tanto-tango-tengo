@@ -412,7 +412,7 @@ size = Vector3(1, 0.2, 1)
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_rxs28"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
-size = Vector3(2.8568726, 1, 4.3179016)
+size = Vector3(2.857, 1.75, 4.318)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
 size = Vector3(4, 0.9, 5.4)
@@ -575,8 +575,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3921163, 0.09548479, 2.451
 [node name="Farolito07" parent="InteractiveProps/Faroles" unique_id=917698834 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4992846, 1.5993392, -2.9962258)
 initial_state = 0
-min_flicker_pause = 0.2
-max_flicker_pause = 1.5
 
 [node name="FarolitoCamTrigger" type="Node" parent="InteractiveProps/Faroles/Farolito07" unique_id=1914763581 node_paths=PackedStringArray("farolito", "target_cam_zone", "door")]
 script = ExtResource("8_lu725")
@@ -584,9 +582,10 @@ farolito = NodePath("..")
 target_cam_zone = NodePath("../../../../CamZones/CamZone_06")
 door = NodePath("../../../Door1")
 is_permanent_camera = true
+display_duration = 2.5
 override_camera_speed = true
 custom_smoothing = 2.0
-door_action_delay = 2.5
+door_action_delay = 2.0
 
 [node name="Poster" type="Sprite3D" parent="InteractiveProps" unique_id=496788869]
 transform = Transform3D(0.9999144, 0, 0.013092843, -0.00039591317, 0.9995427, 0.030236311, -0.013086855, -0.0302389, 0.9994572, -3.067117, 0.41591424, 2.1232142)
@@ -605,7 +604,7 @@ shape = SubResource("BoxShape3D_yvib1")
 debug_color = Color(0, 1, 0.70000815, 0.42000002)
 
 [node name="Puzzle_Hint" type="Sprite3D" parent="InteractiveProps" unique_id=179779781]
-transform = Transform3D(0.79807377, 0.60255986, -2.6338732e-08, 0, -4.3711385e-08, -1.0000001, -0.60256, 0.79807353, -3.488491e-08, 0.036686897, 30.120642, -1.1756883)
+transform = Transform3D(0.79807377, 0.60255986, -2.6338732e-08, 0, -4.3711385e-08, -1.0000001, -0.60256, 0.79807353, -3.488491e-08, 0.036686897, 30.120642, -0.9548788)
 flip_h = true
 pixel_size = 0.0015
 texture = ExtResource("21_yplex")
@@ -700,7 +699,7 @@ farolitos = [NodePath("../Faroles/Farolito01"), NodePath("../Faroles/Farolito02"
 target_password = Array[bool]([false, false, false, false, false, false, false])
 red_crosses_parent = NodePath("../Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D")
 alcantarilla = NodePath("../AlcantarillaPivot")
-cam_zone_alcantarilla = NodePath("../../CamZones/CamZone_02")
+cam_zone_alcantarilla = NodePath("../../CamZones/CamZone_Alcantarilla")
 
 [node name="Area 002" type="StaticBody3D" parent="." unique_id=1220581979]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
@@ -793,7 +792,7 @@ transform = Transform3D(4.371139e-08, 1, -8.742278e-08, 1, -4.371139e-08, 0, -3.
 shape = SubResource("BoxShape3D_lnws3")
 
 [node name="RigidBody3D" parent="Area 002" unique_id=1122152434 instance=ExtResource("13_15siy")]
-transform = Transform3D(-0.75011843, 0, 0.6613035, 0.63634443, -0.2721405, 0.72180724, 0.17996751, 0.9622577, 0.20413761, -0.1932653, 0.23109627, -0.9747203)
+transform = Transform3D(0.58364755, 0.78168535, -0.21982686, 0.63634443, -0.2721405, 0.72180724, 0.5044021, -0.5611666, -0.6562551, 0.2079688, 0.39800072, 0.39585778)
 
 [node name="CollisionShape3D" parent="Area 002/RigidBody3D" index="0" unique_id=860921925]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
@@ -803,7 +802,7 @@ shape = SubResource("SphereShape3D_15siy")
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 
 [node name="RigidBody3D2" parent="Area 002" unique_id=1403608554 instance=ExtResource("13_15siy")]
-transform = Transform3D(-0.9388586, 0.2944375, 0.17846835, 0.3256994, 0.9275818, 0.18306233, -0.11164361, 0.22999673, -0.96676636, -0.09154688, 0.21286964, -1.0153619)
+transform = Transform3D(-0.94477224, 0.3267547, 0.025237769, 0.3256993, 0.92758167, 0.1830623, 0.036406428, 0.18117213, -0.9827771, -0.30313274, 0.21286964, 0.07718103)
 
 [node name="CollisionShape3D" parent="Area 002/RigidBody3D2" index="0" unique_id=860921925]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
@@ -813,7 +812,7 @@ shape = SubResource("SphereShape3D_15siy")
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 
 [node name="RigidBody3D3" parent="Area 002" unique_id=1050351788 instance=ExtResource("13_15siy")]
-transform = Transform3D(-0.100464165, 0.9915878, -0.08161433, 0.8646141, 0.12759773, 0.48596433, 0.49228996, -0.021742906, -0.8701596, 0.31496173, 0.15345955, -0.9832027)
+transform = Transform3D(-0.11314978, 0.9918184, -0.05910504, 0.86461425, 0.12759773, 0.48596436, 0.4895299, 0.00388363, -0.8719777, 0.19313517, 0.15345955, -0.27179873)
 
 [node name="CollisionShape3D" parent="Area 002/RigidBody3D3" index="0" unique_id=860921925]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
@@ -823,7 +822,7 @@ shape = SubResource("SphereShape3D_15siy")
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 
 [node name="RigidBody3D4" parent="Area 002" unique_id=832974458 instance=ExtResource("13_15siy")]
-transform = Transform3D(0.48996934, -3.69484e-09, -0.8717398, 0.28934407, -0.94330925, 0.1626285, -0.82231987, -0.33191562, -0.46219248, 0.36316723, 0.20954514, -0.8262619)
+transform = Transform3D(0.94278157, 0.25143272, -0.21896191, 0.28934404, -0.9433091, 0.16262849, -0.16565853, -0.21667846, -0.9620851, -0.33281636, 0.20954514, -0.40248254)
 
 [node name="CollisionShape3D" parent="Area 002/RigidBody3D4" index="0" unique_id=860921925]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
@@ -833,7 +832,7 @@ shape = SubResource("SphereShape3D_15siy")
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 
 [node name="RigidBody3D5" parent="Area 002" unique_id=17289060 instance=ExtResource("13_15siy")]
-transform = Transform3D(0.48996934, -3.69484e-09, -0.8717398, -0.84695095, -0.23677638, -0.4760366, -0.20640743, 0.97156435, -0.116013214, 0.13101321, 0.21276665, -0.9799457)
+transform = Transform3D(0.2862028, -0.9576042, -0.032900255, -0.7313026, -0.2404954, 0.63824576, -0.61909914, -0.15860765, -0.76912886, -0.031161338, 0.21276665, -0.12426847)
 mass = 5.0
 
 [node name="CollisionShape3D" parent="Area 002/RigidBody3D5" index="0" unique_id=860921925]
@@ -841,6 +840,36 @@ transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
 shape = SubResource("SphereShape3D_15siy")
 
 [node name="skull2" parent="Area 002/RigidBody3D5" index="1" unique_id=1156010277]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
+
+[node name="RigidBody3D6" parent="Area 002" unique_id=859501592 instance=ExtResource("13_15siy")]
+transform = Transform3D(-0.7703388, -0.27336842, 0.57606256, 0.63634443, -0.27214047, 0.72180724, -0.04054928, 0.9226103, 0.38359678, -0.5421672, 0.46931458, 0.1359602)
+
+[node name="CollisionShape3D" parent="Area 002/RigidBody3D6" index="0" unique_id=860921925]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
+shape = SubResource("SphereShape3D_15siy")
+
+[node name="skull2" parent="Area 002/RigidBody3D6" index="1" unique_id=1156010277]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
+
+[node name="RigidBody3D7" parent="Area 002" unique_id=758466676 instance=ExtResource("13_15siy")]
+transform = Transform3D(-0.77300847, 0.14976224, 0.6164654, 0.32569933, 0.92758185, 0.18306233, -0.5444064, 0.34229124, -0.7658057, -0.26751938, 0.2841835, -1.3489902)
+
+[node name="CollisionShape3D" parent="Area 002/RigidBody3D7" index="0" unique_id=860921925]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
+shape = SubResource("SphereShape3D_15siy")
+
+[node name="skull2" parent="Area 002/RigidBody3D7" index="1" unique_id=1156010277]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
+
+[node name="RigidBody3D8" parent="Area 002" unique_id=1172765451 instance=ExtResource("13_15siy")]
+transform = Transform3D(-0.38700768, 0.78595066, 0.48218927, 0.8646141, 0.12759769, 0.48596436, 0.32041773, 0.60497975, -0.7289254, 0.33870062, 0.2247734, -1.3251989)
+
+[node name="CollisionShape3D" parent="Area 002/RigidBody3D8" index="0" unique_id=860921925]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
+shape = SubResource("SphereShape3D_15siy")
+
+[node name="skull2" parent="Area 002/RigidBody3D8" index="1" unique_id=1156010277]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 
 [node name="AreaLight3D" type="AreaLight3D" parent="Area 002" unique_id=1527448540]
@@ -897,7 +926,7 @@ local_target = NodePath("../../Area 002/Player_Entrance2")
 fade_duration = 0.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area 001/WarpZone 001" unique_id=237883001]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05444336, 0.16970265)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0.25)
 shape = SubResource("BoxShape3D_3v0ji")
 debug_color = Color(1.563596, 0, 0.6686375, 1)
 
@@ -1119,10 +1148,11 @@ collision_mask = 6
 script = ExtResource("13_o33xq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Enemies/EnemyPatrolZone" unique_id=1108543497]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 0.67459595, -1.8051605)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 1.0103036, -1.8051605)
 shape = SubResource("BoxShape3D_2xxps")
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
+visible = false
 
 [node name="CamZone_01" type="Area3D" parent="CamZones" unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -1.2558405)
@@ -1150,6 +1180,17 @@ shape = SubResource("BoxShape3D_ph32v")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_02" unique_id=2076046546]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3899999, -1.3620001, 2.4383988)
+
+[node name="CamZone_Alcantarilla" type="Area3D" parent="CamZones" unique_id=517092870 node_paths=PackedStringArray("camera_anchor", "look_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8000001, 0)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+look_target = NodePath("../../InteractiveProps/AlcantarillaPivot")
+follow_smoothing = 1.0
+zone_priority = 10
+
+[node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_Alcantarilla" unique_id=1338862662]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3899999, -1.3620001, 2.4383988)
 
 [node name="CamZone_03" type="Area3D" parent="CamZones" unique_id=1378709618 node_paths=PackedStringArray("camera_anchor")]
@@ -1213,3 +1254,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90033185, -0.17360938, 6.7
 [editable path="Area 002/RigidBody3D3"]
 [editable path="Area 002/RigidBody3D4"]
 [editable path="Area 002/RigidBody3D5"]
+[editable path="Area 002/RigidBody3D6"]
+[editable path="Area 002/RigidBody3D7"]
+[editable path="Area 002/RigidBody3D8"]

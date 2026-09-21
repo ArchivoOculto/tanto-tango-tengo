@@ -11,6 +11,8 @@ radius = 0.04
 
 [node name="Farolito" unique_id=1590147781 instance=ExtResource("1_hgu1p")]
 script = ExtResource("2_sjasy")
+min_flicker_pause = 0.2
+max_flicker_pause = 1.5
 flicker_audio = ExtResource("3_51kkn")
 flicker_audio_duration = 0.15
 hit_audio = ExtResource("4_fmfmw")

@@ -1,53 +1,64 @@
-class_name DoorAlcantarilla
 extends Node3D
+class_name DoorAlcantarilla
 
-signal animacion_terminada
+signal opened
+signal closed
 
-@onready var tapa = $TapaAlcantarilla
-@onready var spotlight = $SpotLight3D 
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var tapa_alcantarilla: Node3D = $TapaAlcantarilla
 
-var tween_actual: Tween
+var is_open: bool = false
+
 
 func _ready() -> void:
-	if spotlight:
-		spotlight.visible = false
+	reset_to_closed()
 
-func abrir() -> void:
-	if tween_actual and tween_actual.is_valid():
-		tween_actual.kill()
-		
-	# Sincronizamos el Tween con el proceso de física de AnimatableBody3D
-	tween_actual = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	
-	# 1. Movimiento principal (desplazamiento suave y rotación)
-	tween_actual.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween_actual.tween_property(tapa, "position", Vector3(0.35, 0.01, 0), 2.0)
-	tween_actual.parallel().tween_property(tapa, "rotation", Vector3(0, deg_to_rad(45), 0), 2.0)
-	
-	# 2. Caída al final (usando Vector3 completo manteniendo el X/Z del paso anterior)
-	tween_actual.tween_property(tapa, "position", Vector3(0.35, -0.05, 0), 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	
-	# 3. Encender luz y emitir señal
-	tween_actual.tween_callback(func():
-		if spotlight: 
-			spotlight.visible = true
-		animacion_terminada.emit()
-	)
 
-func cerrar() -> void:
-	if tween_actual and tween_actual.is_valid():
-		tween_actual.kill()
+func open() -> void:
+	if is_open:
+		return
+	is_open = true
+	
+	if tapa_alcantarilla:
+		tapa_alcantarilla.show()
 		
-	tween_actual = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	if animation_player:
+		if animation_player.has_animation("open"):
+			animation_player.play("open")
+			await animation_player.animation_finished
+		else:
+			push_warning("DoorAlcantarilla: No se encontró la animación 'open'.")
+			
+	opened.emit()
+
+
+func close() -> void:
+	if not is_open:
+		return
+	is_open = false
 	
-	if spotlight:
-		spotlight.visible = false
-		
-	tween_actual.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	
-	# 1. Levantar la tapa antes de deslizar
-	tween_actual.tween_property(tapa, "position", Vector3(0.35, 0.01, 0), 0.2)
-	
-	# 2. Deslizar y rotar de vuelta a cero
-	tween_actual.tween_property(tapa, "position", Vector3.ZERO, 1.8)
-	tween_actual.parallel().tween_property(tapa, "rotation", Vector3.ZERO, 1.8)
+	if animation_player:
+		if animation_player.has_animation("RESET"):
+			animation_player.play("RESET")
+			await animation_player.animation_finished
+		elif animation_player.has_animation("open"):
+			animation_player.play_backwards("open")
+			await animation_player.animation_finished
+			
+	reset_to_closed()
+	closed.emit()
+
+
+func reset_to_closed() -> void:
+	is_open = false
+	if animation_player:
+		if animation_player.has_animation("RESET"):
+			animation_player.play("RESET")
+			animation_player.advance(0)
+		else:
+			animation_player.stop()
+			
+	if tapa_alcantarilla:
+		tapa_alcantarilla.show()
+		tapa_alcantarilla.position = Vector3.ZERO
+		tapa_alcantarilla.rotation = Vector3.ZERO
