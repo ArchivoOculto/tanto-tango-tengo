@@ -400,8 +400,6 @@ size = Vector3(0.7, 0.33, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_bp2wt"]
 size = Vector3(0.7, 0.984126, 0.33)
 
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_rxs28"]
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lnws3"]
 albedo_texture = ExtResource("4_lnws3")
 uv1_scale = Vector3(5.31, 5.31, 5.31)
@@ -410,6 +408,8 @@ uv1_triplanar = true
 [sub_resource type="BoxMesh" id="BoxMesh_3v0ji"]
 material = SubResource("StandardMaterial3D_lnws3")
 size = Vector3(1, 0.2, 1)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_rxs28"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
 size = Vector3(2.8568726, 1, 4.3179016)
@@ -1054,10 +1054,6 @@ shape = SubResource("BoxShape3D_o33xq")
 transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -1.5069947, 0.44798583, 1.171646)
 shape = SubResource("BoxShape3D_bp2wt")
 
-[node name="WorldLimit" type="CollisionShape3D" parent="Area 001" unique_id=724137295]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, -0.5, 0)
-shape = SubResource("WorldBoundaryShape3D_rxs28")
-
 [node name="CSGMesh3D" type="CSGMesh3D" parent="Area 001" unique_id=1806931772]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, 1.5)
 use_collision = true
@@ -1067,6 +1063,26 @@ mesh = SubResource("BoxMesh_3v0ji")
 [node name="CSGSphere3D" type="CSGSphere3D" parent="Area 001/CSGMesh3D" unique_id=100216595]
 operation = 2
 radius = 0.18
+
+[node name="WorldLimit" type="CollisionShape3D" parent="Area 001" unique_id=724137295]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, -0.5, 0)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit2" type="CollisionShape3D" parent="Area 001" unique_id=2131335426]
+transform = Transform3D(-4.371139e-08, -1, -4.371139e-08, 0, -4.371139e-08, 1, -1, 4.371139e-08, 1.9106855e-15, 1.9999999, -0.5, 0)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit3" type="CollisionShape3D" parent="Area 001" unique_id=923186497]
+transform = Transform3D(-4.371139e-08, 1, 4.371139e-08, 0, -4.371139e-08, 1, 1, 4.371139e-08, 1.9106855e-15, -3.7, 0, 0)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit4" type="CollisionShape3D" parent="Area 001" unique_id=1455761521]
+transform = Transform3D(-1, -8.742278e-08, -3.821371e-15, 0, -4.371139e-08, 1, -8.742278e-08, 1, 4.371139e-08, 0, 0, -4)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit5" type="CollisionShape3D" parent="Area 001" unique_id=531820928]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 3)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
 
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 
@@ -1107,7 +1123,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 0.67459595, -1.805
 shape = SubResource("BoxShape3D_2xxps")
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
-visible = false
 
 [node name="CamZone_01" type="Area3D" parent="CamZones" unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -1.2558405)

@@ -40,21 +40,26 @@ func _process(delta: float) -> void:
 	if player == null:
 		return
 
-	var look_height: float = _player_height * look_height_ratio
 	var min_distance: float = _player_height * min_distance_ratio
 	var collision_margin: float = _player_height * collision_margin_ratio
 
 	# --- 1. LÓGICA DE MIRA (A dónde apunta la cámara) ---
-	var target_look: Vector3 = player.global_position + Vector3.UP * look_height
-	
-	var horizontal_velocity: Vector3 = Vector3(player.velocity.x, 0.0, player.velocity.z)
-	if horizontal_velocity.length() > 0.1:
-		target_look += horizontal_velocity.normalized() * min(horizontal_velocity.length() * 0.15, look_ahead)
+	var zone: CameraZone3D = CameraDirector.current_zone
+	var target_look: Vector3
+
+	if zone and is_instance_valid(zone.look_target):
+		target_look = zone.look_target.global_position
+	else:
+		var look_height: float = _player_height * look_height_ratio
+		target_look = player.global_position + Vector3.UP * look_height
+		
+		var horizontal_velocity: Vector3 = Vector3(player.velocity.x, 0.0, player.velocity.z)
+		if horizontal_velocity.length() > 0.1:
+			target_look += horizontal_velocity.normalized() * min(horizontal_velocity.length() * 0.15, look_ahead)
 
 	_current_look_target = _current_look_target.lerp(target_look, 10.0 * delta)
 
 	# --- 2. LÓGICA DE POSICIÓN (Dónde se ubica la cámara) ---
-	var zone: CameraZone3D = CameraDirector.current_zone
 	var target_position: Vector3
 	var current_smoothing: float = default_smoothing
 

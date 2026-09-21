@@ -61,7 +61,7 @@ func _recompute_current_zone() -> void:
 
 	var best: CameraZone3D = null
 	for zone in _active_zones:
-		if best == null or zone.priority > best.priority:
+		if best == null or zone.zone_priority > best.zone_priority:
 			best = zone
 	_set_current_zone(best)
 

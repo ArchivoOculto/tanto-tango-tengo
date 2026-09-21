@@ -13,7 +13,6 @@ signal puzzle_failed
 
 @export_group("Elementos Interactivos")
 @export var alcantarilla: DoorAlcantarilla
-## Creá una CameraZone3D nueva apuntando a la alcantarilla y arrastrala acá.
 @export var cam_zone_alcantarilla: CameraZone3D 
 
 var is_solved: bool = false 
