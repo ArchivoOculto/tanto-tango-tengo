@@ -12,8 +12,9 @@ signal puzzle_failed
 @export var red_crosses_parent: Node
 
 @export_group("Elementos Interactivos")
-## Arrastrar aquí el nodo AlcantarillaPivot (que ahora tiene el script DoorAlcantarilla)
 @export var alcantarilla: DoorAlcantarilla
+## Creá una CameraZone3D nueva apuntando a la alcantarilla y arrastrala acá.
+@export var cam_zone_alcantarilla: CameraZone3D 
 
 var is_solved: bool = false 
 
@@ -27,6 +28,7 @@ func _ready() -> void:
 
 	_check_puzzle.call_deferred()
 
+# (Las funciones _generate_random_password y _update_puzzle_hint quedan igual)
 func _generate_random_password() -> void:
 	var total: int = farolitos.size()
 	if total < 3:
@@ -80,8 +82,24 @@ func _check_puzzle() -> void:
 			is_solved = true
 			print("Puzzle Completado")
 			puzzle_completed.emit()
+			
 			if alcantarilla:
+				# 1. Forzar la cámara hacia el pozo
+				if cam_zone_alcantarilla:
+					CameraDirector.force_zone(cam_zone_alcantarilla)
+					
+				# 2. Iniciar animación
 				alcantarilla.abrir()
+				
+				# 3. Esperar a que la tapa caiga y se prenda la luz
+				await alcantarilla.animacion_terminada
+				
+				# 4. Dejar la vista ahí un segundo extra para impacto visual
+				await get_tree().create_timer(1.2).timeout
+				
+				# 5. Devolver la cámara al jugador
+				if cam_zone_alcantarilla:
+					CameraDirector.release_zone(cam_zone_alcantarilla)
 	else:
 		if is_solved:
 			is_solved = false
@@ -89,3 +107,4 @@ func _check_puzzle() -> void:
 			puzzle_failed.emit()
 			if alcantarilla:
 				alcantarilla.cerrar()
+				# No forzamos ninguna zona de cámara acá; el jugador simplemente escucha o ve a lo lejos cómo se cierra.

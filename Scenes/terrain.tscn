@@ -74,7 +74,7 @@ radius = 0.15
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_elrmp"]
 albedo_texture = ExtResource("18_ihuaq")
-uv1_scale = Vector3(4.5, 4.5, 4.5)
+uv1_scale = Vector3(2, 2, 2)
 uv1_triplanar = true
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_gsbiq"]
@@ -82,6 +82,94 @@ material = SubResource("StandardMaterial3D_elrmp")
 top_radius = 0.15
 bottom_radius = 0.15
 height = 0.02
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_rgptw"]
+load_path = "res://.godot/imported/Horror_Metal_14-256x256.png-f8355ba4c490b1937aa218591273af05.s3tc.ctex"
+
+[sub_resource type="Animation" id="Animation_7miuv"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TapaAlcantarilla:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TapaAlcantarilla:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("SpotLight3D:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_atwpt"]
+resource_name = "open"
+length = 2.5000000000000004
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TapaAlcantarilla:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2.2, 2.5),
+"transitions": PackedFloat32Array(1, 1, 1, 2),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0.01, 0), Vector3(0, 0.01, 0.3), Vector3(0, 0, 0.3)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TapaAlcantarilla:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.85, 2.2, 2.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0.7853982, 0), Vector3(0, 0.7853982, 0), Vector3(0, 0.61086524, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("SpotLight3D:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cictk"]
+_data = {
+&"RESET": SubResource("Animation_7miuv"),
+&"open": SubResource("Animation_atwpt")
+}
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_lu725"]
 size = Vector3(0.3, 0.7, 0.082)
@@ -113,9 +201,6 @@ uv1_scale = Vector3(2.5, 2.5, 2.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_15siy"]
 material = SubResource("StandardMaterial3D_gppgl")
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_rgptw"]
-load_path = "res://.godot/imported/Horror_Metal_14-256x256.png-f8355ba4c490b1937aa218591273af05.s3tc.ctex"
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gml2b"]
 size = Vector3(1, 0.1, 2.3867188)
@@ -165,6 +250,12 @@ radius = 2.5
 [sub_resource type="FogMaterial" id="FogMaterial_2xxps"]
 density = 7.77
 emission = Color(0.5540059, 0.12935098, 0.4418329, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cictk"]
+size = Vector3(0.25, 0.1, 0.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3v0ji"]
+size = Vector3(0.25, 0.4, 0.25)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lbu32"]
 resource_name = "rusted_pipe"
@@ -237,9 +328,6 @@ shadow_mesh = SubResource("ArrayMesh_w040d")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_atwpt"]
 size = Vector3(1.0571289, 1.4050598, 0.1)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_3v0ji"]
-size = Vector3(0.25, 0.4, 0.25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mqean"]
 size = Vector3(2.3490968, 0.1, 3.5)
@@ -418,11 +506,12 @@ font_size = 20
 [node name="InteractiveProps" type="Node3D" parent="." unique_id=1539688944]
 
 [node name="AlcantarillaPivot" type="Node3D" parent="InteractiveProps" unique_id=33490419]
-transform = Transform3D(0.08715573, 0, -0.9961947, 0, 1, 0, 0.9961947, 0, 0.08715573, 1.5, 0.1, 1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.1, 1.5)
 script = ExtResource("4_7miuv")
 
 [node name="TapaAlcantarilla" type="AnimatableBody3D" parent="InteractiveProps/AlcantarillaPivot" unique_id=642077729]
 collision_mask = 14
+sync_to_physics = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="InteractiveProps/AlcantarillaPivot/TapaAlcantarilla" unique_id=1104478227]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
@@ -431,6 +520,23 @@ shape = SubResource("CylinderShape3D_lnws3")
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="InteractiveProps/AlcantarillaPivot/TapaAlcantarilla" unique_id=335695189]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
 mesh = SubResource("CylinderMesh_gsbiq")
+
+[node name="SpotLight3D" type="SpotLight3D" parent="InteractiveProps/AlcantarillaPivot" unique_id=1640786390]
+transform = Transform3D(-4.4703484e-08, -1, 4.3365758e-17, -4.371139e-08, 1.9106855e-15, -1, 1, -4.4703484e-08, -4.371139e-08, 0, -0.3330883, 0)
+visible = false
+light_color = Color(0.25278953, 1.8247963, 0, 1)
+light_volumetric_fog_energy = 21.125
+spot_range = 0.33
+spot_angle = 10.0
+
+[node name="PortalTexture03" type="Sprite3D" parent="InteractiveProps/AlcantarillaPivot" unique_id=155913665]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.1, 0)
+modulate = Color(0.33512923, 1.5183448, 0, 0.90588236)
+pixel_size = 0.0015
+texture = SubResource("CompressedTexture2D_rgptw")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="InteractiveProps/AlcantarillaPivot" unique_id=321806589]
+libraries/ = SubResource("AnimationLibrary_cictk")
 
 [node name="Door1" type="AnimatableBody3D" parent="InteractiveProps" unique_id=1671746386]
 transform = Transform3D(0.9999732, 0, -0.0073120594, 0, 1, 0, 0.0073120594, 0, 0.9999732, -1.6740786, 0.45664817, 2)
@@ -588,17 +694,18 @@ transform = Transform3D(0.70710677, -0.70710677, -1.7763568e-15, 0.70710677, 0.7
 shape = SubResource("BoxShape3D_gim56")
 debug_color = Color(0, 1, 0.70000815, 0.42000002)
 
-[node name="PuzzleManager" type="Node" parent="InteractiveProps" unique_id=1104756749 node_paths=PackedStringArray("farolitos", "red_crosses_parent", "alcantarilla")]
+[node name="PuzzleManager" type="Node" parent="InteractiveProps" unique_id=1104756749 node_paths=PackedStringArray("farolitos", "red_crosses_parent", "alcantarilla", "cam_zone_alcantarilla")]
 script = ExtResource("11_7e5pg")
 farolitos = [NodePath("../Faroles/Farolito01"), NodePath("../Faroles/Farolito02"), NodePath("../Faroles/Farolito03"), NodePath("../Faroles/Farolito04"), NodePath("../Faroles/Farolito05"), NodePath("../Faroles/Farolito06"), NodePath("../Faroles/Farolito07")]
 target_password = Array[bool]([false, false, false, false, false, false, false])
 red_crosses_parent = NodePath("../Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D")
 alcantarilla = NodePath("../AlcantarillaPivot")
+cam_zone_alcantarilla = NodePath("../../CamZones/CamZone_02")
 
 [node name="Area 002" type="StaticBody3D" parent="." unique_id=1220581979]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
 
-[node name="Area 002 - PlayerPortal" type="Area3D" parent="Area 002" unique_id=1851901813 node_paths=PackedStringArray("local_target")]
+[node name="WarpZone 002" type="Area3D" parent="Area 002" unique_id=1851901813 node_paths=PackedStringArray("local_target")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.033861756, 0.38567448, 1.3223358)
 collision_layer = 0
 collision_mask = 2
@@ -606,12 +713,12 @@ script = ExtResource("11_gml2b")
 local_target = NodePath("../../Area 001/Player_Entrance")
 fade_duration = 0.5
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area 002/Area 002 - PlayerPortal" unique_id=401713598]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area 002/WarpZone 002" unique_id=401713598]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05444336, 0.16970265)
 shape = SubResource("BoxShape3D_elrmp")
 debug_color = Color(1.563596, 0, 0.6686375, 1)
 
-[node name="Player_Entrance" type="Marker3D" parent="Area 002" unique_id=1420444550 node_paths=PackedStringArray("camera_zone")]
+[node name="Player_Entrance2" type="Marker3D" parent="Area 002" unique_id=1420444550 node_paths=PackedStringArray("camera_zone")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3351879, 0.36316717)
 script = ExtResource("9_bp2wt")
 camera_zone = NodePath("../CamZone_07")
@@ -765,87 +872,103 @@ material = SubResource("FogMaterial_2xxps")
 
 [node name="Area 001" type="StaticBody3D" parent="." unique_id=394980261]
 
+[node name="WarpZone End" type="Area3D" parent="Area 001" unique_id=1782574658 node_paths=PackedStringArray("local_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -0.1, 1.5)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("11_gml2b")
+local_target = NodePath("Player_EntranceEND")
+fade_duration = 0.5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area 001/WarpZone End" unique_id=276706172]
+shape = SubResource("BoxShape3D_cictk")
+debug_color = Color(1.563596, 0, 0.6686375, 1)
+
+[node name="Player_EntranceEND" type="Marker3D" parent="Area 001/WarpZone End" unique_id=284273199]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.270715, 2.790513, -2.85768)
+script = ExtResource("9_bp2wt")
+
+[node name="WarpZone 001" type="Area3D" parent="Area 001" unique_id=1790762693 node_paths=PackedStringArray("local_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5456152, 0.481659, 1.5287992)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("11_gml2b")
+local_target = NodePath("../../Area 002/Player_Entrance2")
+fade_duration = 0.5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area 001/WarpZone 001" unique_id=237883001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05444336, 0.16970265)
+shape = SubResource("BoxShape3D_3v0ji")
+debug_color = Color(1.563596, 0, 0.6686375, 1)
+
 [node name="Player_Entrance" type="Marker3D" parent="Area 001" unique_id=573260989 node_paths=PackedStringArray("camera_zone")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5383668, 0.3351879, 2.6487563)
 script = ExtResource("9_bp2wt")
 camera_zone = NodePath("../../CamZones/CamZone_06")
 
-[node name="Area 001 - Decorations" type="Node3D" parent="Area 001" unique_id=1258876808]
+[node name="Fences" type="Node3D" parent="Area 001" unique_id=1258876808]
 
-[node name="Alambrado" parent="Area 001/Area 001 - Decorations" unique_id=1317907355 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado" parent="Area 001/Fences" unique_id=1317907355 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, 2.478668)
 
-[node name="Alambrado2" parent="Area 001/Area 001 - Decorations" unique_id=1494642769 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado2" parent="Area 001/Fences" unique_id=1494642769 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, 0.5289781)
 
-[node name="Alambrado3" parent="Area 001/Area 001 - Decorations" unique_id=558553504 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado3" parent="Area 001/Fences" unique_id=558553504 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -0.4237134)
 
-[node name="Alambrado4" parent="Area 001/Area 001 - Decorations" unique_id=1016267234 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado4" parent="Area 001/Fences" unique_id=1016267234 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -1.373301)
 
-[node name="Alambrado5" parent="Area 001/Area 001 - Decorations" unique_id=1804746032 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado5" parent="Area 001/Fences" unique_id=1804746032 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -2.3126378)
 
-[node name="Alambrado6" parent="Area 001/Area 001 - Decorations" unique_id=1223507419 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado6" parent="Area 001/Fences" unique_id=1223507419 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -1.041301, 0.6586938, -3.2653294)
 
-[node name="Alambrado7" parent="Area 001/Area 001 - Decorations" unique_id=796152889 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado7" parent="Area 001/Fences" unique_id=796152889 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-1.4242626e-08, 0, -0.9000001, 0, 0.9, 0, 0.32583326, 0, -3.934025e-08, -1.0212878, 0.6654534, -3.8812685)
 
-[node name="Alambrado8" parent="Area 001/Area 001 - Decorations" unique_id=492993870 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado8" parent="Area 001/Fences" unique_id=492993870 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(0.89999986, -2.988347e-10, -8.9406946e-08, 1.3251576e-08, 0.4474562, 0.09555936, 1.1847194e-07, -0.04777967, 0.8949124, -3.2231078, 0.3870477, 2.1059804)
 
-[node name="Alambrado16" parent="Area 001/Area 001 - Decorations" unique_id=393356825 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado16" parent="Area 001/Fences" unique_id=393356825 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(0.1895772, 0.0031425578, -0.87980145, -0.8747239, -0.09593106, -0.18882577, -0.09443742, 0.8948672, -0.017152745, -3.5962467, 0.58227575, 1.5038705)
 
-[node name="Alambrado17" type="Node3D" parent="Area 001/Area 001 - Decorations" unique_id=231954173]
+[node name="Alambrado17" type="Node3D" parent="Area 001/Fences" unique_id=231954173]
 transform = Transform3D(-3.0539457e-08, 0.79477096, 0.38097304, -2.4799121e-08, 0.6453823, -0.4691581, -0.89999986, -4.4752003e-08, 1.4689718e-15, -2.5107577, 0.5463938, 1.5038705)
 
-[node name="mesh" type="MeshInstance3D" parent="Area 001/Area 001 - Decorations/Alambrado17" unique_id=1852750581]
+[node name="mesh" type="MeshInstance3D" parent="Area 001/Fences/Alambrado17" unique_id=1852750581]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5206757, 0.12284881, 0)
 mesh = SubResource("ArrayMesh_72ek7")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Area 001/Area 001 - Decorations/Alambrado17" unique_id=493543675]
+[node name="StaticBody3D" type="StaticBody3D" parent="Area 001/Fences/Alambrado17" unique_id=493543675]
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area 001/Area 001 - Decorations/Alambrado17/StaticBody3D" unique_id=1561817762]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area 001/Fences/Alambrado17/StaticBody3D" unique_id=1561817762]
 transform = Transform3D(1, -1.7763568e-13, -2.937406e-14, 7.1054274e-15, 0.9999994, 2.9802322e-08, -1.3636358e-15, 2.8550626e-22, 1, 0, -0.03050363, 0)
 shape = SubResource("BoxShape3D_atwpt")
 
-[node name="Alambrado9" parent="Area 001/Area 001 - Decorations" unique_id=18049155 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado9" parent="Area 001/Fences" unique_id=18049155 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, 0.5289781)
 
-[node name="Alambrado10" parent="Area 001/Area 001 - Decorations" unique_id=1146057763 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado10" parent="Area 001/Fences" unique_id=1146057763 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -0.4237134)
 
-[node name="Alambrado11" parent="Area 001/Area 001 - Decorations" unique_id=1269190317 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado11" parent="Area 001/Fences" unique_id=1269190317 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -1.373301)
 
-[node name="Alambrado12" parent="Area 001/Area 001 - Decorations" unique_id=1813266097 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado12" parent="Area 001/Fences" unique_id=1813266097 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -2.3126378)
 
-[node name="Alambrado13" parent="Area 001/Area 001 - Decorations" unique_id=2129652955 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado13" parent="Area 001/Fences" unique_id=2129652955 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-3.934025e-08, 0, -0.9, 0, 0.9, 0, 0.9, 0, -3.934025e-08, -3.6545084, 0.6586938, -3.2653294)
 
-[node name="Alambrado15" parent="Area 001/Area 001 - Decorations" unique_id=90987238 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado15" parent="Area 001/Fences" unique_id=90987238 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-2.4625254, 0, 7.8680486e-08, 0, 0.9, 0, -2.152808e-07, 0, -0.8999998, -2.3090897, 0.6586938, -4.0283217)
 
-[node name="Alambrado14" parent="Area 001/Area 001 - Decorations" unique_id=290598042 instance=ExtResource("10_aaxyt")]
+[node name="Alambrado14" parent="Area 001/Fences" unique_id=290598042 instance=ExtResource("10_aaxyt")]
 transform = Transform3D(-1.4242626e-08, 0, -0.9000001, 0, 0.9, 0, 0.32583326, 0, -3.934025e-08, -3.634495, 0.6654534, -3.8812685)
-
-[node name="Area 001 - PlayerPortal" type="Area3D" parent="Area 001" unique_id=1790762693 node_paths=PackedStringArray("local_target")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5456152, 0.481659, 1.5287992)
-collision_layer = 0
-collision_mask = 2
-script = ExtResource("11_gml2b")
-local_target = NodePath("../../Area 002/Player_Entrance")
-fade_duration = 0.5
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area 001/Area 001 - PlayerPortal" unique_id=237883001]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05444336, 0.16970265)
-shape = SubResource("BoxShape3D_3v0ji")
-debug_color = Color(1.563596, 0, 0.6686375, 1)
 
 [node name="Base" type="CollisionShape3D" parent="Area 001" unique_id=1300406603]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -1.3473754, 0, -0.54999995)
@@ -932,7 +1055,7 @@ transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, -1.5
 shape = SubResource("BoxShape3D_bp2wt")
 
 [node name="WorldLimit" type="CollisionShape3D" parent="Area 001" unique_id=724137295]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6000001, -0.100000024, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, -0.5, 0)
 shape = SubResource("WorldBoundaryShape3D_rxs28")
 
 [node name="CSGMesh3D" type="CSGMesh3D" parent="Area 001" unique_id=1806931772]
