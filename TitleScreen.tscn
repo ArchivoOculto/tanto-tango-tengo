@@ -1,0 +1,135 @@
+[gd_scene format=3 uid="uid://dweekc55wgjrs"]
+
+[ext_resource type="Script" uid="uid://v2e2qmtlrmko" path="res://title_screen.gd" id="1_1xr1c"]
+[ext_resource type="Texture2D" uid="uid://b3hy83aq3tq5l" path="res://Assets/2D/Title.png" id="1_fnlyl"]
+[ext_resource type="PackedScene" uid="uid://bdylr3vgdo1k8" path="res://Scenes/terrain.tscn" id="2_tu0on"]
+
+[sub_resource type="Animation" id="Animation_fnlyl"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(419.00003, 190)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.75, 0.75)]
+}
+
+[sub_resource type="Animation" id="Animation_pkhjh"]
+resource_name = "idle"
+loop_mode = 2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 10)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.3, 0.7, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [0.02617993877991494, 0.05235987755982989, -0.05235987755982989, -0.02617993877991494]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.75, 0.75), Vector2(0.77, 0.77), Vector2(0.75, 0.75)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_1xr1c"]
+_data = {
+&"RESET": SubResource("Animation_fnlyl"),
+&"idle": SubResource("Animation_pkhjh")
+}
+
+[node name="TitleScreen" type="Control" unique_id=1269114799]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1xr1c")
+target_scene = ExtResource("2_tu0on")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1882444068]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Title" type="Control" parent="." unique_id=1546043922]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 5.5
+offset_top = -93.0
+offset_right = 5.5
+offset_bottom = -93.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="Title" unique_id=21510655]
+position = Vector2(419.00003, 190)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("1_fnlyl")
+region_enabled = true
+region_rect = Rect2(9.676178, 7.3012753, 379.32382, 195.69873)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Title" unique_id=68582337]
+root_node = NodePath("../Sprite2D")
+libraries/ = SubResource("AnimationLibrary_1xr1c")
+autoplay = &"idle"

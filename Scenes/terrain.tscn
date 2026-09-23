@@ -412,9 +412,6 @@ radius = 2.5
 density = 7.77
 emission = Color(0.5540059, 0.12935098, 0.4418329, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_cictk"]
-size = Vector3(1, 0.7, 7)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_swpjm"]
 size = Vector3(0.5, 0.1, 3.5)
 
@@ -432,25 +429,38 @@ size = Vector3(0.5, 0.37507325, 3.4666748)
 material = SubResource("StandardMaterial3D_lnws3")
 size = Vector3(1, 0.2, 2)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_cictk"]
+size = Vector3(1, 0.7, 1.5348877)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1e2yc"]
+size = Vector3(1, 0.7, 5.4490385)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
 size = Vector3(2.857, 1.75, 4.318)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
-size = Vector3(4, 0.9, 5.4)
+size = Vector3(2.9, 0.9, 1.8)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ph32v"]
-size = Vector3(4, 0.90000004, 3.6000001)
+size = Vector3(3, 0.5, 2.6)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_rxs28"]
-size = Vector3(1, 1.75, 1.5)
+size = Vector3(1, 0.7, 1.8)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4glq7"]
-size = Vector3(1, 1.7, 2.9816895)
+size = Vector3(1, 1, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tsagk"]
+size = Vector3(1, 1, 1.4)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_xx0be"]
+size = Vector3(1, 1, 0.9)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gppgl"]
-size = Vector3(3.9, 0.6612549, 9.1)
+size = Vector3(2.6, 0.5, 2.7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pbqc1"]
+size = Vector3(2.4, 0.5, 3.7)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
@@ -484,18 +494,18 @@ stream = ExtResource("19_4rn8p")
 autoplay = true
 
 [node name="GameCamara" type="Camera3D" parent="." unique_id=2072088570]
-transform = Transform3D(0.32538345, -0.58481115, 0.7430487, -1.2815509e-08, 0.78581095, 0.6184668, -0.9455821, -0.20123886, 0.25568986, 1.9873594, 0.6, -2.8921545)
+transform = Transform3D(0.32538348, -0.58481115, 0.7430488, -1.28155095e-08, 0.78581095, 0.6184668, -0.94558215, -0.20123889, 0.2556899, 1.9873594, 0.6, -3.753883)
 current = true
 script = ExtResource("2_pmkc2")
 collision_mask = 0
 
 [node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
-transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.6350739, 0.57362175, -2.5822232)
+transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.6350739, 0.57362175, -3.4439516)
 
 [node name="Text and Sprites" type="Node3D" parent="." unique_id=386532345]
 
 [node name="tutorialtxt_00" type="Label3D" parent="Text and Sprites" unique_id=259107111]
-transform = Transform3D(-0.9898238, 0.07489781, -0.12099215, -0.026896613, 0.73646986, 0.6759354, 0.13973321, 0.67231137, -0.726961, 1.5051906, 0.1956445, -1.8890464)
+transform = Transform3D(-0.9898238, 0.07489781, -0.12099215, -0.026896613, 0.73646986, 0.6759354, 0.13973321, 0.67231137, -0.726961, 1.5051906, 0.1956445, -2.7507749)
 double_sided = false
 text = "'W' 'A' 'S' 'D'
 para moverte"
@@ -737,7 +747,7 @@ script = ExtResource("9_bp2wt")
 camera_zone = NodePath("../../CamZones/CamZone_06")
 
 [node name="Player_EntranceB" type="Marker3D" parent="Area 001" unique_id=296476379 node_paths=PackedStringArray("camera_zone")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 0.335, 1.502)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7740675, 0.335, 1.7139679)
 script = ExtResource("9_bp2wt")
 camera_zone = NodePath("../../CamZones/CamZone_02")
 
@@ -1155,21 +1165,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.95, 2.5)
 script = ExtResource("9_bp2wt")
 camera_zone = NodePath("../CamZone_08")
 
-[node name="CamZone_08" type="Area3D" parent="Area003" unique_id=183307842 node_paths=PackedStringArray("camera_anchor")]
-script = ExtResource("3_hvvm8")
-camera_anchor = NodePath("CamAnchor")
-follow_smoothing = 5.0
-force_4_3 = true
-aspect_transition_duration = 1.5
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_08" unique_id=1202697483]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.401, 1.9500008, -0.51303476)
-shape = SubResource("BoxShape3D_cictk")
-debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
-
-[node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_08" unique_id=4186281]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.405, 1.9500008, 3.0014863)
-
 [node name="Base3" type="CollisionShape3D" parent="Area003" unique_id=1039426780]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 1.4, 1.5, -0.5)
 shape = SubResource("BoxShape3D_swpjm")
@@ -1208,6 +1203,38 @@ spot_angle = 25.0
 [node name="FogVolume" type="FogVolume" parent="Area003" unique_id=1708661614]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 2.0796394, -0.6359863)
 size = Vector3(2, 0.75341797, 7.041504)
+
+[node name="CamZone_08" type="Area3D" parent="Area003" unique_id=183307842 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, 2.341444)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+follow_smoothing = 5.0
+force_4_3 = true
+aspect_transition_duration = 1.5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_08" unique_id=1202697483]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.11921263)
+shape = SubResource("BoxShape3D_cictk")
+debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
+
+[node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_08" unique_id=4186281]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019605637, 0.04032898, 0.6600423)
+
+[node name="CamZone_09" type="Area3D" parent="Area003" unique_id=558213570 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, -0.375046)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+follow_smoothing = 5.0
+force_4_3 = true
+aspect_transition_duration = 1.5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_09" unique_id=806788801]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.8945559)
+shape = SubResource("BoxShape3D_1e2yc")
+debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
+
+[node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_09" unique_id=1655058472]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4939013, 0.04032898, 0.041661084)
 
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 
@@ -1248,16 +1275,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 1.0103036, -1.8051
 shape = SubResource("BoxShape3D_2xxps")
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
-visible = false
 
 [node name="CamZone_01" type="Area3D" parent="CamZones" unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -1.2558405)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -2.117569)
 script = ExtResource("3_hvvm8")
 camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_01" unique_id=284652046]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85820323, 0.5590488, -1.0631914)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35142833, 0.5590488, -0.9660523)
 shape = SubResource("BoxShape3D_hvvm8")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
@@ -1271,7 +1297,7 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_02" unique_id=691414832]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.99640274, -1.25, 2.1907716)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5247352, -1.4208618, 1.7294923)
 shape = SubResource("BoxShape3D_ph32v")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
@@ -1296,25 +1322,39 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_03" unique_id=1325796933]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -0.265)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13242185, -0.42564452)
 shape = SubResource("BoxShape3D_rxs28")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_03" unique_id=1127736982]
-transform = Transform3D(0.98750514, 0, 0.15758686, 0, 1, 0, -0.15758686, 0, 0.98750514, 0.04357934, -0.42125452, 1.5797217)
+transform = Transform3D(0.98750514, 0, 0.15758686, 0, 1, 0, -0.15758686, 0, 0.98750514, -0.002, 0, 1.1)
 
-[node name="CamZone_04" type="Area3D" parent="CamZones" unique_id=367030191 node_paths=PackedStringArray("camera_anchor")]
+[node name="CamZone_04A" type="Area3D" parent="CamZones" unique_id=367030191 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5043977, 1.7591963, -0.6868231)
 script = ExtResource("3_hvvm8")
 camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_04" unique_id=565285491]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, -0.31077635)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_04A" unique_id=565285491]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34040713, 0.15187675)
 shape = SubResource("BoxShape3D_4glq7")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
-[node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_04" unique_id=1661209144]
+[node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_04A" unique_id=1661209144]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3138237, 1.515)
+
+[node name="CamZone_04B" type="Area3D" parent="CamZones" unique_id=747366959 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5043977, 1.7591963, -2.1344256)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+follow_smoothing = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_04B" unique_id=1170009637]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34040713, 0.20267475)
+shape = SubResource("BoxShape3D_tsagk")
+debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
+
+[node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_04B" unique_id=1525928260]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3138237, 1.515)
 
 [node name="CamZone_05" type="Area3D" parent="CamZones" unique_id=957349250 node_paths=PackedStringArray("camera_anchor")]
@@ -1324,6 +1364,7 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_05" unique_id=1104610566]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.0900867)
 shape = SubResource("BoxShape3D_xx0be")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
@@ -1337,12 +1378,26 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_06" unique_id=277393503]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5305485, -1.632838, 2.4993849)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.89417136, -1.7264743, 4.5296097)
 shape = SubResource("BoxShape3D_gppgl")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06" unique_id=2109779032]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.90033185, -0.17360938, 6.7241907)
+
+[node name="CamZone_06B" type="Area3D" parent="CamZones" unique_id=462311428 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4468079, 0.82978106, -1.6734003)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+follow_smoothing = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_06B" unique_id=2128571954]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -0.3732425)
+shape = SubResource("BoxShape3D_pbqc1")
+debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
+
+[node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06B" unique_id=1112542435]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.5, 2.8)
 
 [editable path="InteractiveProps/Puzzle_Hint/interactable_picture"]
 [editable path="Area 002/RigidBody3D"]

@@ -13,7 +13,8 @@ config_version=5
 config/name="TantoTangoTengo"
 run/main_scene="uid://bdylr3vgdo1k8"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0, 0, 0, 1)
+config/icon="uid://b3hy83aq3tq5l"
 
 [audio]
 
