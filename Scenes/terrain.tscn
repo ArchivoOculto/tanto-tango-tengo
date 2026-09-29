@@ -412,11 +412,16 @@ radius = 2.5
 density = 7.77
 emission = Color(0.5540059, 0.12935098, 0.4418329, 1)
 
+[sub_resource type="BoxMesh" id="BoxMesh_atwpt"]
+material = SubResource("StandardMaterial3D_lnws3")
+size = Vector3(1, 0.2, 7)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_swpjm"]
 size = Vector3(0.5, 0.1, 3.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cictk"]
 cull_mode = 1
+albedo_color = Color(0.43, 0.43, 0.43, 1)
 albedo_texture = ExtResource("28_atwpt")
 uv1_scale = Vector3(2, 2, 2)
 uv1_triplanar = true
@@ -425,15 +430,11 @@ uv1_triplanar = true
 material = SubResource("StandardMaterial3D_cictk")
 size = Vector3(0.5, 0.37507325, 3.4666748)
 
-[sub_resource type="BoxMesh" id="BoxMesh_atwpt"]
-material = SubResource("StandardMaterial3D_lnws3")
-size = Vector3(1, 0.2, 2)
+[sub_resource type="BoxShape3D" id="BoxShape3D_cm1ky"]
+size = Vector3(0.5, 0.5, 0.1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cictk"]
-size = Vector3(1, 0.7, 1.5348877)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_1e2yc"]
-size = Vector3(1, 0.7, 5.4490385)
+size = Vector3(1, 0.7, 7.0115843)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
 size = Vector3(2.857, 1.75, 4.318)
@@ -1146,7 +1147,32 @@ size = Vector3(0.3, 1.4243408, 4.073944)
 material = SubResource("FogMaterial_2xxps")
 
 [node name="Area003" type="StaticBody3D" parent="." unique_id=1016905537]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 60, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.54204, 60, 0)
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="Area003" unique_id=723351990]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4000001, 2.4270973, -0.51425123)
+use_collision = true
+collision_mask = 14
+mesh = SubResource("BoxMesh_atwpt")
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="Area003/CSGMesh3D" unique_id=1980388687]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.9815478)
+operation = 2
+radius = 0.18
+
+[node name="PortalTexture03" type="Sprite3D" parent="Area003/CSGMesh3D" unique_id=543916384]
+transform = Transform3D(-0.6087614, 0.7933533, -3.4678575e-08, 0, -4.371139e-08, -1, -0.7933533, -0.6087614, 2.6609808e-08, 0, -0.06526947, 2.9893625)
+modulate = Color(0.33512923, 1.5183448, 0, 0.90588236)
+pixel_size = 0.0015
+texture = SubResource("CompressedTexture2D_rgptw")
+
+[node name="SpotLight3D" type="SpotLight3D" parent="Area003/CSGMesh3D" unique_id=1185870681]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.10811615, 2.9817522)
+light_color = Color(0.25278953, 1.8247963, 0, 1)
+light_energy = 0.1
+light_volumetric_fog_energy = 0.5
+spot_range = 1.0
+spot_angle = 25.0
 
 [node name="WarpZone 004" type="Area3D" parent="Area003" unique_id=82016470 node_paths=PackedStringArray("local_target")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4006461, 2.573124, 2.4725938)
@@ -1165,44 +1191,28 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.95, 2.5)
 script = ExtResource("9_bp2wt")
 camera_zone = NodePath("../CamZone_08")
 
+[node name="Alambrado2" parent="Area003" unique_id=282537929 instance=ExtResource("10_aaxyt")]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 1.4, 1.43, 1.5)
+
 [node name="Base3" type="CollisionShape3D" parent="Area003" unique_id=1039426780]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 1.4, 1.5, -0.5)
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 1.4000001, 1.5, -0.5)
 shape = SubResource("BoxShape3D_swpjm")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Area003/Base3" unique_id=900618739]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24839401, -0.016662598)
 mesh = SubResource("BoxMesh_oo88h")
 
-[node name="Alambrado2" parent="Area003" unique_id=282537929 instance=ExtResource("10_aaxyt")]
-transform = Transform3D(-3.3876326e-08, -0.775, 0, 0.775, -3.3876326e-08, 0, 0, 0, 0.775, 1.4, 1.5, 1.5)
+[node name="wall" type="CollisionShape3D" parent="Area003" unique_id=4108331]
+transform = Transform3D(-8.742278e-08, 2, 0, -2, -8.742278e-08, 0, 0, 0, 2, 2.0051045, 2, -0.5)
+shape = SubResource("BoxShape3D_swpjm")
 
-[node name="CSGMesh3D" type="CSGMesh3D" parent="Area003" unique_id=723351990]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 2.4270973, 1.9880481)
-use_collision = true
-collision_mask = 14
-mesh = SubResource("BoxMesh_atwpt")
+[node name="wall2" type="CollisionShape3D" parent="Area003" unique_id=584838087]
+transform = Transform3D(-8.742278e-08, 2, 0, -2, -8.742278e-08, 0, 0, 0, 2, 0.8051045, 2, -0.5)
+shape = SubResource("BoxShape3D_swpjm")
 
-[node name="CSGSphere3D" type="CSGSphere3D" parent="Area003/CSGMesh3D" unique_id=1980388687]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5)
-operation = 2
-radius = 0.18
-
-[node name="PortalTexture03" type="Sprite3D" parent="Area003/CSGMesh3D" unique_id=543916384]
-transform = Transform3D(-0.6087614, 0.7933533, -3.4678575e-08, 0, -4.371139e-08, -1, -0.7933533, -0.6087614, 2.6609808e-08, 0, -0.06526947, 0.5)
-modulate = Color(0.33512923, 1.5183448, 0, 0.90588236)
-pixel_size = 0.0015
-texture = SubResource("CompressedTexture2D_rgptw")
-
-[node name="SpotLight3D" type="SpotLight3D" parent="Area003/CSGMesh3D" unique_id=1185870681]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.10811615, 0.5)
-light_color = Color(0.25278953, 1.8247963, 0, 1)
-light_energy = 0.1
-spot_range = 1.0
-spot_angle = 25.0
-
-[node name="FogVolume" type="FogVolume" parent="Area003" unique_id=1708661614]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 2.0796394, -0.6359863)
-size = Vector3(2, 0.75341797, 7.041504)
+[node name="wall3" type="CollisionShape3D" parent="Area003" unique_id=1297852715]
+transform = Transform3D(-8.742278e-08, 2, 0, -2, -8.742278e-08, 0, 0, 0, 2, 1.4038553, 1.9780655, 2.7493446)
+shape = SubResource("BoxShape3D_cm1ky")
 
 [node name="CamZone_08" type="Area3D" parent="Area003" unique_id=183307842 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, 2.341444)
@@ -1213,28 +1223,25 @@ force_4_3 = true
 aspect_transition_duration = 1.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_08" unique_id=1202697483]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.11921263)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -2.857561)
 shape = SubResource("BoxShape3D_cictk")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_08" unique_id=4186281]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019605637, 0.04032898, 0.6600423)
 
-[node name="CamZone_09" type="Area3D" parent="Area003" unique_id=558213570 node_paths=PackedStringArray("camera_anchor")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, -0.375046)
-script = ExtResource("3_hvvm8")
-camera_anchor = NodePath("CamAnchor")
-follow_smoothing = 5.0
-force_4_3 = true
-aspect_transition_duration = 1.5
+[node name="Farolito" parent="Area003" unique_id=243146245 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.4000001, 2.9629097, 0.004262883)
+initial_state = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_09" unique_id=806788801]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.8945559)
-shape = SubResource("BoxShape3D_1e2yc")
-debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
+[node name="SpotLight3D" parent="Area003/Farolito" index="1" unique_id=1793264573]
+transform = Transform3D(-2, -7.642742e-15, 1.7484555e-07, -1.7484555e-07, 8.742278e-08, -2, 0, -2, -8.742278e-08, 0, 0.65254974, 0)
 
-[node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_09" unique_id=1655058472]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4939013, 0.04032898, 0.041661084)
+[node name="Farolito2" parent="Area003" unique_id=1869070748 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.4000001, 2.9629097, -3.0002193)
+
+[node name="SpotLight3D" parent="Area003/Farolito2" index="1" unique_id=1793264573]
+transform = Transform3D(-2, -7.642742e-15, 1.7484555e-07, -1.7484555e-07, 8.742278e-08, -2, 0, -2, -8.742278e-08, 0, 0.65254974, 0)
 
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 
@@ -1408,3 +1415,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.5, 2.8)
 [editable path="Area 002/RigidBody3D6"]
 [editable path="Area 002/RigidBody3D7"]
 [editable path="Area 002/RigidBody3D8"]
+[editable path="Area003/Farolito"]
+[editable path="Area003/Farolito2"]
