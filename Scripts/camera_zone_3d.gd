@@ -3,10 +3,12 @@ class_name CameraZone3D
 
 @export var camera_anchor: Node3D
 ## Punto hacia el cual apuntará la cámara. Si se deja vacío, apuntará al jugador.
-@export var look_target: Node3D 
+@export var look_target: Node3D
 @export var follow_smoothing: float = 2.0
-## Prioridad de la zona para resolver superposiciones en CameraDirector.
-@export var zone_priority: int = 0 
+## Desempate entre zonas físicas superpuestas: gana la de MAYOR valor (en empate, la que entró primero).
+## Es la única prioridad que usa CameraDirector; la propiedad 'Priority' que trae Area3D (física) se ignora.
+## No afecta a las cinemáticas: force_zone() siempre pasa por encima.
+@export var zone_priority: int = 0
 
 @export_group("Formato 4:3")
 @export var force_4_3: bool = false ## Si es true, mientras esta zona esté activa la pantalla se recorta a 4:3 con barras negras (ver LetterboxController)

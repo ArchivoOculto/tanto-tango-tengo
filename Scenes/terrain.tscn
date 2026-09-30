@@ -29,6 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://gyviasuhg3uv" path="res://Assets/3D/metal_fence/gate_TexturesCom_MetalVarious0026_1_seamless_S.png" id="21_7miuv"]
 [ext_resource type="Texture2D" uid="uid://bg4040y3gogcg" path="res://Assets/2D/farolito_puzzle_hint.png" id="21_yplex"]
 [ext_resource type="Texture2D" uid="uid://cm3bma1b0kovi" path="res://Assets/2D/256x256/Stains/Horror_Stain_09-256x256.png" id="28_atwpt"]
+[ext_resource type="Texture2D" uid="uid://dnlw747uk3bq2" path="res://Assets/2D/endpicture.png" id="28_swpjm"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -348,7 +349,7 @@ size = Vector3(0.308, 0.7, 0.05)
 size = Vector3(0.45635986, 0.52490234, 0.31799316)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gim56"]
-size = Vector3(0.7513672, 0.7, 0.5)
+size = Vector3(0.9861206, 1.0680664, 0.48059082)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3v0ji"]
 size = Vector3(0.25, 0.4, 0.25)
@@ -669,7 +670,13 @@ size = Vector3(0.5, 0.37507325, 3.4666748)
 size = Vector3(0.5, 0.5, 0.1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cictk"]
-size = Vector3(1, 0.7, 2.9470763)
+size = Vector3(1, 0.7, 4.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_alrgr"]
+size = Vector3(1, 0.7, 1.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0q7x7"]
+size = Vector3(4.2000003, 3.2961426, 6)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
 size = Vector3(2.857, 1.75, 4.318)
@@ -947,7 +954,7 @@ collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="InteractiveProps/Puzzle_Hint/Area3D" unique_id=1558283978]
-transform = Transform3D(0.70710677, -0.70710677, -1.7763568e-15, 0.70710677, 0.70710677, -1.7763568e-15, 0, 0, 1, -0.029088318, 0.032021582, -0.2685547)
+transform = Transform3D(0.70710677, -0.70710677, -1.7763568e-15, 0.70710677, 0.70710677, -1.7763568e-15, 0, 0, 1, -0.0338313, 0.11407864, -0.27825928)
 shape = SubResource("BoxShape3D_gim56")
 debug_color = Color(0, 1, 0.70000815, 0.42000002)
 
@@ -1508,7 +1515,7 @@ transform = Transform3D(-8.742278e-08, 2, 0, -2, -8.742278e-08, 0, 0, 0, 2, 1.40
 shape = SubResource("BoxShape3D_cm1ky")
 
 [node name="CamZone_08" type="Area3D" parent="Area003" unique_id=183307842 node_paths=PackedStringArray("camera_anchor")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, 2.341444)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, 1.8035898)
 script = ExtResource("3_hvvm8")
 camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 5.0
@@ -1516,32 +1523,35 @@ force_4_3 = true
 aspect_transition_duration = 1.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_08" unique_id=1202697483]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.82530713)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -1.5677681)
 shape = SubResource("BoxShape3D_cictk")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_08" unique_id=4186281]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019605637, 0.04032898, 0.6600423)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.02, 0.04, 1.2)
 
-[node name="CamZone_09" type="Area3D" parent="Area003" unique_id=660353260 node_paths=PackedStringArray("camera_anchor")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, -1.658556)
+[node name="CamZone_09" type="Area3D" parent="Area003" unique_id=605086811 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, -1.5089633)
 script = ExtResource("3_hvvm8")
 camera_anchor = NodePath("CamAnchor")
-follow_smoothing = 5.0
+follow_smoothing = 3.0
 force_4_3 = true
 aspect_transition_duration = 1.5
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_09" unique_id=681987373]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.82530713)
-shape = SubResource("BoxShape3D_cictk")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_09" unique_id=579565758]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -1.5805819)
+shape = SubResource("BoxShape3D_alrgr")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
-[node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_09" unique_id=200989737]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.013851166, -0.15967178, -2.539958)
+[node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_09" unique_id=1633513124]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019605637, 0.04032898, 0.1788677)
 
 [node name="Farolito_Open" parent="Area003" unique_id=243146245 instance=ExtResource("5_0ac8p")]
 transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.4000001, 2.9629097, -0.9905249)
 initial_state = 0
+
+[node name="SpotLight3D" parent="Area003/Farolito_Open" index="1" unique_id=1793264573]
+transform = Transform3D(1, 2.6400943e-14, -3.019916e-07, -3.019916e-07, 1.3113416e-07, -1, 1.3200472e-14, 1, 1.3113416e-07, 4.7683716e-07, 0.5695038, 0)
 
 [node name="FarolitoCamTrigger" type="Node" parent="Area003/Farolito_Open" unique_id=1121677615 node_paths=PackedStringArray("farolito", "target_cam_zone", "door")]
 script = ExtResource("8_lu725")
@@ -1551,9 +1561,6 @@ door = NodePath("../../Alambrado2/StaticBody3D")
 override_camera_speed = true
 custom_smoothing = 2.0
 door_action_delay = 0.0
-
-[node name="SpotLight3D" parent="Area003/Farolito_Open" index="2" unique_id=1793264573]
-transform = Transform3D(1, 2.6400943e-14, -3.019916e-07, -3.019916e-07, 1.3113416e-07, -1, 1.3200472e-14, 1, 1.3113416e-07, 4.7683716e-07, 0.5695038, 0)
 
 [node name="tutorialtxt_06" type="Label3D" parent="Area003/Farolito_Open" unique_id=1823471731]
 transform = Transform3D(-0.8, -1.2079664e-07, 0, 1.2079664e-07, -0.8, 0, 0, 0, 0.8, -0.0010437965, 0.8826027, 0.15848303)
@@ -1566,6 +1573,21 @@ transform = Transform3D(0.3999998, -2.386514e-09, -6.434857e-08, 5.6461396e-09, 
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
 frame = 16
+
+[node name="EndPicture" type="Sprite3D" parent="Area003" unique_id=488448350]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 1.4000001, 2, -3.968405)
+texture = ExtResource("28_swpjm")
+
+[node name="interactable_picture" parent="Area003/EndPicture" unique_id=377943365 node_paths=PackedStringArray("area_3d") instance=ExtResource("20_8hd5e")]
+area_3d = NodePath("../Area3D")
+
+[node name="Area3D" type="Area3D" parent="Area003/EndPicture" unique_id=744975052]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/EndPicture/Area3D" unique_id=1662759150]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.22177124, 3.0621128)
+shape = SubResource("BoxShape3D_0q7x7")
 
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 

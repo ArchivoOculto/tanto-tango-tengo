@@ -17,7 +17,6 @@ class_name Player
 
 @export_group("Velocidad de Acciones")
 @export var attack_move_speed_multiplier: float = 0.3
-@export var block_move_speed_multiplier: float = 0.4
 
 @export_group("Salto y Gravedad")
 @export var jump_velocity: float = 2.5
@@ -69,11 +68,6 @@ func _physics_process(delta: float) -> void:
 func take_damage(amount: float, knockback_impulse: Vector3 = Vector3.ZERO) -> void:
 	if is_invulnerable:
 		return
-
-	# Si está bloqueando, reducimos el impacto
-	if combat_controller and combat_controller.is_blocking():
-		amount *= 0.2
-		knockback_impulse *= 0.3
 
 	current_health -= amount
 
@@ -169,17 +163,9 @@ func _handle_jump() -> void:
 
 
 func _handle_movement(delta: float) -> void:
-	if combat_controller and combat_controller.is_taunting():
-		velocity.x = lerp(velocity.x, 0.0, friction * delta)
-		velocity.z = lerp(velocity.z, 0.0, friction * delta)
-		return
-
 	var current_speed_mult: float = 1.0
-	if combat_controller:
-		if combat_controller.is_attacking():
-			current_speed_mult = attack_move_speed_multiplier
-		elif combat_controller.is_blocking():
-			current_speed_mult = block_move_speed_multiplier
+	if combat_controller and combat_controller.is_attacking():
+		current_speed_mult = attack_move_speed_multiplier
 
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 

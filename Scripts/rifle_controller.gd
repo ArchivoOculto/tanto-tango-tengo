@@ -3,22 +3,54 @@ class_name RifleController
 
 ## Modo fusil en primera persona.
 ##
-## Al activarlo:
-##  - el jugador queda fijo en su lugar (sin movimiento ni combate cuerpo a cuerpo),
-##  - CameraDirector le cede la vista a una Camera3D ubicada en la cabeza,
-##  - aparece una mirilla en el centro de la pantalla,
-##  - el stick derecho (acciones aim_*) mueve la puntería,
-##  - "rifle_shoot" dispara un rayo desde el centro de la cámara.
+## Flujo (máquina de estados):
+##   IDLE --(rifle_toggle)--> ENTERING --(cámara anclada)--> AIMING --(soltar/tocar)--> EXITING --> IDLE
+##
+## ENTERING: el jugador se congela, empieza la pose "player_guitar" (se mantiene mientras
+##           dure todo el modo), aparecen las barras 4:3 y la cámara se desliza con suavizado
+##           desde donde estaba la GameCamera hasta anclarse en la cabeza.
+## AIMING:   la cámara sigue a la cabeza, aparece la mirilla y el stick derecho (aim_*)
+##           mueve la puntería. "rifle_shoot" dispara un rayo desde el centro de la cámara.
+## EXITING:  las barras se retraen y la cámara vuelve deslizándose (duración fija) hasta la
+##           GameCamera; recién ahí el jugador recupera el control.
+##
+## Las cinemáticas tienen prioridad: si CameraDirector.force_zone() se llama (puerta,
+## alcantarilla...), el modo fusil se cierra solo con una salida rápida, y no se puede
+## volver a entrar hasta que la cinemática termine.
 ##
 ## Va como hijo directo del Player (ver Scenes/player.tscn).
 
+## Empieza la transición de entrada (la cámara todavía viaja hacia la cabeza).
 signal rifle_mode_entered
+## La cámara ya está anclada en la cabeza: desde acá se puede apuntar y disparar.
+signal rifle_aim_ready
+## La vista ya volvió a la GameCamera y el jugador recuperó el control.
 signal rifle_mode_exited
 ## Útil para conectar sonido, partículas, marcas de impacto, munición, etc.
 signal shot_fired(hit_position: Vector3, collider: Object)
 
+enum State { IDLE, ENTERING, AIMING, EXITING }
+
 @export_group("Activación")
-@export var hold_to_aim: bool = false ## true = mantener el botón; false = un toque entra, otro toque sale
+@export var hold_to_aim: bool = true ## true = mantener el botón; false = un toque entra, otro toque sale
+
+@export_group("Transición de cámara")
+## Entrada: qué tan rápido se desliza la cámara hacia la cabeza (mayor = más rápido).
+## Mismo estilo de suavizado que follow_smoothing de las zonas.
+@export var enter_smoothing: float = 6.0
+## Entrada: distancia (unidades de mundo) y ángulo a partir de los cuales la cámara se considera "llegada".
+@export var arrive_distance: float = 0.02
+@export_range(0.1, 10.0) var arrive_angle_degrees: float = 1.5
+## Entrada: red de seguridad; si por algo no llega, se ancla igual pasado este tiempo (segundos).
+@export var max_transition_time: float = 1.5
+## Salida: duración fija del regreso a la GameCamera (llega siempre exacta, aunque la GameCamera siga moviéndose).
+@export var exit_duration: float = 0.5
+## Salida forzada por una cinemática: más corta para que el plano de la cinemática se vea a tiempo.
+@export var cutscene_exit_duration: float = 0.2
+
+@export_group("Formato 4:3")
+@export var use_4_3: bool = true ## Recorta la pantalla a 4:3 con barras negras mientras dure el modo
+@export var letterbox_duration: float = 0.6
 
 @export_group("Puntería")
 @export var aim_speed_degrees: float = 100.0 ## Velocidad con el stick al máximo (grados/seg)
@@ -35,8 +67,7 @@ signal shot_fired(hit_position: Vector3, collider: Object)
 ## Se aplica en los ejes de la cámara (x = derecha, y = arriba, z = hacia atrás).
 @export var eye_offset: Vector3 = Vector3(0.0, 0.0, 0.0)
 @export var camera_near: float = 0.01 ## El personaje es pequeño: near bajo para no recortar la escena
-@export var hide_head_props: bool = true ## Oculta calavera/pucho mientras se apunta
-@export var hide_guitar: bool = true
+@export var hide_head_props: bool = true ## Oculta calavera/pucho una vez que la cámara está en la cabeza
 
 @export_group("Disparo")
 @export var damage: float = 34.0
@@ -53,23 +84,29 @@ signal shot_fired(hit_position: Vector3, collider: Object)
 @export var reticle_radius: float = 7.0
 @export var reticle_gap: float = 3.0
 @export var reticle_tick_length: float = 5.0
+@export var reticle_fade_time: float = 0.2
 
 var _player: Player
 var _camera: Camera3D
 var _eye_anchor: Node3D
 var _reticle_layer: CanvasLayer
 var _reticle: Control
+var _reticle_tween: Tween
 
-var _active: bool = false
+var _state: State = State.IDLE
 var _yaw: float = 0.0
 var _pitch: float = 0.0
 var _yaw_center: float = 0.0
 var _cooldown_left: float = 0.0
 var _reticle_kick: float = 0.0 ## 0..1, se anima al disparar
+var _transition_time: float = 0.0
+var _exit_duration_now: float = 0.5
+var _exit_from: Transform3D
+var _exit_fov_from: float = 65.0
 
 # Estado previo que hay que restaurar al salir
+var _head_props_hidden: bool = false
 var _prev_face_visible: bool = true
-var _prev_guitar_visible: bool = true
 var _prev_combat_processing: bool = true
 
 
@@ -87,26 +124,118 @@ func _ready() -> void:
 
 	_build_camera()
 	_build_reticle()
+	CameraDirector.zone_forced.connect(_on_zone_forced)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("rifle_toggle"):
-		if _active:
-			if not hold_to_aim:
-				exit_rifle_mode()
-		else:
+		if _state == State.IDLE or _state == State.EXITING:
 			enter_rifle_mode()
-	elif hold_to_aim and _active and event.is_action_released("rifle_toggle"):
-		exit_rifle_mode()
+		elif not hold_to_aim:
+			exit_rifle_mode()
+	elif hold_to_aim and event.is_action_released("rifle_toggle"):
+		if _state == State.ENTERING or _state == State.AIMING:
+			exit_rifle_mode()
 
 
 func _process(delta: float) -> void:
-	if not _active:
+	match _state:
+		State.ENTERING:
+			_process_entering(delta)
+		State.AIMING:
+			_process_aiming(delta)
+		State.EXITING:
+			_process_exiting(delta)
+
+
+# ---------------------------------------------------------------- ESTADO PÚBLICO
+
+func is_active() -> bool:
+	return _state != State.IDLE
+
+
+func is_aiming() -> bool:
+	return _state == State.AIMING
+
+
+func can_enter() -> bool:
+	if _state != State.IDLE or _player == null:
+		return false
+	# No entrar si otro sistema (ej. inspeccionar un cuadro) frenó al jugador,
+	# ni en pleno salto/caída, ni durante una cinemática (tiene prioridad).
+	if not _player.is_physics_processing() or not _player.is_on_floor():
+		return false
+	if CameraDirector.is_first_person() or CameraDirector.has_forced_zone():
+		return false
+	return true
+
+
+# ---------------------------------------------------------------- ENTRAR
+
+func enter_rifle_mode() -> void:
+	# Re-entrada mientras todavía está volviendo: se retoma desde donde está la cámara.
+	if _state == State.EXITING:
+		if CameraDirector.has_forced_zone():
+			return
+		_state = State.ENTERING
+		_transition_time = 0.0
+		_player.anim_controller.enter_rifle_pose()
+		CameraDirector.set_first_person_letterbox(use_4_3, letterbox_duration)
 		return
 
+	if not can_enter():
+		return
+
+	_freeze_player()
+
+	# Puntería inicial: hacia donde mira el personaje
+	var facing: Vector3 = _player.visuals.global_transform.basis.z # el modelo mira hacia +Z local
+	_yaw = atan2(facing.x, facing.z)
+	_yaw_center = _yaw
+	_pitch = 0.0
+	_cooldown_left = 0.0
+	_transition_time = 0.0
+
+	# La cámara del fusil arranca exactamente donde está la GameCamera (sin salto)
+	var game_cam: Camera3D = _get_game_camera()
+	if game_cam:
+		_camera.global_transform = game_cam.global_transform.orthonormalized()
+		_camera.fov = game_cam.fov
+	else:
+		_camera.global_transform = _head_transform()
+		_camera.fov = field_of_view
+
+	_state = State.ENTERING
+	_player.anim_controller.enter_rifle_pose() # "player_guitar" durante todo el modo
+	CameraDirector.enter_first_person(_camera, use_4_3, letterbox_duration)
+	rifle_mode_entered.emit()
+
+
+func _process_entering(delta: float) -> void:
+	_transition_time += delta
+	var target: Transform3D = _head_transform()
+	_blend_camera_toward(target, field_of_view, enter_smoothing, delta)
+
+	if _camera_arrived(target, field_of_view) or _transition_time >= max_transition_time:
+		_finish_enter(target)
+
+
+func _finish_enter(target: Transform3D) -> void:
+	_state = State.AIMING
+	_camera.global_transform = target
+	_camera.fov = field_of_view
+	_hide_head_props()
+	_show_reticle()
+	rifle_aim_ready.emit()
+
+
+# ---------------------------------------------------------------- APUNTAR
+
+func _process_aiming(delta: float) -> void:
 	_cooldown_left = maxf(_cooldown_left - delta, 0.0)
 	_update_aim(delta)
-	_update_camera_transform()
+	_camera.global_transform = _head_transform()
+	_set_body_yaw(_yaw) # el cuerpo acompaña el giro horizontal
 
 	if Input.is_action_just_pressed("rifle_shoot"):
 		_try_fire()
@@ -115,96 +244,6 @@ func _process(delta: float) -> void:
 		_reticle_kick = maxf(_reticle_kick - delta * 6.0, 0.0)
 		_reticle.queue_redraw()
 
-
-# ---------------------------------------------------------------- ENTRAR / SALIR
-
-func can_enter() -> bool:
-	if _active or _player == null:
-		return false
-	# No entrar si otro sistema (ej. inspeccionar un cuadro) frenó al jugador,
-	# ni en pleno salto/caída.
-	if not _player.is_physics_processing() or not _player.is_on_floor():
-		return false
-	if CameraDirector.is_first_person():
-		return false
-	return true
-
-
-func enter_rifle_mode() -> void:
-	if not can_enter():
-		return
-	_active = true
-
-	# --- Congelar al jugador (mismo patrón que interactable_picture.gd) ---
-	_player.velocity = Vector3.ZERO
-	if _player.combat_controller:
-		_player.combat_controller.interrupt_actions()
-		_prev_combat_processing = _player.combat_controller.is_processing()
-		_player.combat_controller.set_process(false)
-	if _player.anim_controller:
-		_player.anim_controller.update_locomotion(true, 0.0)
-	_player.set_physics_process(false)
-
-	# --- Apariencia en primera persona ---
-	if _eye_anchor and hide_head_props:
-		_prev_face_visible = _eye_anchor.visible
-		_eye_anchor.visible = false
-	var guitar: Node3D = _get_guitar()
-	if guitar and hide_guitar:
-		_prev_guitar_visible = guitar.visible
-		guitar.visible = false
-
-	# --- Puntería inicial: hacia donde mira el personaje ---
-	var facing: Vector3 = _player.visuals.global_transform.basis.z # el modelo mira hacia +Z local
-	_yaw = atan2(facing.x, facing.z)
-	_yaw_center = _yaw
-	_pitch = 0.0
-	_cooldown_left = 0.0
-	_update_camera_transform()
-
-	_reticle_layer.visible = true
-	CameraDirector.enter_first_person(_camera)
-	rifle_mode_entered.emit()
-
-
-func exit_rifle_mode() -> void:
-	if not _active:
-		return
-	_active = false
-
-	_reticle_layer.visible = false
-	CameraDirector.exit_first_person()
-
-	# El cuerpo queda mirando hacia donde se estaba apuntando
-	if is_instance_valid(_player):
-		_set_body_yaw(_yaw)
-
-	if _eye_anchor and hide_head_props:
-		_eye_anchor.visible = _prev_face_visible
-	var guitar: Node3D = _get_guitar()
-	if guitar and hide_guitar:
-		guitar.visible = _prev_guitar_visible
-
-	if is_instance_valid(_player):
-		_player.set_physics_process(true)
-		if _player.combat_controller:
-			_player.combat_controller.set_process(_prev_combat_processing)
-
-	rifle_mode_exited.emit()
-
-
-func is_active() -> bool:
-	return _active
-
-
-func _exit_tree() -> void:
-	# Por si el jugador se libera (cambio de escena / warp) con el modo activo.
-	if _active:
-		_active = false
-		CameraDirector.exit_first_person()
-
-
-# ---------------------------------------------------------------- PUNTERÍA
 
 func _update_aim(delta: float) -> void:
 	# Get_vector ya aplica la zona muerta configurada en cada acción.
@@ -236,16 +275,146 @@ func _aim_direction() -> Vector3:
 	).normalized()
 
 
-func _update_camera_transform() -> void:
+## Dónde tiene que estar la cámara cuando está anclada en la cabeza.
+func _head_transform() -> Transform3D:
 	var eye_pos: Vector3 = _player.global_position + Vector3.UP * (_player.get_body_height() * 0.5)
 	if is_instance_valid(_eye_anchor):
 		eye_pos = _eye_anchor.global_position
 
 	var aim_basis: Basis = Basis.looking_at(_aim_direction(), Vector3.UP)
-	_camera.global_transform = Transform3D(aim_basis, eye_pos + aim_basis * eye_offset)
+	return Transform3D(aim_basis, eye_pos + aim_basis * eye_offset)
 
-	# El cuerpo acompaña el giro horizontal (se ve al salir del modo y en sombras/reflejos)
-	_set_body_yaw(_yaw)
+
+# ---------------------------------------------------------------- SALIR
+
+## 'fast' = salida forzada por una cinemática (más corta).
+func exit_rifle_mode(fast: bool = false) -> void:
+	if _state == State.IDLE:
+		return
+
+	if _state == State.EXITING:
+		if fast and _exit_duration_now > cutscene_exit_duration:
+			_begin_exit_blend(cutscene_exit_duration) # re-parte desde donde está, sin saltos
+		return
+
+	_state = State.EXITING
+	_begin_exit_blend(cutscene_exit_duration if fast else exit_duration)
+
+	# Todo lo visual se suelta al empezar la salida; el control del jugador, al terminar.
+	_hide_reticle()
+	_restore_head_props()
+	_player.anim_controller.exit_rifle_pose()
+	CameraDirector.set_first_person_letterbox(false, letterbox_duration)
+
+
+func _begin_exit_blend(duration: float) -> void:
+	_transition_time = 0.0
+	_exit_duration_now = maxf(duration, 0.01)
+	_exit_from = _camera.global_transform
+	_exit_fov_from = _camera.fov
+
+
+func _process_exiting(delta: float) -> void:
+	_transition_time += delta
+	var game_cam: Camera3D = _get_game_camera()
+	if game_cam == null:
+		_finish_exit()
+		return
+
+	# Progreso con desaceleración (mismo aire que el suavizado de entrada) que llega a 1
+	# exacto en 'duration'. El objetivo es la GameCamera EN VIVO: sigue moviéndose hacia
+	# su zona (o hacia la cinemática) mientras volvemos, y al llegar no hay salto.
+	var t: float = clampf(_transition_time / _exit_duration_now, 0.0, 1.0)
+	var weight: float = 1.0 - pow(1.0 - t, 3.0)
+
+	var target: Transform3D = game_cam.global_transform.orthonormalized()
+	var blended_rot: Quaternion = _exit_from.basis.get_rotation_quaternion().slerp(
+		target.basis.get_rotation_quaternion(), weight)
+	_camera.global_transform = Transform3D(Basis(blended_rot), _exit_from.origin.lerp(target.origin, weight))
+	_camera.fov = lerpf(_exit_fov_from, game_cam.fov, weight)
+
+	if t >= 1.0:
+		_finish_exit()
+
+
+func _finish_exit() -> void:
+	_state = State.IDLE
+	CameraDirector.exit_first_person()
+
+	if is_instance_valid(_player):
+		_player.set_physics_process(true)
+		if _player.combat_controller:
+			_player.combat_controller.set_process(_prev_combat_processing)
+
+	rifle_mode_exited.emit()
+
+
+func _on_zone_forced(_zone: CameraZone3D) -> void:
+	# Una cinemática (puerta, alcantarilla...) manda: cerramos el modo fusil para que se vea.
+	if _state != State.IDLE:
+		exit_rifle_mode(true)
+
+
+func _exit_tree() -> void:
+	# Por si el jugador se libera (cambio de escena / warp) con el modo activo.
+	if _state != State.IDLE:
+		_state = State.IDLE
+		CameraDirector.exit_first_person()
+
+
+# ---------------------------------------------------------------- CÁMARA
+
+## ENTRADA: acerca la cámara a 'target' con suavizado exponencial (independiente del framerate).
+func _blend_camera_toward(target: Transform3D, target_fov: float, smoothing: float, delta: float) -> void:
+	var weight: float = 1.0 - exp(-smoothing * delta)
+	var current: Transform3D = _camera.global_transform
+	var blended_rot: Quaternion = current.basis.get_rotation_quaternion().slerp(
+		target.basis.get_rotation_quaternion(), weight)
+	_camera.global_transform = Transform3D(Basis(blended_rot), current.origin.lerp(target.origin, weight))
+	_camera.fov = lerpf(_camera.fov, target_fov, weight)
+
+
+func _camera_arrived(target: Transform3D, target_fov: float) -> bool:
+	var current: Transform3D = _camera.global_transform
+	if current.origin.distance_to(target.origin) > arrive_distance:
+		return false
+	var angle: float = current.basis.get_rotation_quaternion().angle_to(target.basis.get_rotation_quaternion())
+	return angle <= deg_to_rad(arrive_angle_degrees) and absf(_camera.fov - target_fov) < 0.5
+
+
+func _get_game_camera() -> Camera3D:
+	return get_tree().get_first_node_in_group("game_camera") as Camera3D
+
+
+# ---------------------------------------------------------------- JUGADOR / APARIENCIA
+
+func _freeze_player() -> void:
+	_player.velocity = Vector3.ZERO
+	if _player.combat_controller:
+		_player.combat_controller.interrupt_actions()
+		_prev_combat_processing = _player.combat_controller.is_processing()
+		_player.combat_controller.set_process(false)
+	_player.set_physics_process(false)
+
+
+func _hide_head_props() -> void:
+	if _eye_anchor and hide_head_props and not _head_props_hidden:
+		_prev_face_visible = _eye_anchor.visible
+		_eye_anchor.visible = false
+		_head_props_hidden = true
+
+
+func _restore_head_props() -> void:
+	if _eye_anchor and _head_props_hidden:
+		_eye_anchor.visible = _prev_face_visible
+		_head_props_hidden = false
+
+
+## Orienta el modelo hacia 'yaw' (mundo). Usa rotación local, igual que Player._rotate_visuals_towards,
+## para no tocar la escala del modelo.
+func _set_body_yaw(yaw: float) -> void:
+	if _player.visuals:
+		_player.visuals.rotation.y = yaw - _player.global_rotation.y
 
 
 # ---------------------------------------------------------------- DISPARO
@@ -292,18 +461,7 @@ func _apply_hit(collider: Object, direction: Vector3) -> void:
 		target.take_damage(damage, knockback)
 
 
-## Orienta el modelo hacia 'yaw' (mundo). Usa rotación local, igual que Player._rotate_visuals_towards,
-## para no tocar la escala del modelo.
-func _set_body_yaw(yaw: float) -> void:
-	if _player.visuals:
-		_player.visuals.rotation.y = yaw - _player.global_rotation.y
-
-
 # ---------------------------------------------------------------- SETUP INTERNO
-
-func _get_guitar() -> Node3D:
-	return _player.get_node_or_null("Visuals/Armature/Skeleton3D/righthand_grip") as Node3D
-
 
 func _build_camera() -> void:
 	_camera = Camera3D.new()
@@ -325,6 +483,21 @@ func _build_reticle() -> void:
 	_reticle.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_reticle.draw.connect(_draw_reticle)
 	_reticle_layer.add_child(_reticle)
+
+
+func _show_reticle() -> void:
+	if _reticle_tween and _reticle_tween.is_valid():
+		_reticle_tween.kill()
+	_reticle.modulate.a = 0.0
+	_reticle_layer.visible = true
+	_reticle_tween = create_tween()
+	_reticle_tween.tween_property(_reticle, "modulate:a", 1.0, reticle_fade_time)
+
+
+func _hide_reticle() -> void:
+	if _reticle_tween and _reticle_tween.is_valid():
+		_reticle_tween.kill()
+	_reticle_layer.visible = false
 
 
 func _draw_reticle() -> void:

@@ -5,10 +5,13 @@ const ANIM_IDLE: StringName = &"player_idle"
 const ANIM_WALK: StringName = &"player_walk"
 const ANIM_JUMP: StringName = &"player_jump"
 const ANIM_ATTACK: StringName = &"player_attack"
-const ANIM_BLOCK: StringName = &"player_block"
-const ANIM_GUITAR: StringName = &"player_guitar"
+## Pose que se mantiene durante todo el modo fusil (ver RifleController).
+const ANIM_RIFLE: StringName = &"player_guitar"
 
 @export var walk_speed_threshold: float = 0.25
+@export_group("Modo fusil")
+@export var rifle_pose_blend: float = 0.25 ## Segundos de mezcla al entrar/salir de la pose del fusil
+@export var rifle_shows_guitar_prop: bool = true ## Muestra la guitarra "tocando" (Guitar_playing) mientras dura la pose
 
 var anim_player: AnimationPlayer
 var combat_controller: CombatController
@@ -18,12 +21,14 @@ var combat_controller: CombatController
 var normal_guitar: Node3D
 var playing_guitar: Node3D
 
+var _rifle_pose_active: bool = false
+
 
 func _ready() -> void:
 	if player:
 		anim_player = player.get_node_or_null("Visuals/AnimationPlayer")
 		combat_controller = player.get_node_or_null("CombatController")
-		
+
 		# Nodos de las guitarras dentro del Skeleton3D
 		normal_guitar = player.get_node_or_null("Visuals/Armature/Skeleton3D/righthand_grip")
 		playing_guitar = player.get_node_or_null("Visuals/Armature/Skeleton3D/Guitar_playing_grip")
@@ -32,20 +37,8 @@ func _ready() -> void:
 		anim_player.animation_finished.connect(_on_animation_finished)
 
 	if combat_controller:
-		combat_controller.attack_started.connect(func(): 
-			_set_guitar_mode_playing(false)
+		combat_controller.attack_started.connect(func():
 			if anim_player: anim_player.play(ANIM_ATTACK, -1, 2)
-		)
-		combat_controller.block_started.connect(func(): 
-			_set_guitar_mode_playing(false)
-			_play_if_not_playing(ANIM_BLOCK)
-		)
-		combat_controller.taunt_started.connect(func(): 
-			_set_guitar_mode_playing(true)
-			_play_if_not_playing(ANIM_GUITAR)
-		)
-		combat_controller.taunt_stopped.connect(func(): 
-			_set_guitar_mode_playing(false)
 		)
 
 
@@ -54,18 +47,11 @@ func update_locomotion(is_on_floor: bool, horizontal_speed: float) -> void:
 		return
 
 	var is_attacking: bool = combat_controller and combat_controller.is_attacking()
-	var is_taunting: bool = combat_controller and combat_controller.is_taunting()
-
-	if is_attacking or is_taunting:
+	if is_attacking or _rifle_pose_active:
 		return
 
 	if not is_on_floor:
 		_play_if_not_playing(ANIM_JUMP)
-		return
-
-	var is_blocking: bool = combat_controller and combat_controller.is_blocking()
-	if is_blocking:
-		_play_if_not_playing(ANIM_BLOCK)
 		return
 
 	if horizontal_speed > walk_speed_threshold:
@@ -75,22 +61,39 @@ func update_locomotion(is_on_floor: bool, horizontal_speed: float) -> void:
 
 
 func play_jump() -> void:
-	_set_guitar_mode_playing(false)
 	if anim_player:
 		anim_player.seek(0.0, true)
 		anim_player.play(ANIM_JUMP)
 
 
-func _set_guitar_mode_playing(is_playing: bool) -> void:
+## Empieza la pose del fusil y la mantiene hasta exit_rifle_pose().
+func enter_rifle_pose() -> void:
+	_rifle_pose_active = true
+	_set_rifle_props(true)
+	_play_if_not_playing(ANIM_RIFLE, rifle_pose_blend)
+
+
+## Termina la pose del fusil y vuelve a la guitarra de combate con un idle.
+func exit_rifle_pose() -> void:
+	_rifle_pose_active = false
+	_set_rifle_props(false)
+	_play_if_not_playing(ANIM_IDLE, rifle_pose_blend)
+
+
+func is_rifle_pose_active() -> bool:
+	return _rifle_pose_active
+
+
+func _set_rifle_props(rifle_active: bool) -> void:
 	if normal_guitar:
-		normal_guitar.visible = not is_playing
+		normal_guitar.visible = not rifle_active
 	if playing_guitar:
-		playing_guitar.visible = is_playing
+		playing_guitar.visible = rifle_active and rifle_shows_guitar_prop
 
 
-func _play_if_not_playing(anim_name: StringName) -> void:
+func _play_if_not_playing(anim_name: StringName, blend: float = -1.0) -> void:
 	if anim_player and anim_player.current_animation != anim_name:
-		anim_player.play(anim_name)
+		anim_player.play(anim_name, blend)
 
 
 func _on_animation_finished(anim_name: StringName) -> void:

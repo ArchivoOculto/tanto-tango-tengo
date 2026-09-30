@@ -2,10 +2,10 @@ extends Node
 
 ## Autoload (Project Settings > Autoload, nombre "LetterboxController").
 ##
-## Escucha CameraDirector.zone_changed y anima barras negras que recortan la
-## pantalla a una relación de aspecto 4:3 cuando la CameraZone3D activa tiene
-## 'force_4_3 = true'. Al pasar de una zona 4:3 a una que no lo es, anima la
-## transición inversa.
+## Escucha CameraDirector.letterbox_changed y anima barras negras que recortan
+## la pantalla a una relación de aspecto 4:3. CameraDirector decide cuándo
+## corresponde (zona activa con 'force_4_3 = true' o modo fusil activo); este
+## script solo las dibuja.
 ##
 ## Las barras CRECEN desde el borde de la pantalla hacia el centro (o se
 ## retraen desde el centro hacia el borde) — no se deslizan desde afuera de
@@ -16,7 +16,6 @@ extends Node
 
 const TARGET_ASPECT: float = 4.0 / 3.0
 
-@export var default_transition_duration: float = 0.6 ## Se usa solo si la zona relevante no tiene su propio 'aspect_transition_duration'
 @export var bar_color: Color = Color.BLACK
 
 var _is_active: bool = false
@@ -30,26 +29,13 @@ var _bar_bottom: ColorRect
 
 func _ready() -> void:
 	_build_bars()
-	CameraDirector.zone_changed.connect(_on_zone_changed)
+	CameraDirector.letterbox_changed.connect(_on_letterbox_changed)
 	get_viewport().size_changed.connect(_on_viewport_resized)
 
 
-func _on_zone_changed(previous_zone: CameraZone3D, new_zone: CameraZone3D) -> void:
-	var should_be_active: bool = new_zone != null and new_zone.force_4_3
-	if should_be_active == _is_active:
-		return
-
-	_is_active = should_be_active
-
-	# Al activar usamos la duración de la zona nueva; al desactivar, la de la
-	# zona que se está abandonando (puede haber sido liberada por un cambio
-	# de escena, por eso el chequeo de validez).
-	var relevant_zone: CameraZone3D = new_zone if should_be_active else previous_zone
-	var duration: float = default_transition_duration
-	if is_instance_valid(relevant_zone):
-		duration = relevant_zone.aspect_transition_duration
-
-	_animate_bars(_is_active, duration)
+func _on_letterbox_changed(active: bool, duration: float) -> void:
+	_is_active = active
+	_animate_bars(active, duration)
 
 
 func _on_viewport_resized() -> void:
