@@ -579,6 +579,78 @@ emission = Color(0.5540059, 0.12935098, 0.4418329, 1)
 material = SubResource("StandardMaterial3D_lnws3")
 size = Vector3(1, 0.2, 7)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_swpjm"]
+resource_name = "rusted_pipe"
+cull_mode = 2
+albedo_texture = ExtResource("20_gsbiq")
+texture_filter = 2
+metadata/_gltf_primary_texture_coord = 0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oo88h"]
+resource_name = "fence"
+transparency = 4
+cull_mode = 2
+albedo_texture = ExtResource("21_7miuv")
+texture_filter = 2
+metadata/_gltf_primary_texture_coord = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_tsagk"]
+_surfaces = [{
+"aabb": AABB(-5.7896177e-05, -0.76048666, -0.020052142, 1.0347134, 1.2502706, 0.04525916),
+"format": 34896613377,
+"index_count": 336,
+"index_data": PackedByteArray("AAABAAIAAAADAAEABAAAAAIAAwAAAAUABQAAAAQABAACAAYABQAEAAcACAAEAAYABwAEAAgACQAFAAcAAwAFAAkABwAIAAoACQAHAAsACwAHAAoACgAIAAwADQAJAAsACAAGAA4ADAAIAA4ACwAKAA8ACgAMABAADwAKABAAEQALAA8AEQANAAsADwAQABIAEwARAA8AEwAPABIAEgAQABQAEAAMABQAFQATABIAFQASABQAEwAWABEAEQAXAA0AEQAWABcAEwAYABYAFQAYABMAFgAZABcAGAAaABYAFgAaABkAGAAbABoAFQAbABgAGQAaABwAGgAbAB0AGgAdABwAGwAeAB0AGwAVAB4AHwAcAB0AFwAZACAAGQAcACEAIAAZACEAFwAgACIADQAXACIADQAiACMADQAjAAkAIwADAAkAIwAiACQAIwAkAAMAIgAgACQAIAAhACUAJAAgACUAJgAhABwAJgAcAB8AJwAlACEAJwAhACYAJAAlACgAKAAlACcAKQAnACYAKAAnACkAKgAmAB8AKQAmACoAFQAkACgAJAAVABQAJAAUAAMAFQAoAB4AAwAUACsAAwArAAEAHgAoAAEAHgABACsAKAApACwAKAAsAAEAKQAtACwAKQAqAC0AAQAsAC4ALgAsAC0AAQAuAAIAAgAuAC8ALgAtAC8AAgAvAAYAKgAwAC0ALwAtADAABgAvADEALwAwADEABgAxAA4AKgAyADAAKgAfADIAMQAwADMAMgAzADAADgAxADQAMQAzADQADgA0ADUADAAOADUAFAAMADUAFAA1ACsANQA0ACsANAAzACsANgArADMAMgA2ADMANgAeACsAMgA3ADYANgA3AB4AMgAfADcANwAdAB4AHwAdADcA"),
+"name": "rusted_pipe",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 56,
+"vertex_data": PackedByteArray("zQMiBgAAAACEB835NDIAAM0DzfkAAAAAhAciBjQyAAALACIGdDAAAD0EmQO3AAAACwDN+XQwAAAWAcABQjEAAAAAIgYckwAAigcXAxkCAAAGAcMB6ZMAAIQHAABtMwAAtwMiBlHFAABt+AAA02sAAAAAzfkckwAAeQcAABaWAAAbBKEDBcYAAGL4AAB7zgAAcwcXA2rHAABc+BcD0P8AAHkHIgbclAAAevgiBkfNAADf/r4BU88AAOT+uQGqbAAAx/uiA///AAD//yIGX2wAAPP/IgYHzwAAMfwiBnz/AADz/835B88AADH8zfl8/wAAevjN+UfNAADx/jP+y84AAEf8IgYrOgAA///N+V9sAADQ+5gDrToAAHP4FwN/OgAAhfgiBp9qAABH/M35KzoAAP3+M/4ibAAA4/tZ/BM6AACF+M35n2oAAIv45fxLOQAAhfj9/59qAAB5B8353JQAAIoH5/zfAAAAggf//zMyAADlBP77QQAAADoCLf73MAAAdwf//9yUAAAvAi3+n5MAAHr4/f9HzQAAcwfn/DDGAADPBP77ksUAALcDzflRxQAAdPjl/Jz+AADM+1n8ZP8AAA==")
+}, {
+"aabb": AABB(0.0028577265, -0.73963654, -0.0046872133, 1.0221578, 1.2156556, 0.010466524),
+"format": 34896613377,
+"index_count": 6,
+"index_data": PackedByteArray("AAABAAIAAAADAAEA"),
+"name": "fence",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray("AAD//wAAAAD//wAA/v8AAP///////wAAAAAAAAAAAAA=")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_pbqc1"]
+resource_name = "gate_Cylinder_005"
+_surfaces = [{
+"aabb": AABB(-5.7896177e-05, -0.76048666, -0.020052142, 1.0347134, 1.2502706, 0.04525916),
+"attribute_data": PackedByteArray("jv9CEQAAJh0AAEIRjv8mHY7/Jh0AAAopAAAmHY7/CimO/wopAADvNAAACimO/+40jv/uNAAA00AAAO80jv/TQI7/00AAALdMAADTQI7/t0yO/14FAABCEQAAXgWO/0IRj/5XWgAAL2YAAFdaj/4vZo/+L2YAAAdyAAAvZo/+B3KP/gdyAADgfQAAB3KP/uB9j/7gfQAAuIkAAOB9j/64iY/+uIkAAJCVAAC4iY/+kJWP/n5OAABXWgAAfk6P/ldawAJh6///zNb8/2LrwALM1sACzNb//zbF///M1sACNcXAAjXF/P+gsP//NsXAAqCwwAKgsPz/BJz8/6CwwAIKnMACCpz8/22K/P8EnMACdIrAAvb//P9i6/z////AAmHrHwElov7/y43//yWiBQHLjQUBy43+/xV8/v/LjQUBFXwFARV8//+KZ/7/FXwfAYpnHwGKZ///0VL//4pnHwHRUh8B0VL+/xtB///RUh8BG0EfAd62//8lov7/3rYfASWiRq8ByOOwKccRsJDQIrAHpu+wfK9Kr5yuSq+crsuxZLd+rla377B8r36uVrfHsU6/fq5Av8uxZLd+rkC/47Apx0avAcjHsU6/TwY94AAAE9BXBirQAAAm4CQEgu8AACbgTwY94JQAEPAgAf//lAAQ8CQEgu87BMnAmwAtwD4BS7BXBirQmwAtwDsEycAAABPQ/6ugrnquTrc0q1u3la11rzSrW7d+rje/NKtFv3quTrc0q0W/n60cxwOs+8d+rje/A6z7x5+tHMfUrJrQxKwHppWtda//q6CurqAlru2e4a0vnwemvaGtte2e4a2uoCWup565tcChl72nnrm1vaGttaeeor23oCvFp56ivcChl73wnnjFPJ9MzfCeeMW3oCvFGLVdv8uxc7cYtXO3y7Fdvxi1c7esspOvSLS9rsuxc7dItL2urLKTr3mzB6Z5s8jQrLI8x0i0EshItBLIy7Fdvxi1Xb+ssjzHS6JRzQWiecXOoy7FzqMrrgWi361Logem3KS3tQWi363OoyuuwKG3tdykob3Aobe13KS3tcChob3Ooy7FwKGhvdykob0FonnFNKsmvfunPLU0qzy1+6cmvRKqWswGqcDEo6rAxKOqoq0GqaKtEqoHpqOqwMT7pya9NKsmvQapwMQ0qzy1BqmiraOqoq37pzy1Op5Qx9qb276nntu+05xQx6ee8bbTnH2uOp59rtqb8rbOncXP05xQxzqeUMenntu+2pvytqee8bbam9u+Op59rtOcfa7OnQem"),
+"format": 34896613399,
+"index_count": 336,
+"index_data": PackedByteArray("AAABAAIAAAADAAEABAAFAAYABAAHAAUACAAJAAoACAALAAkADAANAA4ADAAPAA0AEAARABIAEAATABEAFAAVABYAFAAXABUAGAAZABoAGAAbABkAHAAdAB4AHAAfAB0AIAAhACIAIAAjACEAJAAlACYAJAAnACUAKAApACoAKAArACkALAAtAC4ALAAvAC0AMAAxADIAMAAzADEANAA1ADYANAA3ADUAOAA5ADoAOAA7ADkAPAA9AD4APAA/AD0AQABBAEIAQABDAEEARABFAEYARABHAEUASABJAEoASABLAEkATABNAE4ATABPAE0AUABRAFIAUABTAFEAVABVAFYAVABXAFUAWABZAFoAWABbAFkAXABdAF4AXABfAF0AYABhAGIAYwBkAGUAZgBnAGgAZgBpAGcAagBrAGwAagBtAGsAbgBvAHAAbgBxAG8AcgBzAHQAcgB1AHMAdgB3AHgAdgB5AHcAegB7AHwAfQB+AH8AgACBAIIAgACDAIEAhACFAIYAhACHAIUAiACJAIoAiACLAIkAjACNAI4AjACPAI0AkACRAJIAkwCUAJUAlgCXAJgAmQCaAJsAmQCcAJoAnQCeAJ8AnQCgAJ4AoQCiAKMAoQCkAKIApQCmAKcAqACpAKoAqACrAKkArACtAK4ArACvAK0AsACxALIAswC0ALUAtgC3ALgAtgC5ALcAugC7ALwAvQC+AL8AwADBAMIAwADDAMEAxADFAMYAxADHAMUAyADJAMoAyADLAMkAzADNAM4AzADPAM0A0ADRANIA0wDUANUA1gDXANgA1gDZANcA2gDbANwA2gDdANsA3gDfAOAA3gDhAN8A4gDjAOQA4gDlAOMA5gDnAOgA6QDqAOsA6QDsAOoA7QDuAO8A"),
+"material": SubResource("StandardMaterial3D_swpjm"),
+"name": "rusted_pipe",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 240,
+"vertex_data": PackedByteArray("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")
+}, {
+"aabb": AABB(0.0028577265, -0.73963654, -0.0046872133, 1.0221578, 1.2156556, 0.010466524),
+"attribute_data": PackedByteArray("SWL/////7X/+////SWLtfw=="),
+"format": 34896613399,
+"index_count": 6,
+"index_data": PackedByteArray("AAABAAIAAAADAAEA"),
+"material": SubResource("StandardMaterial3D_oo88h"),
+"name": "fence",
+"primitive": 3,
+"uv_scale": Vector4(2.2873142, 3.0698223, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray("AAD//wAA/////wAA/v//////////////AAAAAAAA//9Y//9/WP//f1j//39Y//9/")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_tsagk")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rxs28"]
+size = Vector3(1.0571289, 1.25, 0.1)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_swpjm"]
 size = Vector3(0.5, 0.1, 3.5)
 
@@ -597,7 +669,7 @@ size = Vector3(0.5, 0.37507325, 3.4666748)
 size = Vector3(0.5, 0.5, 0.1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cictk"]
-size = Vector3(1, 0.7, 7.0115843)
+size = Vector3(1, 0.7, 2.9470763)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
 size = Vector3(2.857, 1.75, 4.318)
@@ -608,7 +680,7 @@ size = Vector3(2.9, 0.9, 1.8)
 [sub_resource type="BoxShape3D" id="BoxShape3D_ph32v"]
 size = Vector3(3, 0.5, 2.6)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_rxs28"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_1e2yc"]
 size = Vector3(1, 0.7, 1.8)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4glq7"]
@@ -677,6 +749,7 @@ font_size = 20
 
 [node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_00" unique_id=2104623608]
 transform = Transform3D(0.3299997, -1.8626451e-09, -7.450581e-09, 3.7252903e-09, 0.33, 0, 4.8428774e-08, 1.4901161e-08, 0.32999998, 0.27962446, 0.05528319, 0.013437748)
+double_sided = false
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
 frame = 19
@@ -688,6 +761,7 @@ font_size = 20
 
 [node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_01" unique_id=1352845538]
 transform = Transform3D(0.4, -4.5154995e-09, -5.8701602e-08, 4.515506e-09, 0.4, 2.9802322e-08, 5.8701602e-08, -2.9802322e-08, 0.4, -0.27402306, -0.009861065, -0.0075241327)
+double_sided = false
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
 frame = 13
@@ -700,6 +774,7 @@ font_size = 20
 
 [node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_02" unique_id=1940308240]
 transform = Transform3D(0.4, -4.5155e-09, -5.8701605e-08, 4.515506e-09, 0.4, 2.9802322e-08, 5.8701605e-08, -2.9802322e-08, 0.4, -0.06984651, 0.058075547, 0.008051157)
+double_sided = false
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
 frame = 13
@@ -712,6 +787,7 @@ font_size = 20
 
 [node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_03" unique_id=1742586658]
 transform = Transform3D(0.40000033, -1.4901161e-08, -8.940697e-08, -2.9802322e-08, 0.40000015, 5.2154064e-08, 4.4703484e-08, -9.685755e-08, 0.40000033, -0.29420006, -0.013999999, -0.011000002)
+double_sided = false
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
 frame = 11
@@ -724,6 +800,7 @@ font_size = 20
 
 [node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_04" unique_id=323462989]
 transform = Transform3D(0.4, -5.7043508e-09, -6.4173946e-08, 2.9394869e-09, 0.39999995, 1.0430813e-07, 5.2241376e-08, -1.1920929e-07, 0.39999995, -0.4158515, -0.006055832, -0.0040340424)
+double_sided = false
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
 frame = 12
@@ -794,9 +871,6 @@ pixel_size = 0.0015
 texture = ExtResource("21_yplex")
 
 [node name="interactable_picture" parent="InteractiveProps/Puzzle_Hint" unique_id=1843131871 instance=ExtResource("20_8hd5e")]
-
-[node name="SpriteOnScreen" parent="InteractiveProps/Puzzle_Hint/interactable_picture" index="0" unique_id=678351855]
-visible = true
 
 [node name="RedCross0" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="1" unique_id=399167171]
 visible = false
@@ -1384,8 +1458,34 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.95, 2.5)
 script = ExtResource("9_bp2wt")
 camera_zone = NodePath("../CamZone_08")
 
-[node name="Alambrado2" parent="Area003" unique_id=282537929 instance=ExtResource("10_aaxyt")]
-transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 1.4, 1.43, 1.5)
+[node name="Alambrado2" type="Node3D" parent="Area003" unique_id=9941752]
+transform = Transform3D(-4.371139e-08, -0.75, 0, 1, -3.278354e-08, 0, 0, 0, 1, 1.4000001, 1.4199982, 1.5)
+
+[node name="StaticBody3D" type="AnimatableBody3D" parent="Area003/Alambrado2" unique_id=1527024757]
+collision_mask = 0
+script = ExtResource("6_rgptw")
+open_duration = 0.33
+close_duration = 0.33
+
+[node name="tutorialtxt_05" type="Label3D" parent="Area003/Alambrado2/StaticBody3D" unique_id=408231752]
+transform = Transform3D(-3.4969112e-08, 0.8000001, 0, -0.8000001, -3.4969123e-08, 0, 0, 0, 0.8, 0.34573364, 0, 0.009469986)
+text = "Mantener (     )
+para apuntar
+"
+font_size = 20
+
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/Alambrado2/StaticBody3D/tutorialtxt_05" unique_id=2056028231]
+transform = Transform3D(0.3999998, -2.386514e-09, -6.434857e-08, 5.646143e-09, 0.39999983, 1.0430813e-07, 5.378388e-08, -1.1920929e-07, 0.39999995, 0.2407937, 0.051158905, 0.010601044)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 14
+
+[node name="mesh" type="MeshInstance3D" parent="Area003/Alambrado2/StaticBody3D" unique_id=1451490340]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.52067566, 0.122849464, 0)
+mesh = SubResource("ArrayMesh_pbqc1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/Alambrado2/StaticBody3D" unique_id=935192024]
+shape = SubResource("BoxShape3D_rxs28")
 
 [node name="Base3" type="CollisionShape3D" parent="Area003" unique_id=1039426780]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 1.4000001, 1.5, -0.5)
@@ -1416,46 +1516,52 @@ force_4_3 = true
 aspect_transition_duration = 1.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_08" unique_id=1202697483]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -2.857561)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.82530713)
 shape = SubResource("BoxShape3D_cictk")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_08" unique_id=4186281]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019605637, 0.04032898, 0.6600423)
 
-[node name="Farolito" parent="Area003" unique_id=243146245 instance=ExtResource("5_0ac8p")]
-transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.4000001, 2.9629097, 0.004262883)
+[node name="CamZone_09" type="Area3D" parent="Area003" unique_id=660353260 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3853943, 1.9096718, -1.658556)
+script = ExtResource("3_hvvm8")
+camera_anchor = NodePath("CamAnchor")
+follow_smoothing = 5.0
+force_4_3 = true
+aspect_transition_duration = 1.5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area003/CamZone_09" unique_id=681987373]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015605688, 0.04032898, -0.82530713)
+shape = SubResource("BoxShape3D_cictk")
+debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
+
+[node name="CamAnchor" type="Marker3D" parent="Area003/CamZone_09" unique_id=200989737]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.013851166, -0.15967178, -2.539958)
+
+[node name="Farolito_Open" parent="Area003" unique_id=243146245 instance=ExtResource("5_0ac8p")]
+transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.4000001, 2.9629097, -0.9905249)
 initial_state = 0
 
-[node name="SpotLight3D" parent="Area003/Farolito" index="1" unique_id=1793264573]
-transform = Transform3D(-2, -7.642742e-15, 1.7484555e-07, -1.7484555e-07, 8.742278e-08, -2, 0, -2, -8.742278e-08, 0, 0.65254974, 0)
+[node name="FarolitoCamTrigger" type="Node" parent="Area003/Farolito_Open" unique_id=1121677615 node_paths=PackedStringArray("farolito", "target_cam_zone", "door")]
+script = ExtResource("8_lu725")
+farolito = NodePath("..")
+target_cam_zone = NodePath("../../CamZone_08")
+door = NodePath("../../Alambrado2/StaticBody3D")
+override_camera_speed = true
+custom_smoothing = 2.0
+door_action_delay = 0.0
 
-[node name="Farolito2" parent="Area003" unique_id=1869070748 instance=ExtResource("5_0ac8p")]
-transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.4000001, 2.9629097, -3.0002193)
+[node name="SpotLight3D" parent="Area003/Farolito_Open" index="2" unique_id=1793264573]
+transform = Transform3D(1, 2.6400943e-14, -3.019916e-07, -3.019916e-07, 1.3113416e-07, -1, 1.3200472e-14, 1, 1.3113416e-07, 4.7683716e-07, 0.5695038, 0)
 
-[node name="SpotLight3D" parent="Area003/Farolito2" index="1" unique_id=1793264573]
-transform = Transform3D(-2, -7.642742e-15, 1.7484555e-07, -1.7484555e-07, 8.742278e-08, -2, 0, -2, -8.742278e-08, 0, 0.65254974, 0)
-
-[node name="tutorialtxt_05" type="Label3D" parent="Area003" unique_id=175908993]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 1.3858044, 1.7790451, 1.5150523)
-text = "Mantener (     )
-para apuntar
-"
-font_size = 20
-
-[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/tutorialtxt_05" unique_id=871869179]
-transform = Transform3D(0.3999998, -2.386514e-09, -6.434857e-08, 5.646143e-09, 0.39999983, 1.0430813e-07, 5.378388e-08, -1.1920929e-07, 0.39999995, 0.2407937, 0.051158905, 0.010601044)
-sprite_frames = SubResource("SpriteFrames_2xxps")
-animation = &"buttons"
-frame = 14
-
-[node name="tutorialtxt_06" type="Label3D" parent="Area003" unique_id=1823471731]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 1.4010441, 2.1526794, -0.16370197)
+[node name="tutorialtxt_06" type="Label3D" parent="Area003/Farolito_Open" unique_id=1823471731]
+transform = Transform3D(-0.8, -1.2079664e-07, 0, 1.2079664e-07, -0.8, 0, 0, 0, 0.8, -0.0010437965, 0.8826027, 0.15848303)
 text = "(     ) para disparar
 "
 font_size = 20
 
-[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/tutorialtxt_06" unique_id=262439732]
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/Farolito_Open/tutorialtxt_06" unique_id=262439732]
 transform = Transform3D(0.3999998, -2.386514e-09, -6.434857e-08, 5.6461396e-09, 0.39999986, 0, 5.378387e-08, -1.4901161e-07, 0.39999995, -0.3491466, -0.018123627, -0.0005531311)
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
@@ -1548,7 +1654,7 @@ follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_03" unique_id=1325796933]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13242185, -0.42564452)
-shape = SubResource("BoxShape3D_rxs28")
+shape = SubResource("BoxShape3D_1e2yc")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_03" unique_id=1127736982]
@@ -1633,5 +1739,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.5, 2.8)
 [editable path="Area 002/RigidBody3D6"]
 [editable path="Area 002/RigidBody3D7"]
 [editable path="Area 002/RigidBody3D8"]
-[editable path="Area003/Farolito"]
-[editable path="Area003/Farolito2"]
+[editable path="Area003/Farolito_Open"]
