@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://crufdju3qkiab"]
 
 [ext_resource type="Script" uid="uid://cy3xy00kggprg" path="res://Scripts/interactable_picture.gd" id="1_kl4fw"]
+[ext_resource type="Texture2D" uid="uid://bx1canpe67rfw" path="res://Assets/2D/UI_PS2_Buttons.png" id="2_kl4fw"]
 
 [sub_resource type="Animation" id="Animation_d8keb"]
 length = 0.001
@@ -88,11 +89,102 @@ _data = {
 &"floating": SubResource("Animation_tuk0j")
 }
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_6wpun"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(0, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n5v0w"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(35, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jrbmo"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(70, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kxfiu"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(105, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yww3y"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(0, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iuq2o"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(35, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f0n3h"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(70, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t2exm"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(105, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4ytda"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(140, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o7iyv"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(175, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qevq5"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(140, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_70gjt"]
+atlas = ExtResource("2_kl4fw")
+region = Rect2(175, 0, 35, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_rxs28"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6wpun")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n5v0w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jrbmo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kxfiu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yww3y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iuq2o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f0n3h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t2exm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4ytda")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o7iyv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qevq5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_70gjt")
+}],
+"loop": 1,
+"name": &"buttons",
+"speed": 5.0
+}]
+
 [node name="interactable_picture" type="Node3D" unique_id=203141606]
 script = ExtResource("1_kl4fw")
 
 [node name="SpriteOnScreen" type="Control" parent="." unique_id=678351855]
-visible = false
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -141,6 +233,13 @@ grow_vertical = 2
 pivot_offset = Vector2(75, 15)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 21
-text = "'L' para cerrar"
+text = "(     ) para cerrar"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="SpriteOnScreen/Label" unique_id=2048805241]
+position = Vector2(19.5, 16)
+scale = Vector2(0.8, 0.8)
+sprite_frames = SubResource("SpriteFrames_rxs28")
+animation = &"buttons"
+frame = 2

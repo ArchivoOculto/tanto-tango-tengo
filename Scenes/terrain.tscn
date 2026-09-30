@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://haf07b5k3of4" path="res://Scenes/enemy.tscn" id="4_0ac8p"]
 [ext_resource type="Texture2D" uid="uid://miseachftepx" path="res://Assets/2D/256x256/Misc/Horror_Misc_11-256x256.png" id="4_4glq7"]
 [ext_resource type="Script" uid="uid://gpum8g4i3gxq" path="res://Scripts/door_alcantarilla.gd" id="4_7miuv"]
+[ext_resource type="Texture2D" uid="uid://bx1canpe67rfw" path="res://Assets/2D/UI_PS2_Buttons.png" id="4_cictk"]
 [ext_resource type="Texture2D" uid="uid://dyal7ecwd4c3b" path="res://Assets/2D/256x256/Stone/Horror_Stone_01-256x256.png" id="4_lnws3"]
 [ext_resource type="Texture2D" uid="uid://lvs0rx5jy5sp" path="res://Assets/2D/Poster.png" id="4_xx0be"]
 [ext_resource type="PackedScene" uid="uid://bsa6e7nt867h4" path="res://Scenes/farolito.tscn" id="5_0ac8p"]
@@ -68,6 +69,168 @@ material = SubResource("StandardMaterial3D_sehdd")
 shape = 0
 size = 0.005
 sections = 2
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_swpjm"]
+atlas = ExtResource("4_cictk")
+region = Rect2(0, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_oo88h"]
+atlas = ExtResource("4_cictk")
+region = Rect2(35, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tsagk"]
+atlas = ExtResource("4_cictk")
+region = Rect2(70, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pbqc1"]
+atlas = ExtResource("4_cictk")
+region = Rect2(105, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cm1ky"]
+atlas = ExtResource("4_cictk")
+region = Rect2(0, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1e2yc"]
+atlas = ExtResource("4_cictk")
+region = Rect2(35, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alrgr"]
+atlas = ExtResource("4_cictk")
+region = Rect2(70, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kfsa1"]
+atlas = ExtResource("4_cictk")
+region = Rect2(105, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5ftdt"]
+atlas = ExtResource("4_cictk")
+region = Rect2(140, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lrle2"]
+atlas = ExtResource("4_cictk")
+region = Rect2(175, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cictk"]
+atlas = ExtResource("4_cictk")
+region = Rect2(0, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_oanpt"]
+atlas = ExtResource("4_cictk")
+region = Rect2(35, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ix3g"]
+atlas = ExtResource("4_cictk")
+region = Rect2(70, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_71iw5"]
+atlas = ExtResource("4_cictk")
+region = Rect2(105, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ogo7n"]
+atlas = ExtResource("4_cictk")
+region = Rect2(0, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_blgtd"]
+atlas = ExtResource("4_cictk")
+region = Rect2(35, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xkwig"]
+atlas = ExtResource("4_cictk")
+region = Rect2(70, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kg1rn"]
+atlas = ExtResource("4_cictk")
+region = Rect2(105, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qpmkt"]
+atlas = ExtResource("4_cictk")
+region = Rect2(140, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_asn1u"]
+atlas = ExtResource("4_cictk")
+region = Rect2(175, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8e312"]
+atlas = ExtResource("4_cictk")
+region = Rect2(140, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_32bxd"]
+atlas = ExtResource("4_cictk")
+region = Rect2(175, 0, 35, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_2xxps"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_swpjm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_oo88h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tsagk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pbqc1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cm1ky")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1e2yc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alrgr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kfsa1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5ftdt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lrle2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cictk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_oanpt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8ix3g")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_71iw5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ogo7n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_blgtd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xkwig")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kg1rn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qpmkt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_asn1u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8e312")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_32bxd")
+}],
+"loop": 2,
+"name": &"buttons",
+"speed": 10.0
+}]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_lnws3"]
 height = 0.02
@@ -506,34 +669,64 @@ transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98
 [node name="Text and Sprites" type="Node3D" parent="." unique_id=386532345]
 
 [node name="tutorialtxt_00" type="Label3D" parent="Text and Sprites" unique_id=259107111]
-transform = Transform3D(-0.9898238, 0.07489781, -0.12099215, -0.026896613, 0.73646986, 0.6759354, 0.13973321, 0.67231137, -0.726961, 1.5051906, 0.1956445, -2.7507749)
+transform = Transform3D(-0.9898238, 0.07489781, -0.12099215, -0.026896613, 0.73646986, 0.6759354, 0.13973321, 0.67231137, -0.726961, 1.5259205, 0.27923176, -2.7507749)
 double_sided = false
-text = "'W' 'A' 'S' 'D'
+text = "palanca izq (     )
 para moverte"
 font_size = 20
 
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_00" unique_id=2104623608]
+transform = Transform3D(0.3299997, -1.8626451e-09, -7.450581e-09, 3.7252903e-09, 0.33, 0, 4.8428774e-08, 1.4901161e-08, 0.32999998, 0.27962446, 0.05528319, 0.013437748)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 19
+
 [node name="tutorialtxt_01" type="Label3D" parent="Text and Sprites" unique_id=1807424420]
 transform = Transform3D(-4.371139e-08, -0.24794817, 0.9687733, 0, 0.9687733, 0.24794817, -1, 1.0838159e-08, -4.2346425e-08, 1.0229424, 0.2427684, 1.4733086)
-text = "'K' para saltar"
+text = "(     ) para saltar"
 font_size = 20
+
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_01" unique_id=1352845538]
+transform = Transform3D(0.4, -4.5154995e-09, -5.8701602e-08, 4.515506e-09, 0.4, 2.9802322e-08, 5.8701602e-08, -2.9802322e-08, 0.4, -0.27402306, -0.009861065, -0.0075241327)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 13
 
 [node name="tutorialtxt_02" type="Label3D" parent="Text and Sprites" unique_id=1011112214]
 transform = Transform3D(1, 3.2661333e-08, 3.804763e-08, -4.339575e-08, 0.18353227, 0.9830137, 2.512357e-08, -0.9830137, 0.18353227, -1.4732381, 1.0237038, 1.8085995)
-text = "'K' x2
+text = "(     ) x2
 para doble salto"
 font_size = 20
 
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_02" unique_id=1940308240]
+transform = Transform3D(0.4, -4.5155e-09, -5.8701605e-08, 4.515506e-09, 0.4, 2.9802322e-08, 5.8701605e-08, -2.9802322e-08, 0.4, -0.06984651, 0.058075547, 0.008051157)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 13
+
 [node name="tutorialtxt_03" type="Label3D" parent="Text and Sprites" unique_id=879385856]
 transform = Transform3D(0.64336896, -0.60281867, 0.47189605, 0.08578634, 0.6692961, 0.73802656, -0.76073444, -0.43434125, 0.48231804, -1.8952957, 1.692906, -3.1506646)
-text = "'J' para atacar
+text = "(     ) para atacar
 "
 font_size = 20
 
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_03" unique_id=1742586658]
+transform = Transform3D(0.40000033, -1.4901161e-08, -8.940697e-08, -2.9802322e-08, 0.40000015, 5.2154064e-08, 4.4703484e-08, -9.685755e-08, 0.40000033, -0.29420006, -0.013999999, -0.011000002)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 11
+
 [node name="tutorialtxt_04" type="Label3D" parent="Text and Sprites" unique_id=739729457]
-transform = Transform3D(-0.99948066, 0.025011823, 0.020316994, 0.032206316, 0.79607797, 0.60433626, -0.0010582497, 0.60467726, -0.79647005, 0.08074251, 30.162, -0.89024734)
-text = "'L' para interactuar
+transform = Transform3D(-0.9998235, 0.014299508, 0.012184709, 0.018756866, 0.7963423, 0.60455483, -0.0010582479, 0.60467726, -0.79647005, 0.08074251, 30.182243, -0.89024734)
+text = "(     ) para interactuar
 "
 font_size = 20
+
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Text and Sprites/tutorialtxt_04" unique_id=323462989]
+transform = Transform3D(0.4, -5.7043508e-09, -6.4173946e-08, 2.9394869e-09, 0.39999995, 1.0430813e-07, 5.2241376e-08, -1.1920929e-07, 0.39999995, -0.4158515, -0.006055832, -0.0040340424)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 12
 
 [node name="InteractiveProps" type="Node3D" parent="." unique_id=1539688944]
 
@@ -1242,6 +1435,31 @@ transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.40
 
 [node name="SpotLight3D" parent="Area003/Farolito2" index="1" unique_id=1793264573]
 transform = Transform3D(-2, -7.642742e-15, 1.7484555e-07, -1.7484555e-07, 8.742278e-08, -2, 0, -2, -8.742278e-08, 0, 0.65254974, 0)
+
+[node name="tutorialtxt_05" type="Label3D" parent="Area003" unique_id=175908993]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 1.3858044, 1.7790451, 1.5150523)
+text = "Mantener (     )
+para apuntar
+"
+font_size = 20
+
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/tutorialtxt_05" unique_id=871869179]
+transform = Transform3D(0.3999998, -2.386514e-09, -6.434857e-08, 5.646143e-09, 0.39999983, 1.0430813e-07, 5.378388e-08, -1.1920929e-07, 0.39999995, 0.2407937, 0.051158905, 0.010601044)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 14
+
+[node name="tutorialtxt_06" type="Label3D" parent="Area003" unique_id=1823471731]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 1.4010441, 2.1526794, -0.16370197)
+text = "(     ) para disparar
+"
+font_size = 20
+
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/tutorialtxt_06" unique_id=262439732]
+transform = Transform3D(0.3999998, -2.386514e-09, -6.434857e-08, 5.6461396e-09, 0.39999986, 0, 5.378387e-08, -1.4901161e-07, 0.39999995, -0.3491466, -0.018123627, -0.0005531311)
+sprite_frames = SubResource("SpriteFrames_2xxps")
+animation = &"buttons"
+frame = 16
 
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 

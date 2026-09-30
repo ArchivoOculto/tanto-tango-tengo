@@ -30,6 +30,8 @@ script = ExtResource("4_vgqql")
 
 [node name="RifleController" type="Node" parent="." unique_id=2037710381]
 script = ExtResource("5_rifle")
+hold_to_aim = true
+aim_response_curve = 1.0
 
 [node name="AudioListener3D" type="AudioListener3D" parent="." unique_id=2000426361]
 current = true
