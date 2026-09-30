@@ -56,6 +56,8 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if CameraDirector.is_first_person():
+		return # modo fusil activo: no inspeccionar (al cerrar reactivaría el movimiento del jugador)
 	if event.is_action_pressed("interact"):
 		if _is_inspecting:
 			_close_inspection()

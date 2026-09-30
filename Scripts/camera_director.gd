@@ -3,6 +3,11 @@ extends Node
 ## Autoload (Project Settings > Autoload, nombre "CameraDirector").
 
 signal zone_changed(previous_zone: CameraZone3D, new_zone: CameraZone3D)
+## Se emite al entrar/salir del modo primera persona (fusil).
+signal first_person_changed(active: bool)
+
+## Cámara de primera persona que tiene el control ahora mismo (null = modo normal).
+var first_person_camera: Camera3D = null
 
 var current_zone: CameraZone3D = null
 var _active_zones: Array[CameraZone3D] = []   # zonas físicas (Area3D con el jugador adentro)
@@ -53,6 +58,32 @@ func reset_to_zone(zone: CameraZone3D) -> void:
 	if zone:
 		_active_zones.append(zone)
 	_set_current_zone(zone)
+
+
+## Entrega el control de la vista a 'cam' (cámara en primera persona).
+## Las CameraZone3D siguen registrándose por debajo, así que al salir la
+## GameCamera retoma exactamente la zona que corresponda.
+func enter_first_person(cam: Camera3D) -> void:
+	if cam == null or first_person_camera == cam:
+		return
+	first_person_camera = cam
+	cam.make_current()
+	first_person_changed.emit(true)
+
+
+## Devuelve la vista a la GameCamera (cámaras semifijas por zonas).
+func exit_first_person() -> void:
+	if first_person_camera == null:
+		return
+	first_person_camera = null
+	var game_cam: Camera3D = get_tree().get_first_node_in_group("game_camera")
+	if is_instance_valid(game_cam):
+		game_cam.make_current()
+	first_person_changed.emit(false)
+
+
+func is_first_person() -> bool:
+	return first_person_camera != null
 
 
 func _recompute_current_zone() -> void:
