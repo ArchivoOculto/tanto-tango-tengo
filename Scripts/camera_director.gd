@@ -89,6 +89,28 @@ func reset_to_zone(zone: CameraZone3D) -> void:
 	_set_current_zone(zone)
 
 
+## Vuelve al estado de arranque. Es un autoload: sobrevive a los cambios y recargas de
+## escena, así que sin esto quedarían zonas ya liberadas en las listas (y la cámara
+## fallaría en la segunda partida). Se llama al reiniciar el juego y al empezar el nivel.
+func reset() -> void:
+	var was_first_person: bool = first_person_camera != null
+	var previous: CameraZone3D = current_zone if is_instance_valid(current_zone) else null
+
+	_active_zones.clear()
+	_forced_zones.clear()
+	first_person_camera = null
+	_fp_letterbox = false
+	current_zone = null
+
+	if previous != null:
+		zone_changed.emit(previous, null)
+	if _letterbox_active:
+		_letterbox_active = false
+		letterbox_changed.emit(false, 0.0) # barras fuera al instante
+	if was_first_person:
+		first_person_changed.emit(false)
+
+
 # ---------------------------------------------------------------- PRIMERA PERSONA
 
 ## Entrega el control de la vista a 'cam' (cámara en primera persona).

@@ -1,11 +1,17 @@
 extends Node3D
 class_name InteractablePicture
 
+## Se emite al abrir la imagen (empieza la inspección).
+signal opened
+## Se emite al cerrarla.
+signal closed
+
 @export var area_3d: Area3D ## Asignar manualmente o dejar vacío para auto-detectar
 @export var outline_color: Color = Color(1.0, 0.9, 0.2, 1.0) ## Color del borde al acercarse
 @export var outline_width: float = 3.0 ## Grosor del borde en píxeles
 
-@onready var sprite_on_screen: Control = get_node_or_null("SpriteOnScreen")
+@onready var sprite_on_screen: Control = get_node_or_null("SpriteOnScreen") ## Imagen a pantalla, visible solo mientras se inspecciona
+@onready var sprite_closed: Control = get_node_or_null("SpriteClosed") ## Aviso para abrir, visible solo al estar cerca y sin inspeccionar
 
 var sprite_3d: Sprite3D
 var sprite_2d: Sprite2D
@@ -14,6 +20,7 @@ var _is_player_inside: bool = false
 var _is_inspecting: bool = false
 var _player_ref: Node = null
 var _outline_material: ShaderMaterial = null
+var _canvas: CanvasLayer = null
 
 
 func _ready() -> void:
@@ -37,18 +44,21 @@ func _ready() -> void:
 	else:
 		push_warning("InteractablePicture: No se encontró Area3D bajo " + sprite_3d.name)
 
-	# 3. Configurar UI y CanvasLayer
+	# 3. Configurar UI y CanvasLayer (las dos UI comparten el mismo CanvasLayer)
 	if sprite_on_screen:
 		sprite_2d = sprite_on_screen.find_child("Sprite2D", true, false) as Sprite2D
 		animation_player = sprite_on_screen.find_child("AnimationPlayer", true, false) as AnimationPlayer
 
-		if not (sprite_on_screen.get_parent() is CanvasLayer):
-			var canvas := CanvasLayer.new()
-			canvas.layer = 10
-			add_child(canvas)
-			sprite_on_screen.reparent(canvas)
+	for ui_control in [sprite_on_screen, sprite_closed]:
+		if ui_control and not (ui_control.get_parent() is CanvasLayer):
+			ui_control.reparent(_get_canvas())
 
+	if sprite_on_screen:
 		sprite_on_screen.visible = false
+	_refresh_prompt()
+
+	# El aviso se esconde mientras el modo fusil está activo (ahí no se puede interactuar)
+	CameraDirector.first_person_changed.connect(func(_active: bool): _refresh_prompt())
 
 	# 4. Inicializar Shader de Outline
 	_init_outline_material()
@@ -72,6 +82,7 @@ func _open_inspection() -> void:
 	_is_inspecting = true
 	if sprite_on_screen:
 		sprite_on_screen.visible = true
+	_refresh_prompt() # "SpriteClosed" se oculta, "SpriteOnScreen" se muestra
 	_hide_outline()
 
 	if animation_player and animation_player.has_animation("floating"):
@@ -87,11 +98,14 @@ func _open_inspection() -> void:
 			_player_ref.combat_controller.interrupt_actions()
 			_player_ref.combat_controller.set_process(false)
 
+	opened.emit()
+
 
 func _close_inspection() -> void:
 	_is_inspecting = false
 	if sprite_on_screen:
 		sprite_on_screen.visible = false
+	_refresh_prompt() # vuelve "SpriteClosed" si el jugador sigue en la zona
 
 	if animation_player:
 		animation_player.stop()
@@ -104,6 +118,8 @@ func _close_inspection() -> void:
 	if _is_player_inside:
 		_show_outline()
 
+	closed.emit()
+
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player") or body.name.to_lower().begins_with("player"):
@@ -111,6 +127,7 @@ func _on_body_entered(body: Node3D) -> void:
 		_player_ref = body
 		if not _is_inspecting:
 			_show_outline()
+		_refresh_prompt()
 
 
 func _on_body_exited(body: Node3D) -> void:
@@ -118,6 +135,22 @@ func _on_body_exited(body: Node3D) -> void:
 		_is_player_inside = false
 		_player_ref = null
 		_hide_outline()
+		_refresh_prompt()
+
+
+## "SpriteClosed" (aviso de interacción): visible solo si el jugador está dentro del área,
+## la imagen no está abierta y no hay modo fusil activo.
+func _refresh_prompt() -> void:
+	if sprite_closed:
+		sprite_closed.visible = _is_player_inside and not _is_inspecting and not CameraDirector.is_first_person()
+
+
+func _get_canvas() -> CanvasLayer:
+	if _canvas == null:
+		_canvas = CanvasLayer.new()
+		_canvas.layer = 10
+		add_child(_canvas)
+	return _canvas
 
 
 func _sync_texture_from_parent() -> void:

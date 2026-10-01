@@ -30,6 +30,7 @@
 [ext_resource type="Texture2D" uid="uid://bg4040y3gogcg" path="res://Assets/2D/farolito_puzzle_hint.png" id="21_yplex"]
 [ext_resource type="Texture2D" uid="uid://cm3bma1b0kovi" path="res://Assets/2D/256x256/Stains/Horror_Stain_09-256x256.png" id="28_atwpt"]
 [ext_resource type="Texture2D" uid="uid://dnlw747uk3bq2" path="res://Assets/2D/endpicture.png" id="28_swpjm"]
+[ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level00_manager.gd" id="99_lvl00"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -706,6 +707,11 @@ size = Vector3(2.6, 0.5, 2.7)
 size = Vector3(2.4, 0.5, 3.7)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
+
+[node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("end_picture")]
+script = ExtResource("99_lvl00")
+end_picture = NodePath("../Area003/EndPicture/interactable_picture")
+end_theme_volume_db = -8.0
 
 [node name="Enviroment" type="Node3D" parent="." unique_id=1603349986]
 
@@ -1547,7 +1553,7 @@ debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019605637, 0.04032898, 0.1788677)
 
 [node name="Farolito_Open" parent="Area003" unique_id=243146245 instance=ExtResource("5_0ac8p")]
-transform = Transform3D(-1, 1.509958e-07, 0, -1.509958e-07, -1, 0, 0, 0, 1, 1.4000001, 2.9629097, -0.9905249)
+transform = Transform3D(-1.5, 2.2649371e-07, 0, -2.2649371e-07, -1.5, 0, 0, 0, 1.5, 1.4000001, 3.2595139, -0.2905249)
 initial_state = 0
 
 [node name="SpotLight3D" parent="Area003/Farolito_Open" index="1" unique_id=1793264573]
@@ -1558,17 +1564,15 @@ script = ExtResource("8_lu725")
 farolito = NodePath("..")
 target_cam_zone = NodePath("../../CamZone_08")
 door = NodePath("../../Alambrado2/StaticBody3D")
-override_camera_speed = true
-custom_smoothing = 2.0
 door_action_delay = 0.0
 
-[node name="tutorialtxt_06" type="Label3D" parent="Area003/Farolito_Open" unique_id=1823471731]
-transform = Transform3D(-0.8, -1.2079664e-07, 0, 1.2079664e-07, -0.8, 0, 0, 0, 0.8, -0.0010437965, 0.8826027, 0.15848303)
+[node name="tutorialtxt_06" type="Label3D" parent="Area003" unique_id=1823471731]
+transform = Transform3D(0.75, -8.881784e-15, 0, 8.881784e-15, 0.75, 0, 0, 0, 0.75, 1.401566, 2.0114288, -0.32921207)
 text = "(     ) para disparar
 "
 font_size = 20
 
-[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/Farolito_Open/tutorialtxt_06" unique_id=262439732]
+[node name="Sprite3D" type="AnimatedSprite3D" parent="Area003/tutorialtxt_06" unique_id=262439732]
 transform = Transform3D(0.3999998, -2.386514e-09, -6.434857e-08, 5.6461396e-09, 0.39999986, 0, 5.378387e-08, -1.4901161e-07, 0.39999995, -0.3491466, -0.018123627, -0.0005531311)
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
