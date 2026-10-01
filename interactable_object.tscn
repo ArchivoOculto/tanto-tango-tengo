@@ -1,0 +1,415 @@
+[gd_scene format=3 uid="uid://bl5winfaxheex"]
+
+[ext_resource type="Texture2D" uid="uid://bx1canpe67rfw" path="res://Assets/2D/UI_PS2_Buttons.png" id="1_bcilo"]
+
+[sub_resource type="Animation" id="Animation_d8keb"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("..:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-125.30887, -126.09823)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_tuk0j"]
+resource_name = "floating"
+length = 6.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-0.017453292, 0.01745329251994329]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("..:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-125.30887, -126.09823), Vector2(-125.309, -121.098)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.95, 0.95), Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_4n3oy"]
+_data = {
+&"RESET": SubResource("Animation_d8keb"),
+&"floating": SubResource("Animation_tuk0j")
+}
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_rxs28"]
+viewport_path = NodePath("ObjectOnScreen/SubViewport")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6wpun"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(0, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n5v0w"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(35, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jrbmo"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(70, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kxfiu"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(105, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yww3y"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(0, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iuq2o"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(35, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f0n3h"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(70, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t2exm"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(105, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4ytda"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(140, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o7iyv"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(175, 36, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qevq5"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(140, 0, 35, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_70gjt"]
+atlas = ExtResource("1_bcilo")
+region = Rect2(175, 0, 35, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_fr06r"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6wpun")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n5v0w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jrbmo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kxfiu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yww3y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iuq2o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f0n3h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t2exm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4ytda")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o7iyv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qevq5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_70gjt")
+}],
+"loop": 1,
+"name": &"buttons",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_gci1n"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6wpun")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n5v0w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jrbmo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kxfiu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yww3y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iuq2o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f0n3h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t2exm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4ytda")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o7iyv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qevq5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_70gjt")
+}],
+"loop": 1,
+"name": &"buttons",
+"speed": 5.0
+}]
+
+[node name="Interactable_object" type="Node3D" unique_id=313652406]
+
+[node name="ObjectOnScreen" type="Control" parent="." unique_id=1242654911]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="ObjectOnScreen" unique_id=61018631]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -125.30887
+offset_top = -126.09823
+offset_right = 124.69113
+offset_bottom = 123.90177
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.97159964, 0.97159964)
+pivot_offset = Vector2(125, 125)
+color = Color(0.09, 0.09, 0.09, 0.36862746)
+
+[node name="Sprite2D" type="Sprite2D" parent="ObjectOnScreen/Background" unique_id=243304828]
+position = Vector2(125.30887, 126.09823)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="ObjectOnScreen/Background/Sprite2D" unique_id=1613935716]
+libraries/ = SubResource("AnimationLibrary_4n3oy")
+autoplay = &"floating"
+
+[node name="TextureRect" type="TextureRect" parent="ObjectOnScreen" unique_id=881909083]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("ViewportTexture_rxs28")
+
+[node name="SubViewport" type="SubViewport" parent="ObjectOnScreen" unique_id=728370939]
+transparent_bg = true
+size = Vector2i(250, 250)
+
+[node name="SubView Camera" type="Camera3D" parent="ObjectOnScreen/SubViewport" unique_id=823959524]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.4383471)
+
+[node name="ObjectPivot" type="Marker3D" parent="ObjectOnScreen/SubViewport" unique_id=1942136428]
+
+[node name="UI Menu" type="Control" parent="ObjectOnScreen" unique_id=1521061281]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CloseText" type="Label" parent="ObjectOnScreen/UI Menu" unique_id=503704434]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.0
+offset_top = 109.0
+offset_right = 59.0
+offset_bottom = 139.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(75, 15)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 21
+text = "(     ) cerrar"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="ObjectOnScreen/UI Menu/CloseText" unique_id=893472271]
+position = Vector2(45.5, 16)
+scale = Vector2(0.8, 0.8)
+sprite_frames = SubResource("SpriteFrames_fr06r")
+animation = &"buttons"
+frame = 2
+
+[node name="GuardarText" type="Label" parent="ObjectOnScreen/UI Menu" unique_id=1486112083]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.0
+offset_top = 134.0
+offset_right = 59.0
+offset_bottom = 164.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(75, 15)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 21
+text = "(     ) guardar"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="ObjectOnScreen/UI Menu/GuardarText" unique_id=1570191629]
+position = Vector2(34.5, 16)
+scale = Vector2(0.8, 0.8)
+sprite_frames = SubResource("SpriteFrames_fr06r")
+animation = &"buttons"
+
+[node name="RotateText" type="Label" parent="ObjectOnScreen/UI Menu" unique_id=392204111]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -103.0
+offset_top = 159.0
+offset_right = 63.0
+offset_bottom = 189.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(75, 15)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 21
+text = "(     ) rotar objeto"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="ObjectOnScreen/UI Menu/RotateText" unique_id=183955036]
+position = Vector2(19, 18)
+scale = Vector2(0.8, 0.8)
+sprite_frames = SubResource("SpriteFrames_fr06r")
+animation = &"buttons"
+frame = 8
+
+[node name="ObjectClosed" type="Control" parent="." unique_id=1925626263]
+visible = false
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="ObjectClosed" unique_id=206041064]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.0
+offset_top = 136.0
+offset_right = 75.0
+offset_bottom = 166.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(75, 15)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 21
+text = "(     )"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="ObjectClosed/Label" unique_id=294862335]
+position = Vector2(73.5, 16)
+scale = Vector2(0.8, 0.8)
+sprite_frames = SubResource("SpriteFrames_gci1n")
+animation = &"buttons"
+frame = 2
