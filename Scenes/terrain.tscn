@@ -1359,7 +1359,7 @@ debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 [node name="CamAnchor" type="Marker3D" parent="Area 002/CamZone_07" unique_id=52469569]
 transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 0.8250257, 0.44734764, -1.6359999)
 
-[node name="Calaveritas" parent="Area 002" unique_id=1122152434 instance=ExtResource("13_15siy")]
+[node name="Calaveritas" parent="Area 002" unique_id=2091482262 instance=ExtResource("13_15siy")]
 transform = Transform3D(0.58364755, 0.78168535, -0.21982686, 0.63634443, -0.2721405, 0.72180724, 0.5044021, -0.5611666, -0.6562551, 0.2079688, 0.39800072, 0.39585778)
 
 [node name="CollisionShape3D" parent="Area 002/Calaveritas" index="0" unique_id=860921925]
@@ -1428,16 +1428,6 @@ transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
 shape = SubResource("SphereShape3D_15siy")
 
 [node name="skull2" parent="Area 002/Calaveritas7" index="1" unique_id=1156010277]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
-
-[node name="Calaveritas8" parent="Area 002" unique_id=1172765451 instance=ExtResource("13_15siy")]
-transform = Transform3D(-0.38700768, 0.78595066, 0.48218927, 0.8646141, 0.12759769, 0.48596436, 0.32041773, 0.60497975, -0.7289254, 0.33870062, 0.2247734, -1.3251989)
-
-[node name="CollisionShape3D" parent="Area 002/Calaveritas8" index="0" unique_id=860921925]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0.00998871, 0)
-shape = SubResource("SphereShape3D_15siy")
-
-[node name="skull2" parent="Area 002/Calaveritas8" index="1" unique_id=1156010277]
 transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)
 
 [node name="AreaLight3D" type="AreaLight3D" parent="Area 002" unique_id=1527448540]
@@ -1812,5 +1802,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.5, 2.8)
 [editable path="Area 002/Calaveritas5"]
 [editable path="Area 002/Calaveritas6"]
 [editable path="Area 002/Calaveritas7"]
-[editable path="Area 002/Calaveritas8"]
 [editable path="Area 003/Farolito_Open"]

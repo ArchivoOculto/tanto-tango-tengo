@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://bl5winfaxheex"]
 
+[ext_resource type="Script" uid="uid://dnyyyayel7gtx" path="res://Scripts/interactable_object.gd" id="2_ioscr"]
 [ext_resource type="Texture2D" uid="uid://bx1canpe67rfw" path="res://Assets/2D/UI_PS2_Buttons.png" id="1_bcilo"]
 
 [sub_resource type="Animation" id="Animation_d8keb"]
@@ -228,6 +229,7 @@ animations = [{
 }]
 
 [node name="Interactable_object" type="Node3D" unique_id=313652406]
+script = ExtResource("2_ioscr")
 
 [node name="ObjectOnScreen" type="Control" parent="." unique_id=1242654911]
 layout_mode = 3
