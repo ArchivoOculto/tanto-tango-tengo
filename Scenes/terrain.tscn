@@ -30,6 +30,7 @@
 [ext_resource type="Texture2D" uid="uid://bg4040y3gogcg" path="res://Assets/2D/farolito_puzzle_hint.png" id="21_yplex"]
 [ext_resource type="Texture2D" uid="uid://cm3bma1b0kovi" path="res://Assets/2D/256x256/Stains/Horror_Stain_09-256x256.png" id="28_atwpt"]
 [ext_resource type="Texture2D" uid="uid://dnlw747uk3bq2" path="res://Assets/2D/endpicture.png" id="28_swpjm"]
+[ext_resource type="PackedScene" uid="uid://bl5winfaxheex" path="res://interactable_object.tscn" id="32_tsagk"]
 [ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level00_manager.gd" id="99_lvl00"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
@@ -742,6 +743,36 @@ size = Vector3(2.6, 0.5, 2.7)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_pbqc1"]
 size = Vector3(2.4, 0.5, 3.7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2xxps"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_rxs28"]
+radius = 0.125
+height = 0.25
+radial_segments = 8
+rings = 8
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ekr8f"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tsagk"]
+albedo_color = Color(0.39999986, 1, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_pbqc1"]
+radius = 0.25
+height = 0.5
+radial_segments = 8
+rings = 8
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kfsa1"]
+size = Vector3(0.75, 0.5, 0.75)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_tsagk"]
+radius = 7.033
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5ftdt"]
+size = Vector3(0.5, 0.29089355, 0.5)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
@@ -1794,6 +1825,58 @@ debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06B" unique_id=1112542435]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.5, 2.8)
 
+[node name="test_interactable_objects" type="MeshInstance3D" parent="." unique_id=135294319]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56884503, 0.2482214, -3.3260841)
+material_override = SubResource("StandardMaterial3D_2xxps")
+mesh = SubResource("SphereMesh_rxs28")
+
+[node name="Interactable_object" parent="test_interactable_objects" unique_id=313652406 node_paths=PackedStringArray("area_3d") instance=ExtResource("32_tsagk")]
+area_3d = NodePath("../Area3D")
+
+[node name="Area3D" type="Area3D" parent="test_interactable_objects" unique_id=1622311683]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="test_interactable_objects/Area3D" unique_id=1047496119]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1039117, 0)
+shape = SubResource("BoxShape3D_ekr8f")
+
+[node name="test_interactable_objects2" type="MeshInstance3D" parent="." unique_id=1396503332]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.56884503, 0.30897003, -2.1697245)
+material_override = SubResource("StandardMaterial3D_tsagk")
+mesh = SubResource("SphereMesh_pbqc1")
+
+[node name="Interactable_object" parent="test_interactable_objects2" unique_id=2031230273 node_paths=PackedStringArray("area_3d") instance=ExtResource("32_tsagk")]
+area_3d = NodePath("../Area3D")
+
+[node name="Area3D" type="Area3D" parent="test_interactable_objects2" unique_id=847865120]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="test_interactable_objects2/Area3D" unique_id=1640707154]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04950857, 0)
+shape = SubResource("BoxShape3D_kfsa1")
+
+[node name="test_interactable_objects3" parent="." unique_id=1122152434 instance=ExtResource("13_15siy")]
+transform = Transform3D(-0.012497176, 0, 0.015614754, 0, 0.02, 0, -0.015614754, 0, -0.012497176, 1.3853302, 0.17348397, -0.88095284)
+
+[node name="CollisionShape3D" parent="test_interactable_objects3" index="0" unique_id=860921925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2624598, 0)
+shape = SubResource("SphereShape3D_tsagk")
+
+[node name="Interactable_object" parent="test_interactable_objects3/skull2/skull" parent_id_path=PackedInt32Array(1122152434, 1156010277, 421096015) index="0" unique_id=1299558733 node_paths=PackedStringArray("area_3d") instance=ExtResource("32_tsagk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.050786972, 0.22692204, -2.4376144)
+area_3d = NodePath("../../../Area3D")
+
+[node name="Area3D" type="Area3D" parent="test_interactable_objects3" unique_id=1542025526]
+transform = Transform3D(40, 0, 0, 0, 40, 0, 0, 0, 40, 0, 0, 0)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="test_interactable_objects3/Area3D" unique_id=1854536209]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.063914716, 0)
+shape = SubResource("BoxShape3D_5ftdt")
+
 [editable path="InteractiveProps/Puzzle_Hint/interactable_picture"]
 [editable path="Area 002/Calaveritas"]
 [editable path="Area 002/Calaveritas2"]
@@ -1803,3 +1886,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.5, 2.8)
 [editable path="Area 002/Calaveritas6"]
 [editable path="Area 002/Calaveritas7"]
 [editable path="Area 003/Farolito_Open"]
+[editable path="test_interactable_objects3"]
+[editable path="test_interactable_objects3/skull2"]
