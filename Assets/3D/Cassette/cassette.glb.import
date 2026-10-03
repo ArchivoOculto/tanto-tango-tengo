@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cq5bwlurwv61f"
-path="res://.godot/imported/skull.glb-47fd9d95f3173293693738f4322b95bb.scn"
+uid="uid://d0g68epg00tft"
+path="res://.godot/imported/cassette.glb-cd78bf12204c412f2243f47b24e2f805.scn"
 
 [deps]
 
-source_file="res://Assets/3D/skull.glb"
-dest_files=["res://.godot/imported/skull.glb-47fd9d95f3173293693738f4322b95bb.scn"]
+source_file="res://Assets/3D/Cassette/cassette.glb"
+dest_files=["res://.godot/imported/cassette.glb-cd78bf12204c412f2243f47b24e2f805.scn"]
 
 [params]
 
@@ -19,7 +19,7 @@ nodes/root_script=null
 mesh_library/use_node_names_as_mesh_names=false
 array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
-nodes/root_scale=0.004
+nodes/root_scale=0.009999999999999998
 nodes/import_as_skeleton_bones=false
 nodes/use_name_suffixes=true
 nodes/use_node_type_suffixes=true

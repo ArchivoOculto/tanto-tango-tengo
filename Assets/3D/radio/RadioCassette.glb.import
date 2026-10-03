@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cq5bwlurwv61f"
-path="res://.godot/imported/skull.glb-47fd9d95f3173293693738f4322b95bb.scn"
+uid="uid://bp5d1v750v3u1"
+path="res://.godot/imported/RadioCassette.glb-6dbce915cbac8ef027e34639e0f00e9b.scn"
 
 [deps]
 
-source_file="res://Assets/3D/skull.glb"
-dest_files=["res://.godot/imported/skull.glb-47fd9d95f3173293693738f4322b95bb.scn"]
+source_file="res://Assets/3D/radio/RadioCassette.glb"
+dest_files=["res://.godot/imported/RadioCassette.glb-6dbce915cbac8ef027e34639e0f00e9b.scn"]
 
 [params]
 
@@ -19,7 +19,7 @@ nodes/root_script=null
 mesh_library/use_node_names_as_mesh_names=false
 array_mesh/deduplicate_surfaces=true
 nodes/apply_root_scale=true
-nodes/root_scale=0.004
+nodes/root_scale=0.001
 nodes/import_as_skeleton_bones=false
 nodes/use_name_suffixes=true
 nodes/use_node_type_suffixes=true

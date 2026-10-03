@@ -18,7 +18,8 @@ var sprite_2d: Sprite2D
 var animation_player: AnimationPlayer
 var _is_player_inside: bool = false
 var _is_inspecting: bool = false
-var _player_ref: Node = null
+var _player_ref: Node = null ## Jugador dentro del Area3D (se anula al salir)
+var _frozen_player: Node = null ## Jugador congelado por la inspección abierta (se libera SIEMPRE al cerrar)
 var _outline_material: ShaderMaterial = null
 var _canvas: CanvasLayer = null
 
@@ -65,6 +66,14 @@ func _ready() -> void:
 	_sync_texture_from_parent()
 
 
+func _exit_tree() -> void:
+	# Si el cuadro desaparece con el menú abierto (queue_free, cambio de escena...), el jugador no
+	# puede quedar congelado.
+	if _is_inspecting:
+		_is_inspecting = false
+		_release_player()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if CameraDirector.is_first_person():
 		return # modo fusil activo: no inspeccionar (al cerrar reactivaría el movimiento del jugador)
@@ -88,15 +97,7 @@ func _open_inspection() -> void:
 	if animation_player and animation_player.has_animation("floating"):
 		animation_player.play("floating")
 
-	if _player_ref:
-		if "velocity" in _player_ref:
-			_player_ref.velocity = Vector3.ZERO
-		if "anim_controller" in _player_ref and _player_ref.anim_controller:
-			_player_ref.anim_controller.update_locomotion(_player_ref.is_on_floor(), 0.0)
-		_player_ref.set_physics_process(false)
-		if "combat_controller" in _player_ref and _player_ref.combat_controller:
-			_player_ref.combat_controller.interrupt_actions()
-			_player_ref.combat_controller.set_process(false)
+	_freeze_player(_player_ref)
 
 	opened.emit()
 
@@ -110,10 +111,7 @@ func _close_inspection() -> void:
 	if animation_player:
 		animation_player.stop()
 
-	if is_instance_valid(_player_ref):
-		_player_ref.set_physics_process(true)
-		if "combat_controller" in _player_ref and _player_ref.combat_controller:
-			_player_ref.combat_controller.set_process(true)
+	_release_player() # siempre, esté o no el jugador dentro del área
 
 	if _is_player_inside:
 		_show_outline()
@@ -143,6 +141,34 @@ func _on_body_exited(body: Node3D) -> void:
 func _refresh_prompt() -> void:
 	if sprite_closed:
 		sprite_closed.visible = _is_player_inside and not _is_inspecting and not CameraDirector.is_first_person()
+
+
+## Congela al jugador mientras dura la inspección. Se guarda en _frozen_player, a propósito
+## separado de _player_ref: _player_ref se anula cuando el jugador sale del Area3D (o el área se
+## aleja) y, aun así, hay que poder devolverle el control al cerrar el menú.
+func _freeze_player(player: Node) -> void:
+	if not is_instance_valid(player):
+		return
+	_frozen_player = player
+	if "velocity" in player:
+		player.velocity = Vector3.ZERO
+	if "anim_controller" in player and player.anim_controller:
+		player.anim_controller.update_locomotion(player.is_on_floor(), 0.0)
+	player.set_physics_process(false)
+	if "combat_controller" in player and player.combat_controller:
+		player.combat_controller.interrupt_actions()
+		player.combat_controller.set_process(false)
+
+
+## Devuelve el control SIEMPRE: no depende de si el jugador sigue dentro del Area3D.
+func _release_player() -> void:
+	var player: Node = _frozen_player
+	_frozen_player = null
+	if not is_instance_valid(player):
+		return
+	player.set_physics_process(true)
+	if "combat_controller" in player and player.combat_controller:
+		player.combat_controller.set_process(true)
 
 
 func _get_canvas() -> CanvasLayer:

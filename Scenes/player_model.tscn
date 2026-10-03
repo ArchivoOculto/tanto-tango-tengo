@@ -121,7 +121,7 @@ bone_name = "mixamorig_Head"
 bone_idx = 23
 
 [node name="skull" parent="Armature/Skeleton3D/Face" index="0" unique_id=1858074999 instance=ExtResource("4_mqtts")]
-transform = Transform3D(1.0944505, 0, 0, 0, 0.9705712, 0.3230936, 0, -0.24081115, 1.3022048, 0, 4.8668146, 2.3156655)
+transform = Transform3D(54.722525, 0, 0, 0, 48.52856, 16.15468, 0, -12.0405575, 65.11024, 0, 4.8668146, 2.3156655)
 
 [node name="puchito" type="MeshInstance3D" parent="Armature/Skeleton3D/Face" index="1" unique_id=613285206]
 transform = Transform3D(0.99296707, -0.11839282, -8.703499e-09, 3.5283834e-09, -4.3920977e-08, 0.9999996, -0.118392825, -0.9929666, -4.3194362e-08, 1.3900647, 3.4852467, 10.310259)

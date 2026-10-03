@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://18ibdmis1kyt"
-path.s3tc="res://.godot/imported/Horror_Metal_09-256x256.png-ad65ce5256b303cc5c220abe554dbf08.s3tc.ctex"
+uid="uid://dk7bxltuo66jr"
+path.s3tc="res://.godot/imported/cassette.png-3ce7cee0e1fdcffc7f50cff6c58ac98e.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Assets/2D/256x256/Metal/Horror_Metal_09-256x256.png"
-dest_files=["res://.godot/imported/Horror_Metal_09-256x256.png-ad65ce5256b303cc5c220abe554dbf08.s3tc.ctex"]
+source_file="res://Assets/3D/Cassette/cassette.png"
+dest_files=["res://.godot/imported/cassette.png-3ce7cee0e1fdcffc7f50cff6c58ac98e.s3tc.ctex"]
 
 [params]
 

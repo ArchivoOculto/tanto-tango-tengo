@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://18ibdmis1kyt"
-path.s3tc="res://.godot/imported/Horror_Metal_09-256x256.png-ad65ce5256b303cc5c220abe554dbf08.s3tc.ctex"
+uid="uid://dg51xynipuu5c"
+path.s3tc="res://.godot/imported/RadioCassetteBody_alb.png-67bf30c835a6672189242eaa7090d248.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Assets/2D/256x256/Metal/Horror_Metal_09-256x256.png"
-dest_files=["res://.godot/imported/Horror_Metal_09-256x256.png-ad65ce5256b303cc5c220abe554dbf08.s3tc.ctex"]
+source_file="res://Assets/3D/radio/RadioCassetteBody_alb.png"
+dest_files=["res://.godot/imported/RadioCassetteBody_alb.png-67bf30c835a6672189242eaa7090d248.s3tc.ctex"]
 
 [params]
 

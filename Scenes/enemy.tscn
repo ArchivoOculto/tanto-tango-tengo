@@ -62,6 +62,7 @@ shape = SubResource("SphereShape3D_rxs28")
 debug_color = Color(1, 0, 0, 0.41960785)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="AttackArea" unique_id=458699463]
+visible = false
 mesh = SubResource("SphereMesh_rxs28")
 
 [editable path="Visuals"]
