@@ -22,6 +22,7 @@ var _player_ref: Node = null ## Jugador dentro del Area3D (se anula al salir)
 var _frozen_player: Node = null ## Jugador congelado por la inspección abierta (se libera SIEMPRE al cerrar)
 var _outline_material: ShaderMaterial = null
 var _canvas: CanvasLayer = null
+var _highlighted: bool = false
 
 
 func _ready() -> void:
@@ -56,10 +57,7 @@ func _ready() -> void:
 
 	if sprite_on_screen:
 		sprite_on_screen.visible = false
-	_refresh_prompt()
-
-	# El aviso se esconde mientras el modo fusil está activo (ahí no se puede interactuar)
-	CameraDirector.first_person_changed.connect(func(_active: bool): _refresh_prompt())
+	_refresh_visuals()
 
 	# 4. Inicializar Shader de Outline
 	_init_outline_material()
@@ -67,6 +65,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	InteractionFocus.unregister(self)
 	# Si el cuadro desaparece con el menú abierto (queue_free, cambio de escena...), el jugador no
 	# puede quedar congelado.
 	if _is_inspecting:
@@ -74,47 +73,56 @@ func _exit_tree() -> void:
 		_release_player()
 
 
+func _process(_delta: float) -> void:
+	if _is_player_inside or _highlighted:
+		_refresh_visuals() # el foco puede pasar a otro objeto cercano, o el modo fusil/inventario puede abrirse
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if CameraDirector.is_first_person():
-		return # modo fusil activo: no inspeccionar (al cerrar reactivaría el movimiento del jugador)
+	if CameraDirector.is_first_person() or Inventory.menu_open:
+		return # modo fusil o inventario abiertos: no inspeccionar (al cerrar reactivarían el movimiento)
 	if event.is_action_pressed("interact"):
 		if _is_inspecting:
 			_close_inspection()
 			get_viewport().set_input_as_handled()
-		elif _is_player_inside and is_instance_valid(_player_ref):
+		elif _is_player_inside and is_instance_valid(_player_ref) and InteractionFocus.is_focused(self, _player_ref):
 			_open_inspection()
 			get_viewport().set_input_as_handled()
+
+
+## Posición que usa InteractionFocus para decidir cuál es el objeto más cercano al jugador.
+func get_focus_position() -> Vector3:
+	return sprite_3d.global_position if is_instance_valid(sprite_3d) else global_position
 
 
 func _open_inspection() -> void:
 	_sync_texture_from_parent()
 	_is_inspecting = true
+	InteractionFocus.begin_inspection(self)
 	if sprite_on_screen:
 		sprite_on_screen.visible = true
-	_refresh_prompt() # "SpriteClosed" se oculta, "SpriteOnScreen" se muestra
-	_hide_outline()
+	_refresh_visuals() # "SpriteClosed" y outline se ocultan, "SpriteOnScreen" se muestra
 
 	if animation_player and animation_player.has_animation("floating"):
 		animation_player.play("floating")
 
-	_freeze_player(_player_ref)
+	_frozen_player = _player_ref
+	PlayerControlLock.freeze(_frozen_player)
 
 	opened.emit()
 
 
 func _close_inspection() -> void:
 	_is_inspecting = false
+	InteractionFocus.end_inspection(self)
 	if sprite_on_screen:
 		sprite_on_screen.visible = false
-	_refresh_prompt() # vuelve "SpriteClosed" si el jugador sigue en la zona
 
 	if animation_player:
 		animation_player.stop()
 
 	_release_player() # siempre, esté o no el jugador dentro del área
-
-	if _is_player_inside:
-		_show_outline()
+	_refresh_visuals() # vuelve el aviso y el outline si el jugador sigue en la zona
 
 	closed.emit()
 
@@ -123,52 +131,40 @@ func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player") or body.name.to_lower().begins_with("player"):
 		_is_player_inside = true
 		_player_ref = body
-		if not _is_inspecting:
-			_show_outline()
-		_refresh_prompt()
+		InteractionFocus.register(self)
+		_refresh_visuals()
 
 
 func _on_body_exited(body: Node3D) -> void:
 	if body == _player_ref:
 		_is_player_inside = false
 		_player_ref = null
-		_hide_outline()
-		_refresh_prompt()
+		InteractionFocus.unregister(self)
+		_refresh_visuals()
 
 
-## "SpriteClosed" (aviso de interacción): visible solo si el jugador está dentro del área,
-## la imagen no está abierta y no hay modo fusil activo.
-func _refresh_prompt() -> void:
+## Outline y aviso ("SpriteClosed"): solo si el jugador está dentro del área, la imagen no está
+## abierta, el objeto tiene el foco (es el más cercano) y no hay nada abierto encima (modo fusil o inventario).
+func _refresh_visuals() -> void:
+	var show_prompt: bool = _is_player_inside and not _is_inspecting \
+		and not CameraDirector.is_first_person() and not Inventory.menu_open \
+		and is_instance_valid(_player_ref) and InteractionFocus.is_focused(self, _player_ref)
 	if sprite_closed:
-		sprite_closed.visible = _is_player_inside and not _is_inspecting and not CameraDirector.is_first_person()
+		sprite_closed.visible = show_prompt
+	if show_prompt != _highlighted:
+		_highlighted = show_prompt
+		if show_prompt:
+			_show_outline()
+		else:
+			_hide_outline()
 
 
-## Congela al jugador mientras dura la inspección. Se guarda en _frozen_player, a propósito
-## separado de _player_ref: _player_ref se anula cuando el jugador sale del Area3D (o el área se
-## aleja) y, aun así, hay que poder devolverle el control al cerrar el menú.
-func _freeze_player(player: Node) -> void:
-	if not is_instance_valid(player):
-		return
-	_frozen_player = player
-	if "velocity" in player:
-		player.velocity = Vector3.ZERO
-	if "anim_controller" in player and player.anim_controller:
-		player.anim_controller.update_locomotion(player.is_on_floor(), 0.0)
-	player.set_physics_process(false)
-	if "combat_controller" in player and player.combat_controller:
-		player.combat_controller.interrupt_actions()
-		player.combat_controller.set_process(false)
-
-
-## Devuelve el control SIEMPRE: no depende de si el jugador sigue dentro del Area3D.
+## Devuelve el control SIEMPRE: no depende de si el jugador sigue dentro del Area3D. Se usa la
+## referencia propia _frozen_player porque _player_ref se anula al salir del área.
 func _release_player() -> void:
 	var player: Node = _frozen_player
 	_frozen_player = null
-	if not is_instance_valid(player):
-		return
-	player.set_physics_process(true)
-	if "combat_controller" in player and player.combat_controller:
-		player.combat_controller.set_process(true)
+	PlayerControlLock.release(player)
 
 
 func _get_canvas() -> CanvasLayer:

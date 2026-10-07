@@ -474,7 +474,7 @@ func _build_camera() -> void:
 
 func _build_reticle() -> void:
 	_reticle_layer = CanvasLayer.new()
-	_reticle_layer.layer = 100 # sobre la UI de juego, bajo las barras 4:3 (127) y el fundido (128)
+	_reticle_layer.layer = 100 # sobre la UI de juego, bajo las barras 4:3 (126), el inventario (127) y el fundido (128)
 	_reticle_layer.visible = false
 	add_child(_reticle_layer)
 

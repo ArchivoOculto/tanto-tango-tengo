@@ -75,7 +75,7 @@ func _animate_bars(active: bool, duration: float) -> void:
 # --- SETUP INTERNO ---
 func _build_bars() -> void:
 	var layer: CanvasLayer = CanvasLayer.new()
-	layer.layer = 127 # justo debajo del fundido de WarpManager (128)
+	layer.layer = 126 # bajo el inventario (127) y el fundido de WarpManager (128); sobre la UI de juego
 	add_child(layer)
 
 	_bar_left = _make_bar(Control.PRESET_LEFT_WIDE)

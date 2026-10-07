@@ -1,0 +1,222 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://c75pq0krelws6" path="res://Scripts/inventory/inventory_menu.gd" id="1_invmenu"]
+[ext_resource type="SpriteFrames" path="res://Assets/2D/ui_buttons_frames.tres" id="1_m23wo"]
+
+[node name="InventoryMenu" type="CanvasLayer" unique_id=1276957701]
+script = ExtResource("1_invmenu")
+layer = 127
+visible = false
+
+[node name="Root" type="Control" parent="." unique_id=2099827111]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="Root" unique_id=1614672327]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Title" type="Label" parent="Root" unique_id=1958296668]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 26.0
+offset_right = 300.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 30
+theme_override_constants/outline_size = 12
+text = "inventario"
+vertical_alignment = 1
+
+[node name="ItemList" type="VBoxContainer" parent="Root" unique_id=454487753]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 40.0
+offset_top = 100.0
+offset_right = 290.0
+offset_bottom = 400.0
+theme_override_constants/separation = 4
+
+[node name="Preview" type="Control" parent="Root" unique_id=319668453]
+unique_name_in_owner = true
+anchors_preset = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+mouse_filter = 2
+
+[node name="Background" type="ColorRect" parent="Root/Preview" unique_id=1117390227]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -125.0
+offset_top = -125.0
+offset_right = 125.0
+offset_bottom = 125.0
+mouse_filter = 2
+color = Color(0.09, 0.09, 0.09, 0.36862746)
+
+[node name="Image2D" type="TextureRect" parent="Root/Preview" unique_id=559070433]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="View3D" type="TextureRect" parent="Root/Preview" unique_id=1552575782]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SubViewport" type="SubViewport" parent="Root/Preview" unique_id=1080249695]
+unique_name_in_owner = true
+transparent_bg = true
+size = Vector2i(250, 250)
+
+[node name="ViewCamera" type="Camera3D" parent="Root/Preview/SubViewport" unique_id=1124333827]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.438)
+
+[node name="ObjectPivot" type="Marker3D" parent="Root/Preview/SubViewport" unique_id=1781144802]
+unique_name_in_owner = true
+
+[node name="ItemName" type="Label" parent="Root" unique_id=995884833]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 590.0
+offset_top = 130.0
+offset_right = 820.0
+offset_bottom = 174.0
+theme_override_font_sizes/font_size = 28
+theme_override_constants/outline_size = 12
+
+[node name="ItemDescription" type="Label" parent="Root" unique_id=1531634992]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.85)
+layout_mode = 0
+offset_left = 590.0
+offset_top = 180.0
+offset_right = 820.0
+offset_bottom = 340.0
+theme_override_font_sizes/font_size = 17
+theme_override_constants/outline_size = 8
+autowrap_mode = 3
+
+[node name="EmptyLabel" type="Label" parent="Root" unique_id=679833932]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 1, 1, 0.6)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -20.0
+offset_right = 150.0
+offset_bottom = 20.0
+theme_override_font_sizes/font_size = 24
+theme_override_constants/outline_size = 10
+text = "(vacío)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hints" type="Control" parent="Root" unique_id=2132605302]
+anchors_preset = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+mouse_filter = 2
+
+[node name="CloseHint" type="Label" parent="Root/Hints" unique_id=626370304]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.0
+offset_top = 134.0
+offset_right = 59.0
+offset_bottom = 164.0
+theme_override_font_sizes/font_size = 21
+theme_override_constants/outline_size = 10
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Icon" type="AnimatedSprite2D" parent="Root/Hints/CloseHint" unique_id=1051987769]
+position = Vector2(34, 16)
+scale = Vector2(0.8, 0.8)
+sprite_frames = ExtResource("1_m23wo")
+animation = &"buttons"
+frame = 2
+
+[node name="RotateHint" type="Label" parent="Root/Hints" unique_id=1895453051]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.0
+offset_top = 159.0
+offset_right = 59.0
+offset_bottom = 189.0
+theme_override_font_sizes/font_size = 21
+theme_override_constants/outline_size = 10
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Icon" type="AnimatedSprite2D" parent="Root/Hints/RotateHint" unique_id=41485379]
+position = Vector2(34, 16)
+scale = Vector2(0.8, 0.8)
+sprite_frames = ExtResource("1_m23wo")
+animation = &"buttons"
+frame = 8
+
+[node name="NavHint" type="Label" parent="Root/Hints" unique_id=223497960]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.7)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.0
+offset_top = 186.0
+offset_right = 59.0
+offset_bottom = 214.0
+theme_override_font_sizes/font_size = 17
+theme_override_constants/outline_size = 8
+text = "↑ ↓ elegir"
+horizontal_alignment = 1
+vertical_alignment = 1

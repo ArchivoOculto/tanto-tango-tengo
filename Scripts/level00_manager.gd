@@ -53,6 +53,8 @@ var _ending: bool = false
 func _ready() -> void:
 	# Estado limpio de los autoloads (sobreviven a las recargas de escena)
 	CameraDirector.reset()
+	Inventory.reset()
+	InteractionFocus.reset()
 
 	_player = get_tree().get_first_node_in_group("player") as Player
 	_connect_end_picture()
@@ -146,6 +148,7 @@ func _on_end_theme_finished() -> void:
 func _restart_game() -> void:
 	restart_requested.emit()
 	CameraDirector.reset() # zonas/forzados/modo fusil/barras 4:3 fuera antes de recargar
+	Inventory.reset() # el inventario no sobrevive al reinicio
 	if restart_scene:
 		get_tree().change_scene_to_packed(restart_scene)
 	else:

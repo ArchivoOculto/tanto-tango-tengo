@@ -5,14 +5,21 @@ class_name InteractableObject
 ##
 ## Uso: agregar la escena interactable_object.tscn como HIJA del objeto 3D (el "objeto" es el
 ## padre directo: un MeshInstance3D, o cualquier nodo que contenga mallas) y agregar a mano un
-## Area3D con su CollisionShape3D que delimite dónde el jugador puede interactuar.
+## Area3D con su CollisionShape3D (collision_layer = 0, collision_mask = 2) que delimite dónde el
+## jugador puede interactuar.
 ##
-##  - Con el jugador dentro del Area3D: el objeto se resalta con un contorno amarillo y aparece
+##  - Con el jugador dentro del Area3D: el objeto se resalta con un contorno y aparece
 ##    "ObjectClosed" (el aviso de interacción).
-##  - Con "interact": se congela al jugador, se oculta "ObjectClosed", aparece "ObjectOnScreen" y
-##    el objeto se CLONA dentro de su SubViewport. Con el stick derecho (acciones aim_*) se lo
-##    rota en cualquier eje; siempre queda fijo en posición, girando sobre su centro.
+##  - Con "interact" (○): se congela al jugador, se oculta "ObjectClosed", aparece "ObjectOnScreen" y
+##    el objeto se CLONA dentro de su SubViewport. Con el stick derecho se lo rota en cualquier
+##    eje; siempre queda fijo en posición, girando sobre su centro.
 ##  - Con "interact" de nuevo: se cierra, se libera el clon y el jugador recupera el control.
+##
+## INVENTARIO Y ACCIONES (todo se configura desde el Inspector):
+##  - 'item': si se asigna, el menú muestra "guardar" (△, acción object_save). Al usarlo el objeto
+##    sale del mundo y pasa al Inventory. Si queda vacío (ej: la radio), el objeto NO se puede guardar.
+##  - 'actions': filas extra del menú. Una acción con 'required_item' solo aparece cuando el
+##    jugador lleva ese ítem. Al activarla se emite action_triggered; quien la escuche programa el efecto.
 ##
 ## El clon solo copia las mallas visibles (MeshInstance3D, MultiMeshInstance3D, Sprite3D,
 ## Label3D): sin scripts, colisiones ni hijos de lógica.
@@ -21,9 +28,26 @@ class_name InteractableObject
 signal opened
 ## Se emite al cerrarlo.
 signal closed
+## El objeto salió del mundo y entró al inventario.
+signal stored(item: ItemData)
+## El objeto volvió al mundo (ver drop_to_world) y se puede volver a agarrar.
+signal dropped(item: ItemData)
+## Se activó una acción del menú. 'consumed' es la entrada del inventario que la acción consumió
+## (null si no consume nada).
+signal action_triggered(action: ObjectAction, consumed: InventoryEntry)
 
 @export_group("Zona de interacción")
 @export var area_3d: Area3D ## Asignar manualmente o dejar vacío para auto-detectar un Area3D bajo el objeto
+
+@export_group("Inventario")
+## Si se asigna, el objeto se puede GUARDAR en el inventario. Vacío = solo se inspecciona.
+@export var item: ItemData
+## Radio (en metros) de la zona de interacción que se crea cuando el objeto vuelve al mundo.
+@export var drop_area_radius: float = 0.3
+
+@export_group("Acciones del menú")
+## Filas extra del menú. Las que requieren un ítem se desbloquean al tenerlo en el inventario.
+@export var actions: Array[ObjectAction] = []
 
 @export_group("Outline")
 @export var outline_color: Color = Color(1.0, 0.9, 0.2, 1.0) ## Color del borde al acercarse
@@ -49,15 +73,20 @@ signal closed
 @onready var object_closed: Control = get_node_or_null("ObjectClosed") ## Aviso para abrir, visible solo al estar cerca y sin inspeccionar
 
 var animation_player: AnimationPlayer
+var viewer: ObjectViewer
+
+## false = el objeto ignora al jugador (sin aviso, sin outline, sin menú). Lo usa el guardado
+## (el objeto ya no está en el mundo) y el vuelo de vuelta al mundo.
+var interaction_enabled: bool = true:
+	set(value):
+		interaction_enabled = value
+		if not value and _is_inspecting:
+			_close_inspection()
+		_sync_focus_registration()
+		if is_node_ready():
+			_refresh_visuals()
 
 var _source: Node3D ## El objeto 3D que se resalta y se clona (el padre directo)
-var _sub_viewport: SubViewport
-var _view_camera: Camera3D
-var _pivot: Node3D
-var _holder: Node3D ## Raíz del clon; cuelga de _pivot
-var _bounds: AABB
-var _has_bounds: bool = false
-
 var _is_player_inside: bool = false
 var _is_inspecting: bool = false
 var _player_ref: Node = null ## Jugador dentro del Area3D (se anula al salir)
@@ -65,6 +94,18 @@ var _frozen_player: Node = null ## Jugador congelado por la inspección abierta 
 var _canvas: CanvasLayer = null
 var _outline_material: ShaderMaterial = null
 var _outlined: Dictionary = {} ## MeshInstance3D -> material_overlay que tenía antes del outline
+var _highlighted: bool = false
+var _drop_area: Area3D = null
+var _drop_tween: Tween = null
+
+# Filas del menú
+const ROW_STEP_DEFAULT: float = 25.0
+var _ui_menu: Control
+var _close_row: Label
+var _save_row: Label
+var _rotate_row: Label
+var _action_rows: Array[Label] = [] ## Una fila por cada elemento de 'actions' (mismo orden)
+var _available_actions: Array[ObjectAction] = [] ## Acciones desbloqueadas en el menú abierto
 
 
 func _ready() -> void:
@@ -84,17 +125,22 @@ func _ready() -> void:
 					break
 
 	if area_3d:
-		area_3d.body_entered.connect(_on_body_entered)
-		area_3d.body_exited.connect(_on_body_exited)
+		bind_area(area_3d)
 	else:
 		push_warning("InteractableObject: no se encontró un Area3D bajo " + _source.name + ". Agregá uno con su CollisionShape3D.")
 
 	# 3. UI: las dos comparten el mismo CanvasLayer (se dibujan a pantalla)
+	var sub_viewport: SubViewport
+	var view_camera: Camera3D
+	var pivot: Node3D
+	var texture_rect: TextureRect
 	if object_on_screen:
 		animation_player = object_on_screen.find_child("AnimationPlayer", true, false) as AnimationPlayer
-		_sub_viewport = object_on_screen.find_child("SubViewport", true, false) as SubViewport
-		_view_camera = object_on_screen.find_child("SubView Camera", true, false) as Camera3D
-		_pivot = object_on_screen.find_child("ObjectPivot", true, false) as Node3D
+		sub_viewport = object_on_screen.find_child("SubViewport", true, false) as SubViewport
+		view_camera = object_on_screen.find_child("SubView Camera", true, false) as Camera3D
+		pivot = object_on_screen.find_child("ObjectPivot", true, false) as Node3D
+		texture_rect = object_on_screen.find_child("TextureRect", true, false) as TextureRect
+		_ui_menu = object_on_screen.find_child("UI Menu", true, false) as Control
 
 	for ui_control in [object_on_screen, object_closed]:
 		if ui_control and not (ui_control.get_parent() is CanvasLayer):
@@ -102,18 +148,34 @@ func _ready() -> void:
 
 	if object_on_screen:
 		object_on_screen.visible = false
-	_refresh_prompt()
-	_setup_viewer()
 
-	# El aviso se esconde mientras el modo fusil está activo (ahí no se puede interactuar)
-	CameraDirector.first_person_changed.connect(func(_active: bool): _refresh_prompt())
+	# 4. Visor 3D compartido
+	viewer = ObjectViewer.new()
+	viewer.name = "ObjectViewer"
+	viewer.rotation_speed_degrees = rotation_speed_degrees
+	viewer.rotation_response_curve = rotation_response_curve
+	viewer.invert_y = invert_y
+	viewer.auto_fit = auto_fit
+	viewer.fit_fraction = fit_fraction
+	viewer.scale_multiplier = scale_multiplier
+	viewer.light_energy = viewer_light_energy
+	viewer.ambient_color = viewer_ambient_color
+	viewer.ambient_energy = viewer_ambient_energy
+	add_child(viewer)
+	if not viewer.setup(sub_viewport, view_camera, pivot, texture_rect):
+		push_warning("InteractableObject: faltan SubViewport, 'SubView Camera' u ObjectPivot dentro de ObjectOnScreen.")
 
-	# 4. Material del contorno
+	# 5. Filas del menú
+	_setup_menu_rows()
+
+	# 6. Material del contorno
 	_init_outline_material()
+	_refresh_visuals()
 
 
 func _exit_tree() -> void:
 	_hide_outline()
+	InteractionFocus.unregister(self)
 	# Si el objeto desaparece con el menú abierto (queue_free, cambio de escena...), el jugador no
 	# puede quedar congelado.
 	if _is_inspecting:
@@ -123,117 +185,93 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	if _is_inspecting:
-		_rotate_with_stick(delta)
+		viewer.rotate_with_stick(delta)
+	elif _is_player_inside or _highlighted:
+		_refresh_visuals() # el foco puede pasar a otro objeto cercano, o el modo fusil/inventario puede abrirse
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if CameraDirector.is_first_person():
-		return # modo fusil activo: no inspeccionar (al cerrar reactivaría el movimiento del jugador)
-	if event.is_action_pressed("interact"):
-		if _is_inspecting:
-			_close_inspection()
+	if not interaction_enabled or CameraDirector.is_first_person() or Inventory.menu_open:
+		return # modo fusil o inventario abiertos: no inspeccionar (al cerrar reactivarían el movimiento)
+
+	if _is_inspecting:
+		if _handle_menu_input(event):
 			get_viewport().set_input_as_handled()
-		elif _is_player_inside and is_instance_valid(_player_ref):
-			_open_inspection()
-			get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("interact") and _can_open():
+		_open_inspection()
+		get_viewport().set_input_as_handled()
 
 
-# ---------------------------------------------------------------- ABRIR / CERRAR
-
-func _open_inspection() -> void:
-	_hide_outline() # antes de clonar, para que el clon no herede el contorno
-	_is_inspecting = true
-
-	_build_clone()
-	if _pivot:
-		_pivot.transform.basis = Basis.IDENTITY # siempre se empieza viendo el objeto "de frente"
-	if _sub_viewport:
-		_sub_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	if _view_camera:
-		_view_camera.make_current()
-
-	if object_on_screen:
-		object_on_screen.visible = true
-	_refresh_prompt() # "ObjectClosed" se oculta, "ObjectOnScreen" se muestra
-
-	if animation_player and animation_player.has_animation("floating"):
-		animation_player.play("floating")
-
-	_freeze_player(_player_ref)
-
-	opened.emit()
+## Posición que usa InteractionFocus para decidir cuál es el objeto más cercano al jugador.
+func get_focus_position() -> Vector3:
+	return _source.global_position if is_instance_valid(_source) else global_position
 
 
-func _close_inspection() -> void:
-	_is_inspecting = false
-	if object_on_screen:
-		object_on_screen.visible = false
-	if _sub_viewport:
-		_sub_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	_clear_clone()
-	_refresh_prompt() # vuelve "ObjectClosed" si el jugador sigue en la zona
+func _can_open() -> bool:
+	return interaction_enabled and _is_player_inside and is_instance_valid(_player_ref) \
+		and InteractionFocus.is_focused(self, _player_ref)
 
-	if animation_player:
-		animation_player.stop()
 
-	_release_player() # siempre, esté o no el jugador dentro del área
+# ---------------------------------------------------------------- ZONA DE INTERACCIÓN
 
-	if _is_player_inside:
-		_show_outline()
-
-	closed.emit()
+## Cambia la zona de interacción por 'new_area' (la anterior deja de contar).
+func bind_area(new_area: Area3D) -> void:
+	if is_instance_valid(area_3d):
+		if area_3d.body_entered.is_connected(_on_body_entered):
+			area_3d.body_entered.disconnect(_on_body_entered)
+		if area_3d.body_exited.is_connected(_on_body_exited):
+			area_3d.body_exited.disconnect(_on_body_exited)
+	area_3d = new_area
+	_is_player_inside = false
+	_player_ref = null
+	_sync_focus_registration()
+	if is_instance_valid(area_3d):
+		area_3d.body_entered.connect(_on_body_entered)
+		area_3d.body_exited.connect(_on_body_exited)
+	if is_node_ready():
+		_refresh_visuals()
 
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player") or body.name.to_lower().begins_with("player"):
 		_is_player_inside = true
 		_player_ref = body
-		if not _is_inspecting:
-			_show_outline()
-		_refresh_prompt()
+		_sync_focus_registration()
+		_refresh_visuals()
 
 
 func _on_body_exited(body: Node3D) -> void:
 	if body == _player_ref:
 		_is_player_inside = false
 		_player_ref = null
-		_hide_outline()
-		_refresh_prompt()
+		_sync_focus_registration()
+		_refresh_visuals()
 
 
-## "ObjectClosed" (aviso de interacción): visible solo si el jugador está dentro del área,
-## el visor no está abierto y no hay modo fusil activo.
-func _refresh_prompt() -> void:
+## Participa del arbitraje de foco si y solo si está activo y el jugador está dentro de su zona. Un
+## objeto desactivado (ej: el cassette guardado) no puede "ganar" por cercanía y tapar a otro de la
+## misma zona (ej: la radio).
+func _sync_focus_registration() -> void:
+	if interaction_enabled and _is_player_inside:
+		InteractionFocus.register(self)
+	else:
+		InteractionFocus.unregister(self)
+
+
+## Outline y aviso ("ObjectClosed"): solo si el objeto está activo, el jugador está dentro del área,
+## tiene el foco (es el más cercano) y no hay nada abierto encima (visor, modo fusil o inventario).
+func _refresh_visuals() -> void:
+	var show_prompt: bool = interaction_enabled and _is_player_inside and not _is_inspecting \
+		and not CameraDirector.is_first_person() and not Inventory.menu_open \
+		and is_instance_valid(_player_ref) and InteractionFocus.is_focused(self, _player_ref)
 	if object_closed:
-		object_closed.visible = _is_player_inside and not _is_inspecting and not CameraDirector.is_first_person()
-
-
-## Congela al jugador mientras dura la inspección. Se guarda en _frozen_player, a propósito
-## separado de _player_ref: _player_ref se anula cuando el jugador sale del Area3D (o el área se
-## aleja) y, aun así, hay que poder devolverle el control al cerrar el menú.
-func _freeze_player(player: Node) -> void:
-	if not is_instance_valid(player):
-		return
-	_frozen_player = player
-	if "velocity" in player:
-		player.velocity = Vector3.ZERO
-	if "anim_controller" in player and player.anim_controller:
-		player.anim_controller.update_locomotion(player.is_on_floor(), 0.0)
-	player.set_physics_process(false)
-	if "combat_controller" in player and player.combat_controller:
-		player.combat_controller.interrupt_actions()
-		player.combat_controller.set_process(false)
-
-
-## Devuelve el control SIEMPRE: no depende de si el jugador sigue dentro del Area3D.
-func _release_player() -> void:
-	var player: Node = _frozen_player
-	_frozen_player = null
-	if not is_instance_valid(player):
-		return
-	player.set_physics_process(true)
-	if "combat_controller" in player and player.combat_controller:
-		player.combat_controller.set_process(true)
+		object_closed.visible = show_prompt
+	if show_prompt != _highlighted:
+		_highlighted = show_prompt
+		if show_prompt:
+			_show_outline()
+		else:
+			_hide_outline()
 
 
 func _get_canvas() -> CanvasLayer:
@@ -244,154 +282,230 @@ func _get_canvas() -> CanvasLayer:
 	return _canvas
 
 
-# ---------------------------------------------------------------- VISOR 3D
+# ---------------------------------------------------------------- ABRIR / CERRAR
 
-func _setup_viewer() -> void:
-	if _sub_viewport == null or _view_camera == null or _pivot == null:
-		push_warning("InteractableObject: faltan SubViewport, 'SubView Camera' u ObjectPivot dentro de ObjectOnScreen.")
+func _open_inspection() -> void:
+	_is_inspecting = true
+	InteractionFocus.begin_inspection(self)
+	_refresh_visuals() # quita outline y aviso
+
+	if viewer.is_ready_to_show():
+		viewer.show_source(_source, self) # clona el objeto en el visor
+		viewer.set_active(true)
+	if object_on_screen:
+		object_on_screen.visible = true
+	_rebuild_menu_rows()
+
+	if animation_player and animation_player.has_animation("floating"):
+		animation_player.play("floating")
+
+	_frozen_player = _player_ref
+	PlayerControlLock.freeze(_frozen_player)
+	opened.emit()
+
+
+func _close_inspection() -> void:
+	_is_inspecting = false
+	InteractionFocus.end_inspection(self)
+	if object_on_screen:
+		object_on_screen.visible = false
+	viewer.set_active(false)
+	viewer.clear()
+
+	if animation_player:
+		animation_player.stop()
+
+	_release_player() # siempre, esté o no el jugador dentro del área
+	_refresh_visuals() # vuelve el aviso si el jugador sigue en la zona
+	closed.emit()
+
+
+## Devuelve el control SIEMPRE: no depende de si el jugador sigue dentro del Area3D. Se usa la
+## referencia propia _frozen_player porque _player_ref se anula al salir del área.
+func _release_player() -> void:
+	var player: Node = _frozen_player
+	_frozen_player = null
+	PlayerControlLock.release(player)
+
+
+# ---------------------------------------------------------------- FILAS DEL MENÚ
+
+func _setup_menu_rows() -> void:
+	if _ui_menu == null:
 		return
+	_close_row = _ui_menu.get_node_or_null("CloseText") as Label
+	_save_row = _ui_menu.get_node_or_null("GuardarText") as Label
+	_rotate_row = _ui_menu.get_node_or_null("RotateText") as Label
 
-	# Mundo propio: sin esto el visor mostraría el nivel entero y el clon se iluminaría con sus luces.
-	_sub_viewport.own_world_3d = true
-	_sub_viewport.transparent_bg = true
-	_sub_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED # solo renderiza mientras se inspecciona
-
-	# Textura ligada directamente al viewport (no depende de rutas, sobrevive a los reparent)
-	var texture_rect: TextureRect = object_on_screen.find_child("TextureRect", true, false) as TextureRect
-	if texture_rect:
-		texture_rect.texture = _sub_viewport.get_texture()
-
-	# Iluminación propia del visor
-	var environment := Environment.new()
-	environment.background_mode = Environment.BG_CLEAR_COLOR
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = viewer_ambient_color
-	environment.ambient_light_energy = viewer_ambient_energy
-	_view_camera.environment = environment
-
-	var light := DirectionalLight3D.new()
-	light.name = "ViewerLight"
-	light.light_energy = viewer_light_energy
-	light.shadow_enabled = false
-	light.rotation_degrees = Vector3(-35.0, 30.0, 0.0)
-	_sub_viewport.add_child(light)
+	# Una fila por acción, clonando el estilo de "GuardarText" (mismo tamaño, contorno y marco de botón)
+	_action_rows.clear()
+	if _save_row == null and not actions.is_empty():
+		push_warning("InteractableObject: falta 'GuardarText' en UI Menu, se usa como modelo de las filas de acciones.")
+	for action in actions:
+		var row: Label = null
+		if _save_row and action:
+			row = _save_row.duplicate() as Label
+			row.name = "Action_" + String(action.id)
+			var icon := row.get_child(0) as AnimatedSprite2D
+			ButtonPrompt.setup_row(row, icon, action.label, action.icon_frame)
+			row.visible = false
+			_ui_menu.add_child(row)
+		_action_rows.append(row)
 
 
-## Rotación libre con el stick derecho. Se compone en los ejes de la CÁMARA (no del objeto),
-## así "derecha" siempre gira hacia la derecha sin importar cómo haya quedado el objeto.
-func _rotate_with_stick(delta: float) -> void:
-	if _pivot == null:
+## Acomoda las filas visibles una debajo de otra: cerrar, guardar, acciones desbloqueadas, rotar.
+func _rebuild_menu_rows() -> void:
+	if _ui_menu == null:
 		return
-	var stick: Vector2 = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
-	if stick == Vector2.ZERO:
-		return
+	_available_actions.clear()
 
-	var strength: float = pow(stick.length(), rotation_response_curve)
-	var dir: Vector2 = stick.normalized() * strength
-	var step: float = deg_to_rad(rotation_speed_degrees) * delta
+	var ordered: Array[Label] = []
+	if _close_row:
+		ordered.append(_close_row)
 
-	var yaw: float = dir.x * step # stick a la derecha => la cara frontal gira hacia la derecha
-	var pitch: float = dir.y * step * (-1.0 if invert_y else 1.0) # stick arriba => la cara frontal sube
+	if _save_row:
+		_save_row.visible = item != null
+		if item != null:
+			ordered.append(_save_row)
 
-	var rotation_step: Basis = Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch)
-	_pivot.transform.basis = (rotation_step * _pivot.transform.basis).orthonormalized()
-
-
-func _build_clone() -> void:
-	_clear_clone()
-	if _pivot == null or _source == null:
-		return
-
-	_holder = Node3D.new()
-	_holder.name = "ObjectClone"
-	_has_bounds = false
-
-	# El propio objeto, si es una malla, va con transform identidad (se muestra "en reposo",
-	# sin su posición/rotación/escala en el mundo)
-	if _is_cloneable_visual(_source):
-		var root_copy: Node3D = _duplicate_visual(_source)
-		root_copy.transform = Transform3D.IDENTITY
-		_holder.add_child(root_copy)
-		_grow_bounds(_source, Transform3D.IDENTITY)
-
-	_clone_children(_source, _holder, Transform3D.IDENTITY)
-	_pivot.add_child(_holder)
-	_fit_clone()
-
-
-func _clear_clone() -> void:
-	if is_instance_valid(_holder):
-		_holder.queue_free()
-	_holder = null
-	_has_bounds = false
-
-
-## Recorre el árbol del objeto y replica su jerarquía: las mallas se copian, el resto se
-## reemplaza por un Node3D vacío para conservar las transformaciones relativas.
-func _clone_children(src: Node, dst_parent: Node3D, accumulated: Transform3D) -> void:
-	for child in src.get_children():
-		if child == self or not (child is Node3D):
-			continue # ni a sí mismo (recursión) ni lo que no sea 3D (UI, audio, etc.)
-		var node: Node3D = child as Node3D
-		if not node.visible:
+	for i in actions.size():
+		var action: ObjectAction = actions[i]
+		var row: Label = _action_rows[i] if i < _action_rows.size() else null
+		if action == null or row == null:
 			continue
+		var unlocked: bool = action.required_item == null or Inventory.has_item(action.required_item)
+		row.visible = unlocked or action.show_when_locked
+		row.modulate = Color(1, 1, 1, 1.0 if unlocked else 0.4)
+		if unlocked:
+			_available_actions.append(action)
+		if row.visible:
+			ordered.append(row)
 
-		var node_transform: Transform3D = accumulated * node.transform
-		var copy: Node3D
-		if _is_cloneable_visual(node):
-			copy = _duplicate_visual(node)
-			_grow_bounds(node, node_transform)
+	if _rotate_row:
+		_rotate_row.visible = viewer.is_ready_to_show()
+		if _rotate_row.visible:
+			ordered.append(_rotate_row)
+
+	var top: float = _close_row.offset_top if _close_row else 109.0
+	var step: float = ROW_STEP_DEFAULT
+	if _close_row and _save_row:
+		step = absf(_save_row.offset_top - _close_row.offset_top)
+		if step < 1.0:
+			step = ROW_STEP_DEFAULT
+	for row in ordered:
+		var height: float = row.offset_bottom - row.offset_top
+		row.offset_top = top
+		row.offset_bottom = top + height
+		top += step
+
+
+func _handle_menu_input(event: InputEvent) -> bool:
+	if event.is_action_pressed("interact"):
+		_close_inspection()
+		return true
+	if item != null and event.is_action_pressed("object_save"):
+		_store_in_inventory()
+		return true
+	for action in _available_actions:
+		if event.is_action_pressed(action.input_action):
+			_trigger_action(action)
+			return true
+	return false
+
+
+func _trigger_action(action: ObjectAction) -> void:
+	var consumed: InventoryEntry = null
+	if action.required_item != null:
+		if not Inventory.has_item(action.required_item):
+			return
+		if action.consume_required_item:
+			consumed = Inventory.remove_item(action.required_item)
+	if action.close_menu_on_trigger and _is_inspecting:
+		_close_inspection()
+	action_triggered.emit(action, consumed)
+
+
+# ---------------------------------------------------------------- INVENTARIO
+
+## Guarda el objeto: sale del mundo y entra al Inventory. Se usa desde el menú (△).
+func _store_in_inventory() -> void:
+	if item == null:
+		return
+
+	# Plantilla para la vista previa 3D del inventario: la del ítem si define una escena, y si no,
+	# el clon que ya está armado en el visor.
+	var template: Dictionary
+	if item.preview_scene != null:
+		var instance: Node = item.preview_scene.instantiate()
+		if instance is Node3D:
+			template = ObjectViewer.build_template(instance as Node3D)
+		instance.free()
+	if template.is_empty():
+		template = viewer.take_template()
+	var template_node: Node3D = template.node if template.get("valid", false) else null
+	var bounds: AABB = template.bounds if template.get("valid", false) else AABB()
+
+	var entry: InventoryEntry = Inventory.add_item(item, self, template_node, bounds)
+	if entry == null:
+		return
+
+	_close_inspection()
+	_source.visible = false # ya no está en el mundo
+	interaction_enabled = false
+	stored.emit(item)
+
+
+## Devuelve el objeto al mundo con un salto desde 'from_position' hasta 'to_position' y le crea una
+## zona de interacción nueva donde aterriza, para poder volver a agarrarlo. (La zona original puede
+## estar lejos: el objeto no tiene por qué volver al mismo lugar.)
+func drop_to_world(from_position: Vector3, to_position: Vector3, hop_height: float = 0.2, duration: float = 0.5) -> void:
+	if not is_instance_valid(_source):
+		return
+	interaction_enabled = false
+	_source.visible = true
+	_source.global_position = from_position
+
+	if _drop_tween and _drop_tween.is_valid():
+		_drop_tween.kill()
+	_drop_tween = _source.create_tween()
+	# Un salto principal y, al aterrizar, un rebote chico
+	_drop_tween.tween_method(func(u: float):
+		if not is_instance_valid(_source):
+			return
+		var position: Vector3
+		if u < 0.7:
+			var t: float = u / 0.7
+			position = from_position.lerp(to_position, t) + Vector3.UP * hop_height * 4.0 * t * (1.0 - t)
 		else:
-			copy = Node3D.new()
-		copy.transform = node.transform
-		dst_parent.add_child(copy)
-		_clone_children(node, copy, node_transform)
+			var t2: float = (u - 0.7) / 0.3
+			position = to_position + Vector3.UP * hop_height * 0.3 * 4.0 * t2 * (1.0 - t2)
+		_source.global_position = position
+	, 0.0, 1.0, duration)
+	_drop_tween.tween_callback(func():
+		_spawn_drop_area(to_position)
+		interaction_enabled = true
+		dropped.emit(item)
+	)
 
 
-func _is_cloneable_visual(node: Node) -> bool:
-	return node is MeshInstance3D or node is MultiMeshInstance3D or node is Sprite3D or node is Label3D
-
-
-## Copia solo el nodo: sin scripts, señales ni grupos (flags = 0) y sin hijos.
-func _duplicate_visual(node: Node3D) -> Node3D:
-	var copy: Node3D = node.duplicate(0) as Node3D
-	for grandchild in copy.get_children():
-		copy.remove_child(grandchild)
-		grandchild.free()
-	return copy
-
-
-func _grow_bounds(node: Node, node_transform: Transform3D) -> void:
-	var local_aabb: AABB = (node as VisualInstance3D).get_aabb()
-	if local_aabb.size == Vector3.ZERO:
-		return
-	var world_aabb: AABB = node_transform * local_aabb
-	if _has_bounds:
-		_bounds = _bounds.merge(world_aabb)
-	else:
-		_bounds = world_aabb
-		_has_bounds = true
-
-
-## Centra el clon sobre el pivote (para que gire sobre su centro y quede fijo) y, si
-## auto_fit está activo, lo escala para que ni siquiera la punta más lejana se salga del visor.
-func _fit_clone() -> void:
-	if not _has_bounds or _holder == null:
-		push_warning("InteractableObject: no se encontraron mallas para clonar bajo " + _source.name + ".")
-		return
-
-	var center: Vector3 = _bounds.get_center()
-	var radius: float = _bounds.size.length() * 0.5 # esfera que contiene a la caja: rote como rote, entra
-
-	var fit_scale: float = scale_multiplier
-	if auto_fit and radius > 0.0001 and _view_camera:
-		var distance: float = _view_camera.transform.origin.distance_to(_pivot.transform.origin)
-		var half_fov: float = deg_to_rad(_view_camera.fov) * 0.5
-		var target_radius: float = distance * sin(half_fov * fit_fraction)
-		fit_scale = (target_radius / radius) * scale_multiplier
-
-	_holder.scale = Vector3.ONE * fit_scale
-	_holder.position = -center * fit_scale
+func _spawn_drop_area(world_position: Vector3) -> void:
+	if is_instance_valid(_drop_area):
+		_drop_area.queue_free()
+	var area := Area3D.new()
+	area.name = "DropArea"
+	area.top_level = true # sin heredir la escala/rotación del objeto
+	area.collision_layer = 0
+	area.collision_mask = 2
+	area.monitorable = false
+	var shape_node := CollisionShape3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = drop_area_radius
+	shape_node.shape = sphere
+	area.add_child(shape_node)
+	_source.add_child(area)
+	area.global_position = world_position
+	_drop_area = area
+	bind_area(area)
 
 
 # ---------------------------------------------------------------- OUTLINE

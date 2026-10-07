@@ -35,6 +35,9 @@
 [ext_resource type="PackedScene" uid="uid://bfeb1ihbgumys" path="res://Assets/3D/Cassette/Cassette_mesh.tscn" id="33_1e2yc"]
 [ext_resource type="PackedScene" uid="uid://bl5winfaxheex" path="res://Scenes/interactable_object.tscn" id="34_cm1ky"]
 [ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level00_manager.gd" id="99_lvl00"]
+[ext_resource type="Script" uid="uid://dqorn1gv08dnd" path="res://Scripts/radio.gd" id="50_radio"]
+[ext_resource type="Resource" path="res://Resources/Items/cassette.tres" id="51_cassette"]
+[ext_resource type="Script" uid="uid://cffuuu1umlvih" path="res://Scripts/inventory/object_action.gd" id="52_oaction"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -770,6 +773,13 @@ size = Vector3(2.5611815, 0.5, 2.929883)
 [sub_resource type="BoxShape3D" id="BoxShape3D_5ftdt"]
 size = Vector3(2.5684447, 0.5, 0.90000004)
 
+[sub_resource type="Resource" id="Resource_playtape"]
+script = ExtResource("52_oaction")
+id = &"play_tape"
+label = "reproducir cinta"
+required_item = ExtResource("51_cassette")
+consume_required_item = true
+
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
 [node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("end_picture")]
@@ -1071,14 +1081,27 @@ override_camera_speed = true
 custom_smoothing = 2.0
 door_action_delay = 2.0
 
-[node name="RadioShit" type="StaticBody3D" parent="InteractiveProps" unique_id=1201380270]
+[node name="RadioShit" type="StaticBody3D" parent="InteractiveProps" unique_id=1201380270 node_paths=PackedStringArray("interactable", "visual", "eject_point", "landing_point")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08043003, 0, 0)
+collision_layer = 9
+script = ExtResource("50_radio")
+interactable = NodePath("Radio/Interactable_object")
+visual = NodePath("Radio")
+eject_point = NodePath("CassetteEject")
+landing_point = NodePath("CassetteLanding")
+
+[node name="CassetteEject" type="Marker3D" parent="InteractiveProps/RadioShit" unique_id=1900000101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3036, 0.6, -3.85)
+
+[node name="CassetteLanding" type="Marker3D" parent="InteractiveProps/RadioShit" unique_id=1900000102]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2196, 0.12, -3.62)
 
 [node name="Radio" parent="InteractiveProps/RadioShit" unique_id=524702442 instance=ExtResource("32_tsagk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3039587, 0.35301754, -3.88642)
 
 [node name="Interactable_object" parent="InteractiveProps/RadioShit/Radio" unique_id=313652406 node_paths=PackedStringArray("area_3d") instance=ExtResource("34_cm1ky")]
 area_3d = NodePath("Area3D")
+actions = Array[ExtResource("52_oaction")]([SubResource("Resource_playtape")])
 outline_color = Color(0.71844184, 0.03650001, 0.73, 1)
 outline_width = 1.0
 scale_multiplier = 1.25
@@ -1634,6 +1657,7 @@ area_3d = NodePath("../../RadioAltar/Area3D")
 outline_color = Color(0.71844184, 0.03650001, 0.73, 1)
 outline_width = 1.0
 scale_multiplier = 1.25
+item = ExtResource("51_cassette")
 
 [node name="CassetteMesh1" parent="Area 003/CassetteShit" unique_id=1905706799 instance=ExtResource("33_1e2yc")]
 transform = Transform3D(0.041278377, -0.49759483, 0.02637206, 0.0034463308, 0.026746854, 0.4992722, -0.49828127, -0.04103653, 0.0056378543, -0.020816505, 0.13148117, 0.00017762184)
