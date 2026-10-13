@@ -77,6 +77,10 @@ var viewer: ObjectViewer
 
 ## false = el objeto ignora al jugador (sin aviso, sin outline, sin menú). Lo usa el guardado
 ## (el objeto ya no está en el mundo) y el vuelo de vuelta al mundo.
+## Estado propio del objeto, para datos que deben sobrevivir a guardarlo y soltarlo (ej: el punto
+## de reproducción de un cassette). Lo comparte su InventoryEntry (ver InventoryEntry.state).
+var state: Dictionary = {}
+
 var interaction_enabled: bool = true:
 	set(value):
 		interaction_enabled = value

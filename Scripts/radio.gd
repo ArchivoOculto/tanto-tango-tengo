@@ -7,25 +7,41 @@ class_name Radio
 ##  - Se puede INSPECCIONAR con su InteractableObject, pero no guardar (no tiene 'item').
 ##  - Su InteractableObject debe tener una ObjectAction (id "play_tape") con 'required_item' = el
 ##    cassette y 'consume_required_item' = true. Al activarla (□) el cassette sale del inventario,
-##    queda "dentro" de la radio y se emite tape_play_started: ahí se programa lo que sigue.
-##  - Al GOLPEARLA se sacude (como los farolitos). Si tiene una cinta adentro, el cassette salta
-##    de la radio, aterriza cerca y se puede volver a agarrar (se emite tape_ejected).
+##    queda "dentro" de la radio y empieza a sonar su canción DESDE LA RADIO (audio 3D posicional).
+##  - Al GOLPEARLA se sacude (como los farolitos). Si tiene una cinta adentro, el cassette salta de la
+##    radio, aterriza cerca y se puede volver a agarrar. La radio se calla y el cassette RECUERDA en
+##    qué punto de la canción quedó: al volver a colocarlo, sigue desde ahí.
+##  - Cuando la canción termina se emite tape_finished (Level00Manager lo usa para cerrar el juego).
+##
+## La canción sale del cassette (CassetteItem.track). Si el ítem no es un CassetteItem se usa
+## 'fallback_track'.
 ##
 ## IMPORTANTE: para que la guitarra la detecte, el StaticBody3D necesita estar en la capa 4 o 8
 ## (collision_layer = 9 conserva la capa 1 de "mundo" y suma la 8 de "props").
 
-## Se activó "reproducir cinta": el cassette ya está dentro de la radio. Conectar acá la lógica propia.
+## Se activó "reproducir cinta": el cassette ya está dentro de la radio y empieza a sonar.
 signal tape_play_started(item: ItemData)
-## El cassette saltó de la radio y volvió al mundo.
+## El cassette saltó de la radio y volvió al mundo (la canción queda en pausa en ese punto).
 signal tape_ejected(item: ItemData)
+## La canción llegó a su fin.
+signal tape_finished(item: ItemData)
 ## La radio recibió un golpe (con o sin cinta).
 signal hit_received
 
-enum State { IDLE, PLAYING_TAPE }
+enum State { IDLE, PLAYING_TAPE, TAPE_FINISHED }
 
 @export var interactable: InteractableObject ## El menú de la radio. Vacío = se busca entre sus hijos.
 @export var visual: Node3D ## Nodo que se sacude. Vacío = el primer hijo 3D que tenga una malla.
 @export var play_tape_action_id: StringName = &"play_tape"
+
+@export_group("Reproducción")
+## Canción de respaldo si el ítem insertado no es un CassetteItem.
+@export var fallback_track: AudioStream
+@export var volume_db: float = 0.0
+## Distancia (m) a la que la canción se oye a volumen pleno; más lejos se atenúa. El mundo es chico: valores bajos.
+@export var unit_size: float = 3.0
+## Distancia máxima a la que se oye (0 = sin límite).
+@export var max_distance: float = 0.0
 
 @export_group("Sacudida")
 @export var shake_duration: float = 0.35
@@ -44,6 +60,7 @@ enum State { IDLE, PLAYING_TAPE }
 
 var state: State = State.IDLE
 var _inserted: InventoryEntry = null
+var _player: AudioStreamPlayer3D
 var _shake_tween: Tween
 var _rest_rotation: Vector3
 var _eject_pending: bool = false
@@ -71,9 +88,23 @@ func _ready() -> void:
 	else:
 		push_warning("Radio: no se encontró qué nodo sacudir (asignar 'visual').")
 
+	# La canción suena DESDE la radio (audio posicional), no como un sonido global
+	_player = AudioStreamPlayer3D.new()
+	_player.name = "TapePlayer"
+	_player.volume_db = volume_db
+	_player.unit_size = unit_size
+	_player.max_distance = max_distance
+	(visual if visual else self).add_child(_player)
+	_player.finished.connect(_on_track_finished)
+
 
 func is_playing_tape() -> bool:
 	return state == State.PLAYING_TAPE
+
+
+## true si hay un cassette dentro de la radio (sonando o terminado).
+func has_tape() -> bool:
+	return _inserted != null
 
 
 # ---------------------------------------------------------------- GOLPES
@@ -82,7 +113,7 @@ func is_playing_tape() -> bool:
 func take_hit(_damage: float = 0.0) -> void:
 	hit_received.emit()
 	_play_shake()
-	if state == State.PLAYING_TAPE and not _eject_pending:
+	if has_tape() and not _eject_pending:
 		_eject_pending = true
 		get_tree().create_timer(eject_delay).timeout.connect(_eject_tape)
 
@@ -115,27 +146,70 @@ func _play_shake() -> void:
 # ---------------------------------------------------------------- CINTA
 
 func _on_action_triggered(action: ObjectAction, consumed: InventoryEntry) -> void:
-	if action == null or action.id != play_tape_action_id or state == State.PLAYING_TAPE:
+	if action == null or action.id != play_tape_action_id or has_tape():
 		return
 	if consumed == null:
 		push_warning("Radio: la acción '%s' debe tener 'consume_required_item' activado para poder expulsar el cassette después." % play_tape_action_id)
+		return
 	_inserted = consumed
 	state = State.PLAYING_TAPE
-	tape_play_started.emit(consumed.item if consumed else action.required_item)
+	_start_playback()
+	tape_play_started.emit(consumed.item)
+
+
+## Empieza a sonar la canción del cassette, desde el punto donde quedó (0 si nunca se reprodujo).
+func _start_playback() -> void:
+	var track: AudioStream = _track_of(_inserted.item)
+	if track == null:
+		push_warning("Radio: el cassette no tiene canción (asignar 'track' en el CassetteItem o 'fallback_track' en la radio).")
+		return
+	var from: float = float(_inserted.state.get(CassetteItem.STATE_POSITION, 0.0))
+	if from >= track.get_length() - 0.05:
+		from = 0.0 # estaba prácticamente al final: se vuelve a empezar
+	_player.stream = track
+	_player.play(from)
+
+
+## Detiene la canción y devuelve el punto (en segundos) donde estaba.
+func _stop_playback() -> float:
+	if _player == null or not _player.playing:
+		return 0.0
+	var length: float = _player.stream.get_length() if _player.stream else 0.0
+	var position: float = _player.get_playback_position() + AudioServer.get_time_since_last_mix()
+	_player.stop()
+	return clampf(position, 0.0, length)
+
+
+func _track_of(item: ItemData) -> AudioStream:
+	if item is CassetteItem and (item as CassetteItem).track != null:
+		return (item as CassetteItem).track
+	return fallback_track
+
+
+func _on_track_finished() -> void:
+	if state != State.PLAYING_TAPE or _inserted == null:
+		return
+	state = State.TAPE_FINISHED
+	_inserted.state[CassetteItem.STATE_POSITION] = 0.0 # terminó: si se vuelve a poner, arranca de cero
+	tape_finished.emit(_inserted.item)
 
 
 func _eject_tape() -> void:
 	_eject_pending = false
-	if state != State.PLAYING_TAPE:
+	if _inserted == null:
 		return
 	var entry: InventoryEntry = _inserted
 	_inserted = null
+
+	# El cassette recuerda hasta dónde se reprodujo (si ya había terminado, vuelve a empezar de cero)
+	var position: float = _stop_playback() if state == State.PLAYING_TAPE else 0.0
+	entry.state[CassetteItem.STATE_POSITION] = position
 	state = State.IDLE
 
-	var source: InteractableObject = entry.source as InteractableObject if entry else null
+	var source: InteractableObject = entry.source as InteractableObject
 	if is_instance_valid(source):
 		source.drop_to_world(_eject_position(), _landing_position(), hop_height, hop_duration)
-	tape_ejected.emit(entry.item if entry else null)
+	tape_ejected.emit(entry.item)
 
 
 func _eject_position() -> Vector3:

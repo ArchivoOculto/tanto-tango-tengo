@@ -29,3 +29,6 @@ static func release(player: Node) -> void:
 	player.set_physics_process(true)
 	if "combat_controller" in player and player.combat_controller:
 		player.combat_controller.set_process(true)
+	# Un botón que sigue apretado (ej: □ activó una acción del menú) no debe contar como una pulsación
+	# nueva de juego: si no, el jugador atacaría o saltaría al cerrarse el menú.
+	GameplayInput.consume_held_actions()

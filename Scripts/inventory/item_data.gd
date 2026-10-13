@@ -30,6 +30,24 @@ class_name ItemData
 @export var properties: Dictionary = {}
 
 
+## Acciones que el inventario ofrece para este ítem cuando está seleccionado (ej: "rebobinar" en un
+## cassette). Se muestran como filas con su botón; cada ObjectAction usa 'input_action', 'label' e
+## 'icon_frame'. Se sobreescribe en las subclases; por defecto un ítem no ofrece ninguna.
+func get_inventory_actions(_entry: InventoryEntry) -> Array[ObjectAction]:
+	return []
+
+
+## Ejecuta una de las acciones de get_inventory_actions(). Se sobreescribe en las subclases.
+func do_inventory_action(_entry: InventoryEntry, _action: ObjectAction) -> void:
+	pass
+
+
+## Texto que se muestra bajo el nombre en el inventario. Las subclases pueden sumar información
+## del estado (ej: hasta dónde se reprodujo un cassette).
+func get_detail_text(_entry: InventoryEntry) -> String:
+	return description
+
+
 ## Nombre para mostrar: el 'display_name' o, si está vacío, el id.
 func get_label() -> String:
 	return display_name if display_name != "" else String(id)

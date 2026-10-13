@@ -150,7 +150,7 @@ func _apply_gravity(delta: float) -> void:
 
 
 func _handle_jump() -> void:
-	if Input.is_action_just_pressed("jump"):
+	if GameplayInput.just_pressed(&"jump"):
 		if is_on_floor() or jump_count < max_jumps:
 			velocity.y = jump_velocity
 			jump_count += 1

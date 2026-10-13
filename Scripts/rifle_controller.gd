@@ -237,7 +237,7 @@ func _process_aiming(delta: float) -> void:
 	_camera.global_transform = _head_transform()
 	_set_body_yaw(_yaw) # el cuerpo acompaña el giro horizontal
 
-	if Input.is_action_just_pressed("rifle_shoot"):
+	if GameplayInput.just_pressed(&"rifle_shoot"):
 		_try_fire()
 
 	if _reticle_kick > 0.0:

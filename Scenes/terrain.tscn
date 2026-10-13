@@ -38,6 +38,7 @@
 [ext_resource type="Script" uid="uid://dqorn1gv08dnd" path="res://Scripts/radio.gd" id="50_radio"]
 [ext_resource type="Resource" path="res://Resources/Items/cassette.tres" id="51_cassette"]
 [ext_resource type="Script" uid="uid://cffuuu1umlvih" path="res://Scripts/inventory/object_action.gd" id="52_oaction"]
+[ext_resource type="Script" uid="uid://dvf2vtx0lbe0q" path="res://Scripts/ui/context_visibility.gd" id="60_ctxvis"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -782,10 +783,9 @@ consume_required_item = true
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
-[node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("end_picture")]
+[node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("radio")]
 script = ExtResource("99_lvl00")
-end_picture = NodePath("../Area 003/EndPicture/interactable_picture")
-end_theme_volume_db = -8.0
+radio = NodePath("../InteractiveProps/RadioShit")
 
 [node name="Enviroment" type="Node3D" parent="." unique_id=1603349986]
 
@@ -1089,6 +1089,7 @@ interactable = NodePath("Radio/Interactable_object")
 visual = NodePath("Radio")
 eject_point = NodePath("CassetteEject")
 landing_point = NodePath("CassetteLanding")
+volume_db = -8.0
 
 [node name="CassetteEject" type="Marker3D" parent="InteractiveProps/RadioShit" unique_id=1900000101]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3036, 0.6, -3.85)
@@ -1629,6 +1630,9 @@ double_sided = false
 sprite_frames = SubResource("SpriteFrames_2xxps")
 animation = &"buttons"
 frame = 16
+
+[node name="ContextVisibility" type="Node" parent="Area 003/tutorialtxt_06" unique_id=1900000201]
+script = ExtResource("60_ctxvis")
 
 [node name="EndPicture" type="Sprite3D" parent="Area 003" unique_id=488448350]
 transform = Transform3D(-8.742278e-09, 0, 0.2, 0, 0.2, 0, -0.2, 0, -8.742278e-09, 0.90692097, 2, -0.30224448)

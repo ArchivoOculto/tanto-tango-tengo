@@ -9,6 +9,8 @@ class_name InventoryMenu
 ## Lo instancia el autoload Inventory, así existe en cualquier nivel sin agregarlo a mano.
 ## Se abre y cierra con la acción "inventory" (SELECT / I / Tab). Con ○ ("interact") también se cierra.
 ## La lista se recorre con "inventory_up" / "inventory_down" (cruceta o W/S).
+## Cada ítem puede ofrecer acciones propias (ItemData.get_inventory_actions), por ejemplo "rebobinar"
+## en un cassette: aparecen como filas con su botón mientras ese ítem está seleccionado.
 ## Mientras está abierto el jugador queda congelado (PlayerControlLock).
 
 signal opened
@@ -23,6 +25,9 @@ var viewer: ObjectViewer
 var _selected: int = 0
 var _frozen_player: Node = null
 var _rows: Array[Label] = []
+var _action_rows: Array[Label] = [] ## Filas de las acciones del ítem seleccionado
+var _current_actions: Array[ObjectAction] = []
+var _current_entry: InventoryEntry
 
 @onready var _list: VBoxContainer = %ItemList
 @onready var _preview: Control = %Preview
@@ -76,7 +81,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_move_selection(1)
 	elif event.is_action_pressed("inventory_up", true):
 		_move_selection(-1)
-	else:
+	elif not _trigger_item_action(event):
 		return
 	get_viewport().set_input_as_handled()
 
@@ -174,15 +179,63 @@ func _refresh() -> void:
 	_description_label.visible = has_items
 	_nav_hint.visible = entries.size() > 1
 
+	_current_entry = entries[_selected] if has_items else null
+	_rebuild_action_rows()
+
 	if has_items:
 		_show_preview(entries[_selected])
 	else:
 		_clear_preview()
+	_layout_hints()
+
+
+## Filas de las acciones que ofrece el ítem seleccionado (ej: "rebobinar"), con el mismo estilo que "cerrar".
+func _rebuild_action_rows() -> void:
+	for row in _action_rows:
+		row.queue_free()
+	_action_rows.clear()
+	_current_actions.clear()
+	if _current_entry == null:
+		return
+	for action in _current_entry.item.get_inventory_actions(_current_entry):
+		var row: Label = _close_hint.duplicate() as Label
+		row.name = "Action_" + String(action.id)
+		_close_hint.get_parent().add_child(row)
+		ButtonPrompt.setup_row(row, row.get_node("Icon"), action.label, action.icon_frame)
+		_action_rows.append(row)
+		_current_actions.append(action)
+
+
+## Apila las pistas de botones de abajo: cerrar, acciones del ítem, rotar (si es 3D) y la ayuda de navegación.
+func _layout_hints() -> void:
+	var ordered: Array[Label] = [_close_hint]
+	ordered.append_array(_action_rows)
+	if _rotate_hint.visible:
+		ordered.append(_rotate_hint)
+	var y: float = _close_hint.offset_top
+	for row in ordered:
+		var height: float = row.offset_bottom - row.offset_top
+		row.offset_top = y
+		row.offset_bottom = y + height
+		y += 25.0
+	_nav_hint.offset_top = y + 2.0
+	_nav_hint.offset_bottom = y + 30.0
+
+
+func _trigger_item_action(event: InputEvent) -> bool:
+	if _current_entry == null:
+		return false
+	for action in _current_actions:
+		if event.is_action_pressed(action.input_action):
+			_current_entry.item.do_inventory_action(_current_entry, action)
+			_refresh() # el estado cambió (ej: la cinta ya no necesita rebobinarse)
+			return true
+	return false
 
 
 func _show_preview(entry: InventoryEntry) -> void:
 	_name_label.text = entry.item.get_label()
-	_description_label.text = entry.item.description
+	_description_label.text = entry.item.get_detail_text(entry)
 
 	var shown_3d: bool = false
 	if entry.item.preview_texture != null:
