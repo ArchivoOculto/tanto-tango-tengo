@@ -34,11 +34,11 @@
 [ext_resource type="PackedScene" uid="uid://bt6xbrelu3kx" path="res://Assets/3D/radio/Radio.tscn" id="32_tsagk"]
 [ext_resource type="PackedScene" uid="uid://bfeb1ihbgumys" path="res://Assets/3D/Cassette/Cassette_mesh.tscn" id="33_1e2yc"]
 [ext_resource type="PackedScene" uid="uid://bl5winfaxheex" path="res://Scenes/interaction/interactable_object.tscn" id="34_cm1ky"]
-[ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level/level00_manager.gd" id="99_lvl00"]
 [ext_resource type="Script" uid="uid://dqorn1gv08dnd" path="res://Scripts/props/radio.gd" id="50_radio"]
 [ext_resource type="Resource" path="res://Resources/inventory/cassette.tres" id="51_cassette"]
 [ext_resource type="Script" uid="uid://cffuuu1umlvih" path="res://Scripts/inventory/object_action.gd" id="52_oaction"]
 [ext_resource type="Script" uid="uid://dvf2vtx0lbe0q" path="res://Scripts/ui/context_visibility.gd" id="60_ctxvis"]
+[ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level/level00_manager.gd" id="99_lvl00"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -359,6 +359,13 @@ size = Vector3(0.45635986, 0.52490234, 0.31799316)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gim56"]
 size = Vector3(0.9861206, 1.0680664, 0.48059082)
+
+[sub_resource type="Resource" id="Resource_playtape"]
+script = ExtResource("52_oaction")
+id = &"play_tape"
+label = "reproducir cinta"
+required_item = ExtResource("51_cassette")
+consume_required_item = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ekr8f"]
 size = Vector3(1, 0.5, 0.75)
@@ -774,13 +781,6 @@ size = Vector3(2.5611815, 0.5, 2.929883)
 [sub_resource type="BoxShape3D" id="BoxShape3D_5ftdt"]
 size = Vector3(2.5684447, 0.5, 0.90000004)
 
-[sub_resource type="Resource" id="Resource_playtape"]
-script = ExtResource("52_oaction")
-id = &"play_tape"
-label = "reproducir cinta"
-required_item = ExtResource("51_cassette")
-consume_required_item = true
-
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
 [node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("radio")]
@@ -1087,15 +1087,15 @@ collision_layer = 9
 script = ExtResource("50_radio")
 interactable = NodePath("Radio/Interactable_object")
 visual = NodePath("Radio")
+volume_db = -8.0
 eject_point = NodePath("CassetteEject")
 landing_point = NodePath("CassetteLanding")
-volume_db = -8.0
 
 [node name="CassetteEject" type="Marker3D" parent="InteractiveProps/RadioShit" unique_id=1900000101]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3036, 0.6, -3.85)
 
 [node name="CassetteLanding" type="Marker3D" parent="InteractiveProps/RadioShit" unique_id=1900000102]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2196, 0.12, -3.62)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9470956, 0.12, -3.82)
 
 [node name="Radio" parent="InteractiveProps/RadioShit" unique_id=524702442 instance=ExtResource("32_tsagk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3039587, 0.35301754, -3.88642)
@@ -1658,10 +1658,10 @@ transform = Transform3D(9.553428e-16, 2.1855694e-08, -0.50000006, 0.50000006, -2
 [node name="Interactable_object" parent="Area 003/CassetteShit/CassetteMesh" unique_id=1219052446 node_paths=PackedStringArray("area_3d") instance=ExtResource("34_cm1ky")]
 transform = Transform3D(-2.723893e-07, 0.35995963, 6.4699936, -6.2315407, -1.7744162, 0.0987198, 1.77716, -6.2219176, 0.34615797, 0.006210327, 0.00035524368, 0.120217204)
 area_3d = NodePath("../../RadioAltar/Area3D")
+item = ExtResource("51_cassette")
 outline_color = Color(0.71844184, 0.03650001, 0.73, 1)
 outline_width = 1.0
 scale_multiplier = 1.25
-item = ExtResource("51_cassette")
 
 [node name="CassetteMesh1" parent="Area 003/CassetteShit" unique_id=1905706799 instance=ExtResource("33_1e2yc")]
 transform = Transform3D(0.041278377, -0.49759483, 0.02637206, 0.0034463308, 0.026746854, 0.4992722, -0.49828127, -0.04103653, 0.0056378543, -0.020816505, 0.13148117, 0.00017762184)

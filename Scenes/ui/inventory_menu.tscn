@@ -1,18 +1,20 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cqhppvt3nrikb"]
 
 [ext_resource type="Script" uid="uid://c75pq0krelws6" path="res://Scripts/inventory/inventory_menu.gd" id="1_invmenu"]
-[ext_resource type="SpriteFrames" path="res://Resources/ui/ui_buttons_frames.tres" id="1_m23wo"]
+[ext_resource type="SpriteFrames" uid="uid://ch8pra0ijdexb" path="res://Resources/ui/ui_buttons_frames.tres" id="1_m23wo"]
 
 [node name="InventoryMenu" type="CanvasLayer" unique_id=1276957701]
-script = ExtResource("1_invmenu")
 layer = 127
 visible = false
+script = ExtResource("1_invmenu")
 
 [node name="Root" type="Control" parent="." unique_id=2099827111]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Dim" type="ColorRect" parent="Root" unique_id=1614672327]
@@ -28,8 +30,8 @@ offset_left = 40.0
 offset_top = 26.0
 offset_right = 300.0
 offset_bottom = 70.0
-theme_override_font_sizes/font_size = 30
 theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 30
 text = "inventario"
 vertical_alignment = 1
 
@@ -115,19 +117,20 @@ offset_left = 590.0
 offset_top = 130.0
 offset_right = 820.0
 offset_bottom = 174.0
-theme_override_font_sizes/font_size = 28
 theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 28
 
 [node name="ItemDescription" type="Label" parent="Root" unique_id=1531634992]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.85)
+custom_minimum_size = Vector2(100, 160)
 layout_mode = 0
 offset_left = 590.0
 offset_top = 180.0
-offset_right = 820.0
+offset_right = 785.0
 offset_bottom = 340.0
-theme_override_font_sizes/font_size = 17
 theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 17
 autowrap_mode = 3
 
 [node name="EmptyLabel" type="Label" parent="Root" unique_id=679833932]
@@ -143,8 +146,8 @@ offset_left = -150.0
 offset_top = -20.0
 offset_right = 150.0
 offset_bottom = 20.0
-theme_override_font_sizes/font_size = 24
 theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 24
 text = "(vacío)"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -168,8 +171,8 @@ offset_left = -99.0
 offset_top = 134.0
 offset_right = 59.0
 offset_bottom = 164.0
-theme_override_font_sizes/font_size = 21
 theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 21
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -191,8 +194,8 @@ offset_left = -99.0
 offset_top = 159.0
 offset_right = 59.0
 offset_bottom = 189.0
-theme_override_font_sizes/font_size = 21
 theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 21
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -215,8 +218,8 @@ offset_left = -99.0
 offset_top = 186.0
 offset_right = 59.0
 offset_bottom = 214.0
-theme_override_font_sizes/font_size = 17
 theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 17
 text = "↑ ↓ elegir"
 horizontal_alignment = 1
 vertical_alignment = 1
