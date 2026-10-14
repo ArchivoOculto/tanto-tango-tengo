@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://crufdju3qkiab"]
 
-[ext_resource type="Script" uid="uid://cy3xy00kggprg" path="res://Scripts/interactable_picture.gd" id="1_kl4fw"]
+[ext_resource type="Script" uid="uid://cy3xy00kggprg" path="res://Scripts/interaction/interactable_picture.gd" id="1_kl4fw"]
 [ext_resource type="Texture2D" uid="uid://bx1canpe67rfw" path="res://Assets/2D/UI_PS2_Buttons.png" id="2_kl4fw"]
 
 [sub_resource type="Animation" id="Animation_d8keb"]

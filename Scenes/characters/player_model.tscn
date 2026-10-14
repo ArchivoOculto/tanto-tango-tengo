@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cl6xjh0ehqf62" path="res://Assets/3D/player_model.glb" id="1_dluh4"]
 [ext_resource type="PackedScene" uid="uid://bgyu2bikwoegk" path="res://Assets/3D/Guitar.glb" id="2_waurb"]
-[ext_resource type="Script" uid="uid://d1pk8snbvc38w" path="res://Scripts/guitar_hitbox.gd" id="3_tywhj"]
+[ext_resource type="Script" uid="uid://d1pk8snbvc38w" path="res://Scripts/player/weapon_hitbox.gd" id="3_tywhj"]
 [ext_resource type="PackedScene" uid="uid://bh42e028b045y" path="res://Assets/3D/Fedora.glb" id="4_2bmg7"]
 [ext_resource type="PackedScene" uid="uid://cq5bwlurwv61f" path="res://Assets/3D/skull.glb" id="4_mqtts"]
 

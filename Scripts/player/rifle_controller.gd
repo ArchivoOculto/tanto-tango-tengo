@@ -18,7 +18,7 @@ class_name RifleController
 ## alcantarilla...), el modo fusil se cierra solo con una salida rápida, y no se puede
 ## volver a entrar hasta que la cinemática termine.
 ##
-## Va como hijo directo del Player (ver Scenes/player.tscn).
+## Va como hijo directo del Player (ver Scenes/characters/player.tscn).
 
 ## Empieza la transición de entrada (la cámara todavía viaja hacia la cabeza).
 signal rifle_mode_entered

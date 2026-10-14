@@ -14,7 +14,7 @@ signal changed
 signal menu_opened
 signal menu_closed
 
-const MENU_SCENE: PackedScene = preload("res://Scenes/inventory_menu.tscn")
+const MENU_SCENE: PackedScene = preload("res://Scenes/ui/inventory_menu.tscn")
 
 var _entries: Array[InventoryEntry] = []
 var _menu: InventoryMenu

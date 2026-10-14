@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dweekc55wgjrs"]
 
-[ext_resource type="Script" uid="uid://v2e2qmtlrmko" path="res://title_screen.gd" id="1_1xr1c"]
+[ext_resource type="Script" uid="uid://v2e2qmtlrmko" path="res://Scripts/ui/title_screen.gd" id="1_1xr1c"]
 [ext_resource type="Texture2D" uid="uid://b3hy83aq3tq5l" path="res://Assets/2D/Title.png" id="1_fnlyl"]
-[ext_resource type="PackedScene" uid="uid://bdylr3vgdo1k8" path="res://Scenes/terrain.tscn" id="2_tu0on"]
+[ext_resource type="PackedScene" uid="uid://bdylr3vgdo1k8" path="res://Scenes/levels/terrain.tscn" id="2_tu0on"]
 
 [sub_resource type="Animation" id="Animation_fnlyl"]
 length = 0.001

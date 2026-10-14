@@ -34,7 +34,7 @@ signal restart_requested
 ## Duración del fade out a negro cuando termina la canción.
 @export_range(0.0, 30.0, 0.1, "or_greater", "suffix:s") var end_fade_out_duration: float = 2.5
 ## Escena a cargar al reiniciar. Vacío = recarga este mismo nivel (arranca con la intro).
-## Para volver a la pantalla de título, asignar TitleScreen.tscn.
+## Para volver a la pantalla de título, asignar Scenes/ui/title_screen.tscn.
 @export var restart_scene: PackedScene
 
 var _player: Player

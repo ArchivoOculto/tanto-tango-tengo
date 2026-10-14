@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bsa6e7nt867h4"]
 
 [ext_resource type="PackedScene" uid="uid://bpggcgvneuriv" path="res://Assets/3D/Farolito/Farolito.glb" id="1_hgu1p"]
-[ext_resource type="Script" uid="uid://fadge3iahk14" path="res://Scripts/farolito.gd" id="2_sjasy"]
+[ext_resource type="Script" uid="uid://fadge3iahk14" path="res://Scripts/props/farolito.gd" id="2_sjasy"]
 [ext_resource type="AudioStream" uid="uid://dft5rmctqrenm" path="res://Assets/Audio/BulbSound.wav" id="3_51kkn"]
 [ext_resource type="AudioStream" uid="uid://bh8ud2b80h8ko" path="res://Assets/Audio/farolito_bang.wav" id="4_fmfmw"]
 

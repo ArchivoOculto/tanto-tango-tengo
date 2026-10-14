@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" uid="uid://c75pq0krelws6" path="res://Scripts/inventory/inventory_menu.gd" id="1_invmenu"]
-[ext_resource type="SpriteFrames" path="res://Assets/2D/ui_buttons_frames.tres" id="1_m23wo"]
+[ext_resource type="SpriteFrames" path="res://Resources/ui/ui_buttons_frames.tres" id="1_m23wo"]
 
 [node name="InventoryMenu" type="CanvasLayer" unique_id=1276957701]
 script = ExtResource("1_invmenu")

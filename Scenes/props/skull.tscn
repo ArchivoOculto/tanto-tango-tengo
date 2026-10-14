@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c2q6ct23ekrbw"]
 
 [ext_resource type="PackedScene" uid="uid://cq5bwlurwv61f" path="res://Assets/3D/skull.glb" id="1_uepnp"]
-[ext_resource type="Script" uid="uid://c2gyhlm4ar2es" path="res://Scripts/reactive_prop.gd" id="2_react"]
+[ext_resource type="Script" uid="uid://c2gyhlm4ar2es" path="res://Scripts/props/reactive_prop.gd" id="2_react"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_uepnp"]
 friction = 0.7
