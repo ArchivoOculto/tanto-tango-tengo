@@ -12,6 +12,10 @@ class_name InventoryMenu
 ## Cada ítem puede ofrecer acciones propias (ItemData.get_inventory_actions), por ejemplo "rebobinar"
 ## en un cassette: aparecen como filas con su botón mientras ese ítem está seleccionado.
 ## Mientras está abierto el jugador queda congelado (PlayerControlLock).
+##
+## MODO SELECTOR (open_picker): el mismo menú, pero con solo los ítems que pasan un filtro (ej: los
+## cassettes que se pueden poner en la radio). Se elige con ↑/↓ y se confirma con el botón que se pida
+## (□ para "reproducir cinta"); ○ cancela. Lo usan las ObjectAction con 'required_item_category'.
 
 signal opened
 signal closed
@@ -29,6 +33,14 @@ var _action_rows: Array[Label] = [] ## Filas de las acciones del ítem seleccion
 var _current_actions: Array[ObjectAction] = []
 var _current_entry: InventoryEntry
 
+# Modo selector
+var _picker_active: bool = false
+var _picker_filter: Callable
+var _picker_confirm_action: StringName = &""
+var _picker_on_picked: Callable
+var _picker_on_cancelled: Callable
+var _picker_confirm_row: Label
+
 @onready var _list: VBoxContainer = %ItemList
 @onready var _preview: Control = %Preview
 @onready var _image_2d: TextureRect = %Image2D
@@ -42,6 +54,7 @@ var _current_entry: InventoryEntry
 @onready var _close_hint: Label = %CloseHint
 @onready var _rotate_hint: Label = %RotateHint
 @onready var _nav_hint: Label = %NavHint
+@onready var _title_label: Label = $Root/Title
 
 
 func _ready() -> void:
@@ -66,7 +79,7 @@ func _exit_tree() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("inventory"):
 		if is_open:
-			close()
+			close() # en modo selector, cerrar = cancelar
 		else:
 			open()
 		get_viewport().set_input_as_handled()
@@ -75,7 +88,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_open:
 		return
 
-	if event.is_action_pressed("interact"):
+	if _picker_active and _current_entry != null and event.is_action_pressed(_picker_confirm_action):
+		_confirm_picker()
+	elif event.is_action_pressed("interact"):
 		close()
 	elif event.is_action_pressed("inventory_down", true):
 		_move_selection(1)
@@ -111,6 +126,7 @@ func can_open() -> bool:
 func open() -> bool:
 	if not can_open():
 		return false
+	_set_picker_mode(false)
 	_frozen_player = get_tree().get_first_node_in_group("player")
 	PlayerControlLock.freeze(_frozen_player)
 
@@ -123,9 +139,68 @@ func open() -> bool:
 	return true
 
 
-func close() -> void:
+## Abre el inventario filtrado para elegir un ítem (ver Inventory.open_picker).
+func open_picker(filter: Callable, title: String, confirm_label: String, confirm_action: StringName,
+		confirm_icon_frame: int, on_picked: Callable, on_cancelled: Callable = Callable()) -> bool:
+	if not can_open():
+		return false
+	if Inventory.get_entries_where(filter).is_empty():
+		return false
+	_picker_filter = filter
+	_picker_confirm_action = confirm_action
+	_picker_on_picked = on_picked
+	_picker_on_cancelled = on_cancelled
+	_selected = 0
+	_set_picker_mode(true, title, confirm_label, confirm_icon_frame)
+
+	_frozen_player = get_tree().get_first_node_in_group("player")
+	PlayerControlLock.freeze(_frozen_player)
+	is_open = true
+	visible = true
+	if not Inventory.changed.is_connected(_refresh):
+		Inventory.changed.connect(_refresh)
+	_refresh()
+	opened.emit()
+	return true
+
+
+func _set_picker_mode(active: bool, title: String = "", confirm_label: String = "", confirm_icon_frame: int = 1) -> void:
+	_picker_active = active
+	if is_instance_valid(_picker_confirm_row):
+		_picker_confirm_row.queue_free()
+		_picker_confirm_row = null
+	if active:
+		_title_label.text = title
+		ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cancelar", 2)
+		_picker_confirm_row = _close_hint.duplicate() as Label
+		_picker_confirm_row.name = "PickerConfirm"
+		_close_hint.get_parent().add_child(_picker_confirm_row)
+		ButtonPrompt.setup_row(_picker_confirm_row, _picker_confirm_row.get_node("Icon"), confirm_label, confirm_icon_frame)
+	else:
+		_title_label.text = "inventario"
+		ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cerrar", 2)
+		_picker_filter = Callable()
+		_picker_on_picked = Callable()
+		_picker_on_cancelled = Callable()
+
+
+func _confirm_picker() -> void:
+	var entry: InventoryEntry = _current_entry
+	var on_picked: Callable = _picker_on_picked
+	_picker_active = false # ya no cuenta como cancelación al cerrar
+	close()
+	_set_picker_mode(false)
+	if on_picked.is_valid():
+		on_picked.call(entry)
+
+
+## 'silent' = cierre forzado (ej: el jugador recibe daño): en modo selector no avisa la cancelación,
+## así quien lo abrió no vuelve a abrir su propio menú encima.
+func close(silent: bool = false) -> void:
 	if not is_open:
 		return
+	var cancelled: Callable = _picker_on_cancelled if _picker_active and not silent else Callable()
+	var was_picker: bool = _picker_active
 	is_open = false
 	visible = false
 	viewer.set_active(false)
@@ -138,6 +213,10 @@ func close() -> void:
 	_frozen_player = null
 	PlayerControlLock.release(player)
 	closed.emit()
+	if was_picker:
+		_set_picker_mode(false)
+		if cancelled.is_valid():
+			cancelled.call()
 
 
 # ---------------------------------------------------------------- LISTA Y VISTA PREVIA
@@ -146,8 +225,15 @@ func get_selected_index() -> int:
 	return _selected
 
 
+## Entradas que se listan: todas, o solo las que pasan el filtro en modo selector.
+func _visible_entries() -> Array[InventoryEntry]:
+	if _picker_active and _picker_filter.is_valid():
+		return Inventory.get_entries_where(_picker_filter)
+	return Inventory.get_entries()
+
+
 func _move_selection(step: int) -> void:
-	var count: int = Inventory.count()
+	var count: int = _visible_entries().size()
 	if count == 0:
 		return
 	_selected = posmod(_selected + step, count)
@@ -156,7 +242,7 @@ func _move_selection(step: int) -> void:
 
 ## Reconstruye la lista y la vista previa a partir del Inventory.
 func _refresh() -> void:
-	var entries: Array[InventoryEntry] = Inventory.get_entries()
+	var entries: Array[InventoryEntry] = _visible_entries()
 	_selected = clampi(_selected, 0, maxi(entries.size() - 1, 0))
 
 	for row in _rows:
@@ -181,6 +267,8 @@ func _refresh() -> void:
 
 	_current_entry = entries[_selected] if has_items else null
 	_rebuild_action_rows()
+	if _picker_active and not has_items:
+		close() # no queda nada que elegir
 
 	if has_items:
 		_show_preview(entries[_selected])
@@ -195,7 +283,7 @@ func _rebuild_action_rows() -> void:
 		row.queue_free()
 	_action_rows.clear()
 	_current_actions.clear()
-	if _current_entry == null:
+	if _current_entry == null or _picker_active:
 		return
 	for action in _current_entry.item.get_inventory_actions(_current_entry):
 		var row: Label = _close_hint.duplicate() as Label
@@ -209,6 +297,8 @@ func _rebuild_action_rows() -> void:
 ## Apila las pistas de botones de abajo: cerrar, acciones del ítem, rotar (si es 3D) y la ayuda de navegación.
 func _layout_hints() -> void:
 	var ordered: Array[Label] = [_close_hint]
+	if is_instance_valid(_picker_confirm_row):
+		ordered.append(_picker_confirm_row)
 	ordered.append_array(_action_rows)
 	if _rotate_hint.visible:
 		ordered.append(_rotate_hint)

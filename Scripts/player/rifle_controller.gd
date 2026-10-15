@@ -7,8 +7,13 @@ class_name RifleController
 ##   IDLE --(rifle_toggle)--> ENTERING --(cámara anclada)--> AIMING --(soltar/tocar)--> EXITING --> IDLE
 ##
 ## ENTERING: el jugador se congela, empieza la pose "player_guitar" (se mantiene mientras
-##           dure todo el modo), aparecen las barras 4:3 y la cámara se desliza con suavizado
-##           desde donde estaba la GameCamera hasta anclarse en la cabeza.
+##           dure todo el modo), aparecen las barras 4:3 y la cámara viaja en DOS fases:
+##             1. ORBITA alrededor del jugador (sin atravesarlo) hasta quedar justo detrás de su espalda.
+##                Se evita así el "TP" aparente cuando el jugador mira directo hacia el anchor de la
+##                GameCamera (la cámara quedaría delante y cruzaría el cuerpo de un salto).
+##                Si la cámara ya está detrás del jugador, esta fase se salta.
+##             2. Desde la espalda se desliza con suavizado hasta anclarse en la cabeza (acá sí
+##                "atraviesa" el cuerpo, ya que entra al ojo).
 ## AIMING:   la cámara sigue a la cabeza, aparece la mirilla y el stick derecho (aim_*)
 ##           mueve la puntería. "rifle_shoot" dispara un rayo desde el centro de la cámara.
 ## EXITING:  las barras se retraen y la cámara vuelve deslizándose (duración fija) hasta la
@@ -42,7 +47,19 @@ enum State { IDLE, ENTERING, AIMING, EXITING }
 @export var arrive_distance: float = 0.02
 @export_range(0.1, 10.0) var arrive_angle_degrees: float = 1.5
 ## Entrada: red de seguridad; si por algo no llega, se ancla igual pasado este tiempo (segundos).
-@export var max_transition_time: float = 1.5
+@export var max_transition_time: float = 2.5
+## Entrada, fase 1: primero la cámara orbita hasta la espalda del jugador y recién ahí va a la cabeza.
+@export var orbit_behind: bool = true
+## Duración de la órbita si hay que dar media vuelta (180°); para giros menores es proporcionalmente más corta.
+@export var orbit_duration: float = 0.55
+## A qué distancia queda detrás del jugador antes de entrar a la cabeza (fracción de la altura del personaje).
+@export var behind_distance_ratio: float = 1.4
+## Altura sobre la cabeza durante la órbita (fracción de la altura del personaje).
+@export var behind_height_ratio: float = 0.15
+## Si la cámara ya está dentro de este ángulo respecto de la espalda del jugador, no hace falta orbitar.
+@export_range(0.0, 90.0) var orbit_skip_angle_degrees: float = 12.0
+## Capas que frenan la órbita (el decorado): la cámara no atraviesa paredes mientras orbita.
+@export_flags_3d_physics var orbit_scenery_mask: int = 1
 ## Salida: duración fija del regreso a la GameCamera (llega siempre exacta, aunque la GameCamera siga moviéndose).
 @export var exit_duration: float = 0.5
 ## Salida forzada por una cinemática: más corta para que el plano de la cinemática se vea a tiempo.
@@ -103,6 +120,17 @@ var _transition_time: float = 0.0
 var _exit_duration_now: float = 0.5
 var _exit_from: Transform3D
 var _exit_fov_from: float = 65.0
+
+# Entrada: fase de órbita
+enum EnterPhase { ORBIT, APPROACH }
+var _enter_phase: EnterPhase = EnterPhase.APPROACH
+var _orbit_time: float = 0.0
+var _orbit_total: float = 0.0
+var _orbit_from_angle: float = 0.0
+var _orbit_delta: float = 0.0
+var _orbit_from_radius: float = 0.0
+var _orbit_from_height: float = 0.0
+var _orbit_from_rot: Quaternion = Quaternion.IDENTITY
 
 # Estado previo que hay que restaurar al salir
 var _head_props_hidden: bool = false
@@ -179,6 +207,7 @@ func enter_rifle_mode() -> void:
 			return
 		_state = State.ENTERING
 		_transition_time = 0.0
+		_begin_enter_transition()
 		_player.anim_controller.enter_rifle_pose()
 		CameraDirector.set_first_person_letterbox(use_4_3, letterbox_duration)
 		return
@@ -206,6 +235,7 @@ func enter_rifle_mode() -> void:
 		_camera.fov = field_of_view
 
 	_state = State.ENTERING
+	_begin_enter_transition()
 	_player.anim_controller.enter_rifle_pose() # "player_guitar" durante todo el modo
 	CameraDirector.enter_first_person(_camera, use_4_3, letterbox_duration)
 	rifle_mode_entered.emit()
@@ -214,10 +244,80 @@ func enter_rifle_mode() -> void:
 func _process_entering(delta: float) -> void:
 	_transition_time += delta
 	var target: Transform3D = _head_transform()
+
+	if _enter_phase == EnterPhase.ORBIT:
+		_process_orbit(delta)
+		if _transition_time >= max_transition_time:
+			_finish_enter(target) # red de seguridad
+		return
+
 	_blend_camera_toward(target, field_of_view, enter_smoothing, delta)
 
 	if _camera_arrived(target, field_of_view) or _transition_time >= max_transition_time:
 		_finish_enter(target)
+
+
+## Decide cómo empieza el viaje de la cámara: orbitando hasta la espalda del jugador (si la cámara
+## está del costado o de frente) o directo a la cabeza (si ya está detrás).
+func _begin_enter_transition() -> void:
+	_enter_phase = EnterPhase.APPROACH
+	if not orbit_behind:
+		return
+
+	var body_height: float = _player.get_body_height()
+	var offset: Vector3 = _camera.global_position - _head_position()
+	var flat: Vector3 = Vector3(offset.x, 0.0, offset.z)
+	if flat.length() < body_height * 0.15:
+		return # la cámara ya está pegada a la cabeza
+
+	var behind_angle: float = _yaw + PI # la espalda es el lado opuesto a hacia donde mira
+	var from_angle: float = atan2(flat.x, flat.z)
+	var delta_angle: float = angle_difference(from_angle, behind_angle) # por el camino más corto
+	if absf(delta_angle) <= deg_to_rad(orbit_skip_angle_degrees):
+		return
+
+	_enter_phase = EnterPhase.ORBIT
+	_orbit_time = 0.0
+	_orbit_total = maxf(orbit_duration * clampf(absf(delta_angle) / PI, 0.35, 1.0), 0.05)
+	_orbit_from_angle = from_angle
+	_orbit_delta = delta_angle
+	_orbit_from_radius = flat.length()
+	_orbit_from_height = offset.y
+	_orbit_from_rot = _camera.global_basis.get_rotation_quaternion()
+
+
+## Fase 1: la cámara gira alrededor de la cabeza del jugador hasta su espalda. El radio nunca baja de un
+## mínimo, así que NUNCA atraviesa el cuerpo; siempre mira a la cabeza.
+func _process_orbit(delta: float) -> void:
+	_orbit_time += delta
+	var t: float = clampf(_orbit_time / _orbit_total, 0.0, 1.0)
+	var weight: float = t * t * (3.0 - 2.0 * t) # smoothstep
+
+	var body_height: float = _player.get_body_height()
+	var head: Vector3 = _head_position()
+	var angle: float = _orbit_from_angle + _orbit_delta * weight
+	var radius: float = maxf(lerpf(_orbit_from_radius, body_height * behind_distance_ratio, weight), body_height * 0.4)
+	var height: float = lerpf(_orbit_from_height, body_height * behind_height_ratio, weight)
+
+	var cam_pos: Vector3 = head + Vector3(sin(angle) * radius, height, cos(angle) * radius)
+	cam_pos = _clip_to_scenery(head, cam_pos)
+
+	var look_rot: Quaternion = Basis.looking_at(head - cam_pos, Vector3.UP).get_rotation_quaternion()
+	_camera.global_transform = Transform3D(Basis(_orbit_from_rot.slerp(look_rot, weight)), cam_pos)
+
+	if t >= 1.0:
+		_enter_phase = EnterPhase.APPROACH # ya está en la espalda: ahora sí, hacia la cabeza
+
+
+## Acorta la posición si hay decorado entre la cabeza y la cámara (que no atraviese paredes).
+func _clip_to_scenery(head: Vector3, cam_pos: Vector3) -> Vector3:
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(head, cam_pos)
+	query.collision_mask = orbit_scenery_mask
+	query.exclude = [_player.get_rid()]
+	var hit: Dictionary = _player.get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return cam_pos
+	return hit.position + (head - cam_pos).normalized() * _player.get_body_height() * 0.05
 
 
 func _finish_enter(target: Transform3D) -> void:
@@ -275,12 +375,16 @@ func _aim_direction() -> Vector3:
 	).normalized()
 
 
+## Posición de la cabeza (el ojo), en coordenadas de mundo.
+func _head_position() -> Vector3:
+	if is_instance_valid(_eye_anchor):
+		return _eye_anchor.global_position
+	return _player.global_position + Vector3.UP * (_player.get_body_height() * 0.5)
+
+
 ## Dónde tiene que estar la cámara cuando está anclada en la cabeza.
 func _head_transform() -> Transform3D:
-	var eye_pos: Vector3 = _player.global_position + Vector3.UP * (_player.get_body_height() * 0.5)
-	if is_instance_valid(_eye_anchor):
-		eye_pos = _eye_anchor.global_position
-
+	var eye_pos: Vector3 = _head_position()
 	var aim_basis: Basis = Basis.looking_at(_aim_direction(), Vector3.UP)
 	return Transform3D(aim_basis, eye_pos + aim_basis * eye_offset)
 

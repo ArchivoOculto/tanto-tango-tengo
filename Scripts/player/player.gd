@@ -71,6 +71,10 @@ func take_damage(amount: float, knockback_impulse: Vector3 = Vector3.ZERO) -> vo
 
 	current_health -= amount
 
+	# Cualquier daño cierra los menús abiertos (inventario, objetos, cuadros). Va ANTES del empuje:
+	# al cerrarse devuelven el control al jugador y no deben pisar el knockback.
+	_close_open_menus()
+
 	# Aplicar empuje
 	if knockback_impulse != Vector3.ZERO:
 		velocity = knockback_impulse
@@ -81,6 +85,11 @@ func take_damage(amount: float, knockback_impulse: Vector3 = Vector3.ZERO) -> vo
 
 	_flash_red()
 	_start_invulnerability()
+
+
+func _close_open_menus() -> void:
+	InteractionFocus.close_open_menu()
+	Inventory.close_menu()
 
 
 # --- EFECTO DE DESTELLO ROJO ---

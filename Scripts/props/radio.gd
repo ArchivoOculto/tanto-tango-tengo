@@ -11,6 +11,12 @@ class_name Radio
 ##  - Al GOLPEARLA se sacude (como los farolitos). Si tiene una cinta adentro, el cassette salta de la
 ##    radio, aterriza cerca y se puede volver a agarrar. La radio se calla y el cassette RECUERDA en
 ##    qué punto de la canción quedó: al volver a colocarlo, sigue desde ahí.
+##  - Mientras suena, la radio "baila": se mece sobre el eje Z al ritmo de la música.
+##  - Mientras suena, con su menú abierto, rotar el objeto con el stick derecho altera levemente la
+##    velocidad de reproducción (y por lo tanto el pitch), como si el stick fuera una palanca de la radio.
+##  - Mientras suena, el menú ofrece "sacar cassette": la cinta vuelve directo al inventario.
+##  - Con varios cassettes en el inventario, "reproducir cinta" abre un submenú para elegir cuál
+##    (la acción debe usar 'required_item_category' = "cassette", ver ObjectAction).
 ##  - Cuando la canción termina se emite tape_finished (Level00Manager lo usa para cerrar el juego).
 ##
 ## La canción sale del cassette (CassetteItem.track). Si el ítem no es un CassetteItem se usa
@@ -43,6 +49,24 @@ enum State { IDLE, PLAYING_TAPE, TAPE_FINISHED }
 ## Distancia máxima a la que se oye (0 = sin límite).
 @export var max_distance: float = 0.0
 
+@export_group("Baile")
+@export var dance_enabled: bool = true
+## Ángulo máximo del vaivén sobre el eje Z (grados, a cada lado).
+@export_range(0.0, 20.0, 0.1, "suffix:°") var dance_angle_degrees: float = 3.0
+## Segundos que tarda en ir de un extremo al otro (un compás). Menor = más rápido.
+@export_range(0.05, 3.0, 0.01, "suffix:s") var dance_half_period: float = 0.35
+
+@export_group("Pitch con el stick")
+## Cuánto puede variar la velocidad de reproducción (0.12 = ±12%) con el stick al máximo.
+@export_range(0.0, 0.5, 0.01) var pitch_wobble_range: float = 0.12
+## Qué tan rápido sigue el pitch al stick (y vuelve a 1.0 al soltarlo).
+@export var pitch_smoothing: float = 8.0
+
+@export_group("Sacar cassette")
+## Id de la acción del menú que devuelve el cassette al inventario (se agrega sola al menú de la radio).
+@export var eject_to_inventory_action_id: StringName = &"eject_to_inventory"
+@export var eject_to_inventory_label: String = "sacar cassette"
+
 @export_group("Sacudida")
 @export var shake_duration: float = 0.35
 @export var shake_strength: float = 0.08 ## Ángulo máximo en radianes
@@ -64,6 +88,10 @@ var _player: AudioStreamPlayer3D
 var _shake_tween: Tween
 var _rest_rotation: Vector3
 var _eject_pending: bool = false
+var _dance_tween: Tween
+var _settle_tween: Tween
+var _menu_open: bool = false
+var _eject_action: ObjectAction
 
 
 func _ready() -> void:
@@ -73,6 +101,15 @@ func _ready() -> void:
 			interactable = found[0] as InteractableObject
 	if interactable:
 		interactable.action_triggered.connect(_on_action_triggered)
+		interactable.opened.connect(func(): _menu_open = true)
+		interactable.closed.connect(func(): _menu_open = false)
+		interactable.action_filter = _is_action_available
+		_eject_action = ObjectAction.new()
+		_eject_action.id = eject_to_inventory_action_id
+		_eject_action.label = eject_to_inventory_label
+		_eject_action.input_action = &"object_action_2" # ✕
+		_eject_action.icon_frame = 3
+		interactable.add_action(_eject_action)
 	else:
 		push_warning("Radio: no se encontró un InteractableObject; no se podrá reproducir la cinta.")
 
@@ -96,6 +133,33 @@ func _ready() -> void:
 	_player.max_distance = max_distance
 	(visual if visual else self).add_child(_player)
 	_player.finished.connect(_on_track_finished)
+
+
+func _process(delta: float) -> void:
+	if _player == null:
+		return
+	# Con el menú abierto y la cinta sonando, el stick derecho (el mismo que rota el objeto) "toca" el pitch
+	var target: float = 1.0
+	if _menu_open and state == State.PLAYING_TAPE and _player.playing:
+		var stick: Vector2 = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
+		target = 1.0 + clampf(stick.x - stick.y * 0.5, -1.0, 1.0) * pitch_wobble_range
+	if is_equal_approx(_player.pitch_scale, target):
+		return
+	var weight: float = 1.0 - exp(-pitch_smoothing * delta)
+	_player.pitch_scale = maxf(lerpf(_player.pitch_scale, target, weight), 0.05)
+	if absf(_player.pitch_scale - target) < 0.001:
+		_player.pitch_scale = target
+
+
+## Qué acciones del menú de la radio están disponibles ahora.
+func _is_action_available(action: ObjectAction) -> bool:
+	if action == null:
+		return false
+	if action.id == play_tape_action_id:
+		return not has_tape() # con una cinta adentro no se puede meter otra
+	if action.id == eject_to_inventory_action_id:
+		return state == State.PLAYING_TAPE
+	return true
 
 
 func is_playing_tape() -> bool:
@@ -125,6 +189,7 @@ func _play_shake() -> void:
 		return
 	if _shake_tween and _shake_tween.is_valid():
 		_shake_tween.kill()
+	_kill_dance()
 	visual.rotation = _rest_rotation
 
 	var step: float = shake_duration / 4.0
@@ -141,11 +206,53 @@ func _play_shake() -> void:
 	_shake_tween.tween_property(visual, "rotation:x", _rest_rotation.x, step)
 	_shake_tween.parallel().tween_property(visual, "rotation:z", _rest_rotation.z, step)
 	_shake_tween.tween_property(visual, "rotation", _rest_rotation, step * 0.5)
+	_shake_tween.finished.connect(_resume_dance_if_playing)
+
+
+# ---------------------------------------------------------------- BAILE
+
+## La radio se mece sobre el eje Z (de +ángulo a -ángulo) mientras suena la cinta.
+func _start_dance() -> void:
+	_kill_dance()
+	if not dance_enabled or visual == null or dance_angle_degrees <= 0.0:
+		return
+	var angle: float = deg_to_rad(dance_angle_degrees)
+	_dance_tween = create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_dance_tween.tween_property(visual, "rotation:z", _rest_rotation.z + angle, dance_half_period)
+	_dance_tween.tween_property(visual, "rotation:z", _rest_rotation.z - angle, dance_half_period)
+
+
+## Corta el baile y vuelve suavemente a la pose de reposo.
+func _stop_dance() -> void:
+	var was_dancing: bool = _dance_tween != null and _dance_tween.is_valid()
+	_kill_dance()
+	if not was_dancing or visual == null:
+		return
+	if _settle_tween and _settle_tween.is_valid():
+		_settle_tween.kill()
+	_settle_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_settle_tween.tween_property(visual, "rotation", _rest_rotation, 0.15)
+
+
+func _kill_dance() -> void:
+	if _dance_tween and _dance_tween.is_valid():
+		_dance_tween.kill()
+	_dance_tween = null
+	if _settle_tween and _settle_tween.is_valid():
+		_settle_tween.kill()
+
+
+func _resume_dance_if_playing() -> void:
+	if state == State.PLAYING_TAPE and _player and _player.playing:
+		_start_dance()
 
 
 # ---------------------------------------------------------------- CINTA
 
 func _on_action_triggered(action: ObjectAction, consumed: InventoryEntry) -> void:
+	if action != null and action.id == eject_to_inventory_action_id:
+		_eject_to_inventory()
+		return
 	if action == null or action.id != play_tape_action_id or has_tape():
 		return
 	if consumed == null:
@@ -154,6 +261,7 @@ func _on_action_triggered(action: ObjectAction, consumed: InventoryEntry) -> voi
 	_inserted = consumed
 	state = State.PLAYING_TAPE
 	_start_playback()
+	_resume_dance_if_playing()
 	tape_play_started.emit(consumed.item)
 
 
@@ -167,6 +275,7 @@ func _start_playback() -> void:
 	if from >= track.get_length() - 0.05:
 		from = 0.0 # estaba prácticamente al final: se vuelve a empezar
 	_player.stream = track
+	_player.pitch_scale = 1.0
 	_player.play(from)
 
 
@@ -175,9 +284,10 @@ func _stop_playback() -> float:
 	if _player == null or not _player.playing:
 		return 0.0
 	var length: float = _player.stream.get_length() if _player.stream else 0.0
-	var position: float = _player.get_playback_position() + AudioServer.get_time_since_last_mix()
+	var played: float = _player.get_playback_position() + AudioServer.get_time_since_last_mix()
 	_player.stop()
-	return clampf(position, 0.0, length)
+	_player.pitch_scale = 1.0
+	return clampf(played, 0.0, length)
 
 
 func _track_of(item: ItemData) -> AudioStream:
@@ -190,6 +300,8 @@ func _on_track_finished() -> void:
 	if state != State.PLAYING_TAPE or _inserted == null:
 		return
 	state = State.TAPE_FINISHED
+	_stop_dance()
+	_player.pitch_scale = 1.0
 	_inserted.state[CassetteItem.STATE_POSITION] = 0.0 # terminó: si se vuelve a poner, arranca de cero
 	tape_finished.emit(_inserted.item)
 
@@ -202,12 +314,33 @@ func _eject_tape() -> void:
 	_inserted = null
 
 	# El cassette recuerda hasta dónde se reprodujo (si ya había terminado, vuelve a empezar de cero)
-	var position: float = _stop_playback() if state == State.PLAYING_TAPE else 0.0
-	entry.state[CassetteItem.STATE_POSITION] = position
+	var played: float = _stop_playback() if state == State.PLAYING_TAPE else 0.0
+	entry.state[CassetteItem.STATE_POSITION] = played
 	state = State.IDLE
+	_stop_dance()
 
 	var source: InteractableObject = entry.source as InteractableObject
 	if is_instance_valid(source):
+		source.drop_to_world(_eject_position(), _landing_position(), hop_height, hop_duration)
+	tape_ejected.emit(entry.item)
+
+
+## Saca el cassette (desde el menú de la radio) y lo guarda directo en el inventario del jugador.
+func _eject_to_inventory() -> void:
+	if _inserted == null:
+		return
+	var entry: InventoryEntry = _inserted
+	_inserted = null
+
+	var played: float = _stop_playback() if state == State.PLAYING_TAPE else 0.0
+	entry.state[CassetteItem.STATE_POSITION] = played # el cassette recuerda dónde quedó
+	state = State.IDLE
+	_stop_dance()
+
+	var source: InteractableObject = entry.source as InteractableObject
+	var stored: bool = is_instance_valid(source) and source.store_in_inventory_now()
+	if not stored and is_instance_valid(source):
+		# Sin posibilidad de guardarlo (no debería pasar): que al menos salte al mundo
 		source.drop_to_world(_eject_position(), _landing_position(), hop_height, hop_duration)
 	tape_ejected.emit(entry.item)
 

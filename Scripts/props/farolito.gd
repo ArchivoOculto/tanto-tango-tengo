@@ -30,6 +30,9 @@ var hit_duration_min: float = 0.45 ## Duración mínima del sonido de golpe.
 @export_range(0.1, 1.0, 0.01)
 var hit_duration_max: float = 0.55 ## Duración máxima del sonido de golpe.
 
+## Tiempo mínimo (s) entre dos golpes: evita que un mismo golpe lo apague y lo prenda de nuevo.
+@export_range(0.0, 1.0, 0.01) var hit_lockout: float = 0.2
+
 @export_group("Sacudida")
 @export var shake_duration: float = 0.35
 @export var shake_strength: float = 0.15
@@ -59,6 +62,7 @@ var _off_material: StandardMaterial3D
 
 var _flicker_tween: Tween
 var _hit_strobo_tween: Tween
+var _last_hit_msec: int = -1000000
 var _audio_tween: Tween
 
 
@@ -83,6 +87,12 @@ func _ready() -> void:
 
 
 func take_hit(_damage: float = 0.0) -> void:
+	# Doble impacto: dos llamadas casi simultáneas valen como un solo golpe
+	var now: int = Time.get_ticks_msec()
+	if now - _last_hit_msec < int(hit_lockout * 1000.0):
+		return
+	_last_hit_msec = now
+
 	_kill_flicker_tween()
 
 	# El golpe SIEMPRE pisa/cancela el audio anterior.

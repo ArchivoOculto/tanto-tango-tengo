@@ -35,9 +35,10 @@
 [ext_resource type="PackedScene" uid="uid://bfeb1ihbgumys" path="res://Assets/3D/Cassette/Cassette_mesh.tscn" id="33_1e2yc"]
 [ext_resource type="PackedScene" uid="uid://bl5winfaxheex" path="res://Scenes/interaction/interactable_object.tscn" id="34_cm1ky"]
 [ext_resource type="Script" uid="uid://dqorn1gv08dnd" path="res://Scripts/props/radio.gd" id="50_radio"]
-[ext_resource type="Resource" path="res://Resources/inventory/cassette.tres" id="51_cassette"]
+[ext_resource type="PackedScene" path="res://Scenes/props/Cassette_Prefab.tscn" id="51_cassprefab"]
 [ext_resource type="Script" uid="uid://cffuuu1umlvih" path="res://Scripts/inventory/object_action.gd" id="52_oaction"]
 [ext_resource type="Script" uid="uid://dvf2vtx0lbe0q" path="res://Scripts/ui/context_visibility.gd" id="60_ctxvis"]
+[ext_resource type="AudioStream" uid="uid://cqj3wboih4mfw" path="res://Assets/Audio/garua_endtheme.mp3" id="61_track"]
 [ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level/level00_manager.gd" id="99_lvl00"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
@@ -364,7 +365,8 @@ size = Vector3(0.9861206, 1.0680664, 0.48059082)
 script = ExtResource("52_oaction")
 id = &"play_tape"
 label = "reproducir cinta"
-required_item = ExtResource("51_cassette")
+required_item_category = &"cassette"
+picker_title = "elegir cinta"
 consume_required_item = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ekr8f"]
@@ -941,6 +943,8 @@ pixel_size = 0.0015
 texture = ExtResource("4_xx0be")
 
 [node name="interactable_picture" parent="InteractiveProps/Poster" unique_id=203141606 instance=ExtResource("20_8hd5e")]
+display_name = "Afiche"
+description = "Una imagen de Garúa tocando el bandoneón"
 
 [node name="Area3D" type="Area3D" parent="InteractiveProps/Poster" unique_id=1494110581]
 collision_layer = 0
@@ -958,6 +962,8 @@ pixel_size = 0.0015
 texture = ExtResource("21_yplex")
 
 [node name="interactable_picture" parent="InteractiveProps/Puzzle_Hint" unique_id=1843131871 instance=ExtResource("20_8hd5e")]
+display_name = "Farolitos"
+description = "¿Una especie de código?"
 
 [node name="RedCross0" type="RichTextLabel" parent="InteractiveProps/Puzzle_Hint/interactable_picture/SpriteOnScreen/Background/Sprite2D" parent_id_path=PackedInt32Array(1843131871, 1129815087) index="1" unique_id=399167171]
 visible = false
@@ -1639,6 +1645,8 @@ transform = Transform3D(-8.742278e-09, 0, 0.2, 0, 0.2, 0, -0.2, 0, -8.742278e-09
 texture = ExtResource("28_swpjm")
 
 [node name="interactable_picture" parent="Area 003/EndPicture" unique_id=377943365 node_paths=PackedStringArray("area_3d") instance=ExtResource("20_8hd5e")]
+display_name = "Afiche"
+description = "Garúa disparando su guitarra fusil"
 area_3d = NodePath("../Area3D")
 
 [node name="Area3D" type="Area3D" parent="Area 003/EndPicture" unique_id=744975052]
@@ -1652,16 +1660,9 @@ shape = SubResource("BoxShape3D_0q7x7")
 [node name="CassetteShit" type="StaticBody3D" parent="Area 003" unique_id=1695171166]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.4020483, 1.7511978, -3.8672168)
 
-[node name="CassetteMesh" parent="Area 003/CassetteShit" unique_id=1321475971 instance=ExtResource("33_1e2yc")]
-transform = Transform3D(9.553428e-16, 2.1855694e-08, -0.50000006, 0.50000006, -2.1855696e-08, 0, -2.1855698e-08, -0.5, -2.1855696e-08, 0.0656579, 0.15488815, 0.00017762184)
-
-[node name="Interactable_object" parent="Area 003/CassetteShit/CassetteMesh" unique_id=1219052446 node_paths=PackedStringArray("area_3d") instance=ExtResource("34_cm1ky")]
-transform = Transform3D(-2.723893e-07, 0.35995963, 6.4699936, -6.2315407, -1.7744162, 0.0987198, 1.77716, -6.2219176, 0.34615797, 0.006210327, 0.00035524368, 0.120217204)
-area_3d = NodePath("../../RadioAltar/Area3D")
-item = ExtResource("51_cassette")
-outline_color = Color(0.71844184, 0.03650001, 0.73, 1)
-outline_width = 1.0
-scale_multiplier = 1.25
+[node name="CassetteMesh" parent="Area 003/CassetteShit" unique_id=1321475971 instance=ExtResource("51_cassprefab")]
+transform = Transform3D(1.9106857e-15, 4.371139e-08, -1, 1, -4.371139e-08, 0, -4.371139e-08, -1, -4.371139e-08, 0.0656579, 0.15488815, 0.00017762184)
+track = ExtResource("61_track")
 
 [node name="CassetteMesh1" parent="Area 003/CassetteShit" unique_id=1905706799 instance=ExtResource("33_1e2yc")]
 transform = Transform3D(0.041278377, -0.49759483, 0.02637206, 0.0034463308, 0.026746854, 0.4992722, -0.49828127, -0.04103653, 0.0056378543, -0.020816505, 0.13148117, 0.00017762184)

@@ -39,6 +39,13 @@ static func has_open_menu() -> bool:
 	return is_instance_valid(_inspecting)
 
 
+## Cierra el menú de objeto/cuadro que esté abierto (ej: el jugador recibe daño). No toca el inventario.
+static func close_open_menu() -> void:
+	if is_instance_valid(_inspecting) and _inspecting.has_method("close_menu"):
+		_inspecting.close_menu()
+	_inspecting = null
+
+
 static func is_focused(node: Node, player: Node3D) -> bool:
 	if is_instance_valid(_inspecting):
 		return _inspecting == node

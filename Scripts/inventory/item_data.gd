@@ -48,6 +48,12 @@ func get_detail_text(_entry: InventoryEntry) -> String:
 	return description
 
 
+## Categoría del ítem (ej: &"cassette"). Sirve para que una acción acepte "cualquier ítem de tal
+## categoría" (ObjectAction.required_item_category). Las subclases la sobreescriben; vacía por defecto.
+func get_category() -> StringName:
+	return &""
+
+
 ## Nombre para mostrar: el 'display_name' o, si está vacío, el id.
 func get_label() -> String:
 	return display_name if display_name != "" else String(id)

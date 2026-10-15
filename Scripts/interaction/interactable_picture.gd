@@ -6,6 +6,11 @@ signal opened
 ## Se emite al cerrarla.
 signal closed
 
+## Nombre que se muestra en el menú al abrir la imagen (como en el inventario).
+@export var display_name: String = ""
+## Descripción que se muestra bajo el nombre.
+@export_multiline var description: String = ""
+
 @export var area_3d: Area3D ## Asignar manualmente o dejar vacío para auto-detectar
 @export var outline_color: Color = Color(1.0, 0.9, 0.2, 1.0) ## Color del borde al acercarse
 @export var outline_width: float = 3.0 ## Grosor del borde en píxeles
@@ -22,6 +27,7 @@ var _player_ref: Node = null ## Jugador dentro del Area3D (se anula al salir)
 var _frozen_player: Node = null ## Jugador congelado por la inspección abierta (se libera SIEMPRE al cerrar)
 var _outline_material: ShaderMaterial = null
 var _canvas: CanvasLayer = null
+var _info_panel: MenuInfoPanel = null
 var _highlighted: bool = false
 
 
@@ -57,6 +63,7 @@ func _ready() -> void:
 
 	if sprite_on_screen:
 		sprite_on_screen.visible = false
+		_info_panel = MenuInfoPanel.create(_get_canvas()) # fondo + nombre + descripción, como el inventario
 	_refresh_visuals()
 
 	# 4. Inicializar Shader de Outline
@@ -101,6 +108,9 @@ func _open_inspection() -> void:
 	InteractionFocus.begin_inspection(self)
 	if sprite_on_screen:
 		sprite_on_screen.visible = true
+	if _info_panel:
+		_info_panel.set_info(display_name, description)
+		_info_panel.visible = true
 	_refresh_visuals() # "SpriteClosed" y outline se ocultan, "SpriteOnScreen" se muestra
 
 	if animation_player and animation_player.has_animation("floating"):
@@ -117,6 +127,8 @@ func _close_inspection() -> void:
 	InteractionFocus.end_inspection(self)
 	if sprite_on_screen:
 		sprite_on_screen.visible = false
+	if _info_panel:
+		_info_panel.visible = false
 
 	if animation_player:
 		animation_player.stop()
@@ -125,6 +137,17 @@ func _close_inspection() -> void:
 	_refresh_visuals() # vuelve el aviso y el outline si el jugador sigue en la zona
 
 	closed.emit()
+
+
+## ¿El menú de esta imagen está abierto?
+func is_inspecting() -> bool:
+	return _is_inspecting
+
+
+## Cierra la imagen si está abierta (ej: el jugador recibe daño). Devuelve el control al jugador.
+func close_menu() -> void:
+	if _is_inspecting:
+		_close_inspection()
 
 
 func _on_body_entered(body: Node3D) -> void:

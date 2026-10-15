@@ -54,12 +54,33 @@ func remove_item(item: Variant) -> InventoryEntry:
 	var index: int = _find_index(item)
 	if index < 0:
 		return null
+	return _remove_at(index)
+
+
+## Quita esa entrada exacta (útil cuando hay varios ítems del mismo tipo y se eligió uno).
+func remove_entry(entry: InventoryEntry) -> InventoryEntry:
+	var index: int = _entries.find(entry)
+	if index < 0:
+		return null
+	return _remove_at(index)
+
+
+func _remove_at(index: int) -> InventoryEntry:
 	var entry: InventoryEntry = _entries[index]
 	_entries.remove_at(index)
 	entry.dispose()
 	item_removed.emit(entry)
 	changed.emit()
 	return entry
+
+
+## Entradas que cumplen un filtro (ej: las que acepta una ObjectAction).
+func get_entries_where(filter: Callable) -> Array[InventoryEntry]:
+	var result: Array[InventoryEntry] = []
+	for entry in _entries:
+		if filter.call(entry.item):
+			result.append(entry)
+	return result
 
 
 func has_item(item: Variant) -> bool:
@@ -82,7 +103,7 @@ func count() -> int:
 ## Vacía el inventario y cierra el menú (reinicio del juego).
 func reset() -> void:
 	if is_instance_valid(_menu):
-		_menu.close()
+		_menu.close(true)
 	for entry in _entries:
 		entry.dispose()
 	_entries.clear()
@@ -106,6 +127,16 @@ func open_menu() -> bool:
 	return is_instance_valid(_menu) and _menu.open()
 
 
+## Cierre forzado (daño, reinicio): no avisa la cancelación de un selector.
 func close_menu() -> void:
 	if is_instance_valid(_menu):
-		_menu.close()
+		_menu.close(true)
+
+
+## Abre el inventario en modo SELECTOR: solo muestra los ítems que pasan 'filter' y, al confirmar uno
+## con 'confirm_action' (acción del Input Map), llama a 'on_picked(entry)'. Si se cancela (○ o el botón
+## del inventario), llama a 'on_cancelled()'. Devuelve false si no se pudo abrir.
+func open_picker(filter: Callable, title: String, confirm_label: String, confirm_action: StringName,
+		confirm_icon_frame: int, on_picked: Callable, on_cancelled: Callable = Callable()) -> bool:
+	return is_instance_valid(_menu) and _menu.open_picker(filter, title, confirm_label, confirm_action,
+			confirm_icon_frame, on_picked, on_cancelled)

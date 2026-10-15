@@ -36,6 +36,12 @@ signal dropped(item: ItemData)
 ## (null si no consume nada).
 signal action_triggered(action: ObjectAction, consumed: InventoryEntry)
 
+@export_group("Menú (nombre y descripción)")
+## Nombre que se muestra en el menú al inspeccionar el objeto. Vacío = el del 'item' (si tiene).
+@export var display_name: String = ""
+## Descripción que se muestra bajo el nombre. Vacía = la del 'item' (si tiene).
+@export_multiline var description: String = ""
+
 @export_group("Zona de interacción")
 @export var area_3d: Area3D ## Asignar manualmente o dejar vacío para auto-detectar un Area3D bajo el objeto
 
@@ -75,6 +81,10 @@ signal action_triggered(action: ObjectAction, consumed: InventoryEntry)
 var animation_player: AnimationPlayer
 var viewer: ObjectViewer
 
+## Filtro opcional para las acciones del menú: func(action: ObjectAction) -> bool. Si devuelve false, la
+## acción no aparece. Lo usa, por ejemplo, la radio para ofrecer "sacar cassette" solo si hay una cinta adentro.
+var action_filter: Callable
+
 ## false = el objeto ignora al jugador (sin aviso, sin outline, sin menú). Lo usa el guardado
 ## (el objeto ya no está en el mundo) y el vuelo de vuelta al mundo.
 ## Estado propio del objeto, para datos que deben sobrevivir a guardarlo y soltarlo (ej: el punto
@@ -96,6 +106,7 @@ var _is_inspecting: bool = false
 var _player_ref: Node = null ## Jugador dentro del Area3D (se anula al salir)
 var _frozen_player: Node = null ## Jugador congelado por la inspección abierta (se libera SIEMPRE al cerrar)
 var _canvas: CanvasLayer = null
+var _info_panel: MenuInfoPanel = null
 var _outline_material: ShaderMaterial = null
 var _outlined: Dictionary = {} ## MeshInstance3D -> material_overlay que tenía antes del outline
 var _highlighted: bool = false
@@ -152,6 +163,7 @@ func _ready() -> void:
 
 	if object_on_screen:
 		object_on_screen.visible = false
+		_info_panel = MenuInfoPanel.create(_get_canvas()) # fondo + nombre + descripción, como el inventario
 
 	# 4. Visor 3D compartido
 	viewer = ObjectViewer.new()
@@ -298,6 +310,9 @@ func _open_inspection() -> void:
 		viewer.set_active(true)
 	if object_on_screen:
 		object_on_screen.visible = true
+	if _info_panel:
+		_info_panel.set_info(get_menu_title(), get_menu_description())
+		_info_panel.visible = true
 	_rebuild_menu_rows()
 
 	if animation_player and animation_player.has_animation("floating"):
@@ -313,6 +328,8 @@ func _close_inspection() -> void:
 	InteractionFocus.end_inspection(self)
 	if object_on_screen:
 		object_on_screen.visible = false
+	if _info_panel:
+		_info_panel.visible = false
 	viewer.set_active(false)
 	viewer.clear()
 
@@ -322,6 +339,31 @@ func _close_inspection() -> void:
 	_release_player() # siempre, esté o no el jugador dentro del área
 	_refresh_visuals() # vuelve el aviso si el jugador sigue en la zona
 	closed.emit()
+
+
+## ¿El menú de este objeto está abierto?
+func is_inspecting() -> bool:
+	return _is_inspecting
+
+
+## Cierra el menú si está abierto (ej: el jugador recibe daño). Devuelve el control al jugador.
+func close_menu() -> void:
+	if _is_inspecting:
+		_close_inspection()
+
+
+## Nombre que muestra el menú: el propio, o el del ítem.
+func get_menu_title() -> String:
+	if display_name != "":
+		return display_name
+	return item.get_label() if item != null else ""
+
+
+## Descripción que muestra el menú: la propia, o la del ítem (con su estado, ej: hasta dónde se reprodujo).
+func get_menu_description() -> String:
+	if description != "":
+		return description
+	return item.get_detail_text(InventoryEntry.new(item, self)) if item != null else ""
 
 
 ## Devuelve el control SIEMPRE: no depende de si el jugador sigue dentro del Area3D. Se usa la
@@ -346,15 +388,30 @@ func _setup_menu_rows() -> void:
 	if _save_row == null and not actions.is_empty():
 		push_warning("InteractableObject: falta 'GuardarText' en UI Menu, se usa como modelo de las filas de acciones.")
 	for action in actions:
-		var row: Label = null
-		if _save_row and action:
-			row = _save_row.duplicate() as Label
-			row.name = "Action_" + String(action.id)
-			var icon := row.get_child(0) as AnimatedSprite2D
-			ButtonPrompt.setup_row(row, icon, action.label, action.icon_frame)
-			row.visible = false
-			_ui_menu.add_child(row)
-		_action_rows.append(row)
+		_action_rows.append(_make_action_row(action))
+
+
+func _make_action_row(action: ObjectAction) -> Label:
+	if _save_row == null or action == null or _ui_menu == null:
+		return null
+	var row: Label = _save_row.duplicate() as Label
+	row.name = "Action_" + String(action.id)
+	var icon := row.get_child(0) as AnimatedSprite2D
+	ButtonPrompt.setup_row(row, icon, action.label, action.icon_frame)
+	row.visible = false
+	_ui_menu.add_child(row)
+	return row
+
+
+## Agrega una acción al menú por código (la radio suma "sacar cassette"). Si ya hay una con el mismo id, no hace nada.
+func add_action(action: ObjectAction) -> void:
+	if action == null:
+		return
+	for existing in actions:
+		if existing != null and existing.id == action.id:
+			return
+	actions.append(action)
+	_action_rows.append(_make_action_row(action))
 
 
 ## Acomoda las filas visibles una debajo de otra: cerrar, guardar, acciones desbloqueadas, rotar.
@@ -377,8 +434,9 @@ func _rebuild_menu_rows() -> void:
 		var row: Label = _action_rows[i] if i < _action_rows.size() else null
 		if action == null or row == null:
 			continue
-		var unlocked: bool = action.required_item == null or Inventory.has_item(action.required_item)
-		row.visible = unlocked or action.show_when_locked
+		var available: bool = not action_filter.is_valid() or bool(action_filter.call(action))
+		var unlocked: bool = available and (not action.needs_item() or not _entries_for(action).is_empty())
+		row.visible = available and (unlocked or action.show_when_locked)
 		row.modulate = Color(1, 1, 1, 1.0 if unlocked else 0.4)
 		if unlocked:
 			_available_actions.append(action)
@@ -417,16 +475,54 @@ func _handle_menu_input(event: InputEvent) -> bool:
 	return false
 
 
+## Entradas del inventario que sirven para esta acción.
+func _entries_for(action: ObjectAction) -> Array[InventoryEntry]:
+	return Inventory.get_entries_where(func(candidate: ItemData) -> bool: return action.accepts(candidate))
+
+
 func _trigger_action(action: ObjectAction) -> void:
+	if action_filter.is_valid() and not bool(action_filter.call(action)):
+		return
+	if not action.needs_item():
+		_finish_action(action, null)
+		return
+
+	var candidates: Array[InventoryEntry] = _entries_for(action)
+	if candidates.is_empty():
+		return
+	# Con varios ítems posibles se abre el submenú del inventario para elegir cuál usar
+	if action.choose_item and (candidates.size() > 1 or action.always_choose):
+		_open_item_picker(action)
+		return
+	_finish_action(action, candidates[0])
+
+
+## Termina la acción con el ítem elegido (o null): lo consume si corresponde, cierra el menú y avisa.
+func _finish_action(action: ObjectAction, chosen: InventoryEntry) -> void:
 	var consumed: InventoryEntry = null
-	if action.required_item != null:
-		if not Inventory.has_item(action.required_item):
-			return
-		if action.consume_required_item:
-			consumed = Inventory.remove_item(action.required_item)
+	if chosen != null and action.consume_required_item:
+		consumed = Inventory.remove_entry(chosen)
 	if action.close_menu_on_trigger and _is_inspecting:
 		_close_inspection()
 	action_triggered.emit(action, consumed)
+
+
+## Cierra el menú del objeto y abre el inventario filtrado. Al cancelar vuelve al menú del objeto.
+func _open_item_picker(action: ObjectAction) -> void:
+	if _is_inspecting:
+		_close_inspection() # devuelve el control: el inventario lo vuelve a congelar
+	var opened_ok: bool = Inventory.open_picker(
+		func(candidate: ItemData) -> bool: return action.accepts(candidate),
+		action.picker_title, action.label, action.input_action, action.icon_frame,
+		func(entry: InventoryEntry) -> void: _finish_action(action, entry),
+		_reopen_after_picker)
+	if not opened_ok:
+		_reopen_after_picker()
+
+
+func _reopen_after_picker() -> void:
+	if is_inside_tree() and not _is_inspecting and _can_open():
+		_open_inspection()
 
 
 # ---------------------------------------------------------------- INVENTARIO
@@ -435,9 +531,20 @@ func _trigger_action(action: ObjectAction) -> void:
 func _store_in_inventory() -> void:
 	if item == null:
 		return
+	_commit_to_inventory()
 
+
+## Guarda el objeto en el inventario SIN necesitar que su menú esté abierto (ej: sacar el cassette de
+## la radio directo al inventario). Devuelve false si no se pudo.
+func store_in_inventory_now() -> bool:
+	if item == null or not is_instance_valid(_source):
+		return false
+	return _commit_to_inventory()
+
+
+func _commit_to_inventory() -> bool:
 	# Plantilla para la vista previa 3D del inventario: la del ítem si define una escena, y si no,
-	# el clon que ya está armado en el visor.
+	# el clon que ya está armado en el visor (o uno nuevo si el visor no está mostrando nada).
 	var template: Dictionary
 	if item.preview_scene != null:
 		var instance: Node = item.preview_scene.instantiate()
@@ -446,17 +553,25 @@ func _store_in_inventory() -> void:
 		instance.free()
 	if template.is_empty():
 		template = viewer.take_template()
+	if not template.get("valid", false):
+		var built: Dictionary = ObjectViewer.build_template(_source, self)
+		if built.get("valid", false):
+			template = built
+		elif built.get("node") != null:
+			(built.node as Node).free()
 	var template_node: Node3D = template.node if template.get("valid", false) else null
 	var bounds: AABB = template.bounds if template.get("valid", false) else AABB()
 
 	var entry: InventoryEntry = Inventory.add_item(item, self, template_node, bounds)
 	if entry == null:
-		return
+		return false
 
-	_close_inspection()
+	if _is_inspecting:
+		_close_inspection()
 	_source.visible = false # ya no está en el mundo
 	interaction_enabled = false
 	stored.emit(item)
+	return true
 
 
 ## Devuelve el objeto al mundo con un salto desde 'from_position' hasta 'to_position' y le crea una
@@ -476,14 +591,14 @@ func drop_to_world(from_position: Vector3, to_position: Vector3, hop_height: flo
 	_drop_tween.tween_method(func(u: float):
 		if not is_instance_valid(_source):
 			return
-		var position: Vector3
+		var pos: Vector3
 		if u < 0.7:
 			var t: float = u / 0.7
-			position = from_position.lerp(to_position, t) + Vector3.UP * hop_height * 4.0 * t * (1.0 - t)
+			pos = from_position.lerp(to_position, t) + Vector3.UP * hop_height * 4.0 * t * (1.0 - t)
 		else:
 			var t2: float = (u - 0.7) / 0.3
-			position = to_position + Vector3.UP * hop_height * 0.3 * 4.0 * t2 * (1.0 - t2)
-		_source.global_position = position
+			pos = to_position + Vector3.UP * hop_height * 0.3 * 4.0 * t2 * (1.0 - t2)
+		_source.global_position = pos
 	, 0.0, 1.0, duration)
 	_drop_tween.tween_callback(func():
 		_spawn_drop_area(to_position)

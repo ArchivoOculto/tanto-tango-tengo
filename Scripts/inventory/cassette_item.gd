@@ -13,6 +13,8 @@ class_name CassetteItem
 const STATE_POSITION: StringName = &"tape_position"
 ## Por debajo de esto la cinta se considera "al comienzo" (no hay nada que rebobinar).
 const MIN_REWIND_SECONDS: float = 0.5
+## Categoría de todos los cassettes.
+const CATEGORY: StringName = &"cassette"
 
 @export_group("Cinta")
 ## La canción grabada. La reproduce la radio.
@@ -31,6 +33,11 @@ func get_position(entry: InventoryEntry) -> float:
 func set_position(entry: InventoryEntry, seconds: float) -> void:
 	if entry != null:
 		entry.state[STATE_POSITION] = maxf(seconds, 0.0)
+
+
+## Categoría para filtrar ítems (ver ObjectAction.required_item_category).
+func get_category() -> StringName:
+	return CATEGORY
 
 
 func get_inventory_actions(entry: InventoryEntry) -> Array[ObjectAction]:
@@ -55,5 +62,6 @@ func get_detail_text(entry: InventoryEntry) -> String:
 	var text: String = description
 	var position: float = get_position(entry)
 	if position > MIN_REWIND_SECONDS:
-		text += "\n\nReproducida hasta %d:%02d." % [int(position) / 60, int(position) % 60]
+		var total_seconds: int = int(position)
+		text += "\n\nReproducida hasta %d:%02d." % [floori(total_seconds / 60.0), total_seconds % 60]
 	return text
