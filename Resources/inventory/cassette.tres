@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CassetteItem" format=3]
 
-[ext_resource type="Script" path="res://Scripts/inventory/cassette_item.gd" id="1_c7sta"]
-[ext_resource type="AudioStream" path="res://Assets/Audio/garua_endtheme.mp3" id="2_i02ft"]
+[ext_resource type="Script" uid="uid://jufjbflsov5g" path="res://Scripts/inventory/cassette_item.gd" id="1_c7sta"]
+[ext_resource type="AudioStream" uid="uid://cqj3wboih4mfw" path="res://Assets/Audio/Cassette tracks/Garua_track.mp3" id="2_i02ft"]
 
 [resource]
 script = ExtResource("1_c7sta")

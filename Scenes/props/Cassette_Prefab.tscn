@@ -1,27 +1,27 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://lrbh4p4114u4"]
 
-[ext_resource type="Script" path="res://Scripts/props/cassette_prefab.gd" id="1_cassp"]
+[ext_resource type="Script" uid="uid://bfea3jbmg0m18" path="res://Scripts/props/cassette_prefab.gd" id="1_cassp"]
 [ext_resource type="PackedScene" uid="uid://bfeb1ihbgumys" path="res://Assets/3D/Cassette/Cassette_mesh.tscn" id="2_cmesh"]
 [ext_resource type="PackedScene" uid="uid://bl5winfaxheex" path="res://Scenes/interaction/interactable_object.tscn" id="3_cinter"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_zone"]
-size = Vector3(0.5, 0.5, 0.5)
+size = Vector3(0.1, 0.1, 0.1)
 
-[node name="Cassette_Prefab" type="Node3D" node_paths=PackedStringArray("interactable")]
+[node name="Cassette_Prefab" type="Node3D" unique_id=1933570437 node_paths=PackedStringArray("interactable")]
 script = ExtResource("1_cassp")
 interactable = NodePath("Interactable_object")
 
-[node name="CassetteMesh" parent="." instance=ExtResource("2_cmesh")]
+[node name="CassetteMesh" parent="." unique_id=76099914 instance=ExtResource("2_cmesh")]
 
-[node name="Interactable_object" parent="." node_paths=PackedStringArray("area_3d") instance=ExtResource("3_cinter")]
+[node name="Interactable_object" parent="." unique_id=556021010 node_paths=PackedStringArray("area_3d") instance=ExtResource("3_cinter")]
 area_3d = NodePath("Area3D")
 outline_color = Color(0.71844184, 0.03650001, 0.73, 1)
 outline_width = 1.0
 scale_multiplier = 1.25
 
-[node name="Area3D" type="Area3D" parent="Interactable_object"]
+[node name="Area3D" type="Area3D" parent="Interactable_object" unique_id=2062313782]
 collision_layer = 0
 collision_mask = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable_object/Area3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable_object/Area3D" unique_id=76073274]
 shape = SubResource("BoxShape3D_zone")

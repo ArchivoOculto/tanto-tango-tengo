@@ -290,6 +290,12 @@ func _refresh_visuals() -> void:
 			_hide_outline()
 
 
+## Capa del menú abierto: por ENCIMA de las barras 4:3 (126, LetterboxController) para que no tapen el
+## texto, y a la par del inventario (127), que nunca está abierto al mismo tiempo.
+const MENU_CANVAS_LAYER: int = 127
+const IDLE_CANVAS_LAYER: int = 10 ## avisos y resaltado con el menú cerrado: debajo de las barras
+
+
 func _get_canvas() -> CanvasLayer:
 	if _canvas == null:
 		_canvas = CanvasLayer.new()
@@ -311,6 +317,7 @@ func _open_inspection() -> void:
 	if object_on_screen:
 		object_on_screen.visible = true
 	if _info_panel:
+		_get_canvas().layer = MENU_CANVAS_LAYER
 		_info_panel.set_info(get_menu_title(), get_menu_description())
 		_info_panel.visible = true
 	_rebuild_menu_rows()
@@ -330,6 +337,7 @@ func _close_inspection() -> void:
 		object_on_screen.visible = false
 	if _info_panel:
 		_info_panel.visible = false
+	_get_canvas().layer = IDLE_CANVAS_LAYER
 	viewer.set_active(false)
 	viewer.clear()
 

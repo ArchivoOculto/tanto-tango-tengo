@@ -109,6 +109,7 @@ func _open_inspection() -> void:
 	if sprite_on_screen:
 		sprite_on_screen.visible = true
 	if _info_panel:
+		_get_canvas().layer = MENU_CANVAS_LAYER
 		_info_panel.set_info(display_name, description)
 		_info_panel.visible = true
 	_refresh_visuals() # "SpriteClosed" y outline se ocultan, "SpriteOnScreen" se muestra
@@ -129,6 +130,7 @@ func _close_inspection() -> void:
 		sprite_on_screen.visible = false
 	if _info_panel:
 		_info_panel.visible = false
+	_get_canvas().layer = IDLE_CANVAS_LAYER
 
 	if animation_player:
 		animation_player.stop()
@@ -188,6 +190,12 @@ func _release_player() -> void:
 	var player: Node = _frozen_player
 	_frozen_player = null
 	PlayerControlLock.release(player)
+
+
+## Capa del menú abierto: por ENCIMA de las barras 4:3 (126, LetterboxController) para que no tapen el
+## texto, y a la par del inventario (127), que nunca está abierto al mismo tiempo.
+const MENU_CANVAS_LAYER: int = 127
+const IDLE_CANVAS_LAYER: int = 10 ## avisos y resaltado con el menú cerrado: debajo de las barras
 
 
 func _get_canvas() -> CanvasLayer:

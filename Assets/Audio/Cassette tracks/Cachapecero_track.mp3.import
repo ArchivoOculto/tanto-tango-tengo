@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://coathd3xnu2ok"
+path="res://.godot/imported/Cachapecero_track.mp3-878c3dfd45d7a02031291383ff4253be.mp3str"
+
+[deps]
+
+source_file="res://Assets/Audio/Cassette tracks/Cachapecero_track.mp3"
+dest_files=["res://.godot/imported/Cachapecero_track.mp3-878c3dfd45d7a02031291383ff4253be.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
