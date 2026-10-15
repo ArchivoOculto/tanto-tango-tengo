@@ -30,7 +30,13 @@ script = ExtResource("4_vgqql")
 
 [node name="RifleController" type="Node" parent="." unique_id=2037710381]
 script = ExtResource("5_rifle")
-enter_smoothing = 4.5
+enter_smoothing = 2.0
+arrive_distance = 1.0
+arrive_angle_degrees = 3.0
+max_transition_time = 3.0
+orbit_duration = 2.0
+behind_distance_ratio = 1.75
+orbit_skip_angle_degrees = 10.0
 aim_speed_degrees = 80.0
 aim_response_curve = 3.0
 eye_offset = Vector3(0, 0.025, 0)
