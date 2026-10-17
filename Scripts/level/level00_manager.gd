@@ -36,6 +36,8 @@ signal restart_requested
 
 ## Pantalla de inicio: a donde se vuelve al completar el nivel.
 const MAIN_MENU_SCENE: String = "res://Scenes/ui/main_menu.tscn"
+## Malla de navegación horneada de los enemigos.
+const NAVMESH_PATH: String = "res://Resources/navigation/level0_navmesh.tres"
 
 const GENRE_MESSAGES: Dictionary = {
 	CassetteItem.Genre.TANGO: "Esta noche quiero escuchar un [i]Tango[/i]",
@@ -74,7 +76,17 @@ enum ForcedGenre { RANDOM, TANGO, FOLKLORE, ROCK }
 ## Puntos de reaparición EXTRA (Marker3D), además de las posiciones originales de los enemigos. Útiles para
 ## que reaparezcan del lado de la radio si el sector original no tiene paso hasta ella.
 @export var extra_spawn_points: Array[Marker3D] = []
-## Margen (m) alrededor de los enemigos y la radio donde se genera la navegación.
+## Navegación de los enemigos hacia el objeto. DESACTIVADA por defecto: la radio está en el mismo sector que los
+## enemigos y llegan en línea recta sin gastar nada. Activarla solo si se agregan obstáculos (paredes, props)
+## que los traben; usa una malla ya horneada (no hornea en el juego).
+@export var use_navigation: bool = false
+## Malla de navegación ya horneada para los enemigos. Vacío = se usa Resources/navigation/level0_navmesh.tres
+## si existe (lo normal). Sin malla, los enemigos van en línea recta.
+@export var navigation_mesh: NavigationMesh
+## SOLO PARA DESARROLLO: vuelve a hornear la malla al correr el nivel desde el editor y la guarda en
+## Resources/navigation/level0_navmesh.tres. Dejar desactivado: hornear en el juego es lo que más pesa.
+@export var rebake_navigation_now: bool = false
+## Margen (m) alrededor de los enemigos y la radio donde se genera la navegación (al hornear).
 @export_range(0.0, 20.0, 0.5, "suffix:m") var nav_bake_margin: float = 4.0
 ## Cada cuántos segundos, con la música correcta sonando, se evalúa si reaparecen enemigos.
 @export_range(1.0, 120.0, 0.5, "or_greater", "suffix:s") var enemy_respawn_delay: float = 12.0
@@ -302,13 +314,32 @@ func _set_correct_playing(playing: bool) -> void:
 
 # ---------------------------------------------------------------- ENEMIGOS
 
-## Malla de navegación para que los enemigos rodeen los alambrados camino a la radio. Se hornea en un
-## hilo aparte alrededor de la zona de los enemigos y la radio.
+## Navegación para que los enemigos rodeen los alambrados camino a la radio: usa una malla YA HORNEADA
+## (sin costo de horneado en el juego). Solo se hornea si se pide explícitamente (rebake_navigation_now).
 func _build_navigation() -> void:
+	var wants_rebake: bool = rebake_navigation_now and OS.has_feature("editor")
+	if not (use_navigation or wants_rebake):
+		return # por defecto: sin navegación, sin costo
 	if not is_instance_valid(radio) or _enemy_spawn_transforms.is_empty():
 		return
-	var min_point: Vector3 = radio.global_position
-	var max_point: Vector3 = radio.global_position
+
+	var prebaked: NavigationMesh = navigation_mesh
+	if prebaked == null and ResourceLoader.exists(NAVMESH_PATH):
+		prebaked = load(NAVMESH_PATH) as NavigationMesh
+
+	if prebaked != null and not wants_rebake:
+		_navigation = RuntimeNavigation.new()
+		_navigation.name = "RuntimeNavigation"
+		get_parent().add_child.call_deferred(_navigation)
+		_use_prebaked_later.call_deferred(prebaked)
+		return
+
+	if not wants_rebake:
+		return # sin malla horneada: línea recta, sin costo extra
+
+	var target_position: Vector3 = _attack_target().global_position
+	var min_point: Vector3 = target_position
+	var max_point: Vector3 = target_position
 	for t in _enemy_spawn_transforms:
 		min_point = min_point.min(t.origin)
 		max_point = max_point.max(t.origin)
@@ -318,8 +349,15 @@ func _build_navigation() -> void:
 
 	_navigation = RuntimeNavigation.new()
 	_navigation.name = "RuntimeNavigation"
+	_navigation.save_path = NAVMESH_PATH
 	get_parent().add_child.call_deferred(_navigation)
 	_bake_navigation_later.call_deferred(bounds)
+
+
+func _use_prebaked_later(prebaked: NavigationMesh) -> void:
+	await get_tree().process_frame
+	if is_instance_valid(_navigation) and _navigation.is_inside_tree():
+		_navigation.use_prebaked(prebaked)
 
 
 func _bake_navigation_later(bounds: AABB) -> void:
@@ -376,9 +414,15 @@ func _pick_spawn_transform() -> Transform3D:
 	return candidates.pick_random()
 
 
-## Qué objeto atacan los enemigos: el asignado en 'enemy_attack_target' o, si no hay, la radio.
+## Qué objeto atacan los enemigos: el asignado en 'enemy_attack_target' o, si no hay, la radio (su malla,
+## que es donde la ve el jugador). Sirve también para los enemigos que reaparecen, que salen de la escena
+## original sin las asignaciones hechas a mano en cada enemigo del nivel.
 func _attack_target() -> Node3D:
-	return enemy_attack_target if is_instance_valid(enemy_attack_target) else radio
+	if is_instance_valid(enemy_attack_target):
+		return enemy_attack_target
+	if is_instance_valid(radio) and is_instance_valid(radio.visual):
+		return radio.visual
+	return radio
 
 
 func _spawn_enemy_at(spawn_transform: Transform3D) -> void:

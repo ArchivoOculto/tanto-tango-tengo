@@ -1,12 +1,16 @@
 extends NavigationRegion3D
 class_name RuntimeNavigation
 
-## Genera en tiempo de ejecución una malla de navegación a partir de las colisiones estáticas del nivel,
-## para que los enemigos puedan rodear alambrados y paredes (el estado ATTACK_OBJECT los manda a la radio,
-## que está del otro lado del corral). No hace falta hornear nada en el editor.
+## Malla de navegación para que los enemigos rodeen alambrados y paredes camino a la radio (estado
+## ATTACK_OBJECT).
 ##
-## Solo se hornea una zona (filter_aabb), no todo el nivel, para que sea rápido. La hornea Level00Manager
-## al iniciar, en un hilo aparte (no traba el juego).
+## RENDIMIENTO: en el juego NO se hornea nada. Se usa una malla ya horneada
+## (Resources/navigation/level0_navmesh.tres), así que el costo en ejecución es solo cargar un recurso
+## chico y consultar caminos (unos pocos por segundo). Hornear en tiempo de ejecución obliga a leer
+## mallas de la GPU y es lo que el motor desaconseja.
+##
+## Para volver a hornearla (si cambia el decorado): en el Level00Manager activar 'rebake_navigation_now',
+## correr el nivel UNA vez desde el editor (se guarda sola en el .tres) y desactivarlo.
 
 signal baked
 
@@ -18,9 +22,12 @@ signal baked
 @export var agent_radius: float = 0.15
 @export var agent_height: float = 0.4
 @export var agent_max_climb: float = 0.1
-@export var cell_size: float = 0.05
+@export var cell_size: float = 0.1
 
 var is_ready: bool = false
+
+## Si no está vacío (y se corre desde el editor), la malla horneada se guarda en este archivo.
+var save_path: String = ""
 
 
 ## Hornea alrededor de 'bounds' (coordenadas de mundo), parseando las colisiones bajo 'source_root'.
@@ -46,8 +53,21 @@ func bake_area(source_root: Node, bounds: AABB) -> void:
 	NavigationServer3D.bake_from_source_geometry_data_async(nav_mesh, source, func():
 		navigation_mesh = nav_mesh
 		is_ready = true
+		if save_path != "" and OS.has_feature("editor"):
+			var error: Error = ResourceSaver.save(nav_mesh, save_path)
+			print("RuntimeNavigation: malla guardada en %s (%s)" % [save_path, error_string(error)])
 		baked.emit()
 	)
+
+
+## Usa una malla ya horneada (sin costo de horneado). Hay que llamarlo con el nodo ya en el árbol.
+func use_prebaked(nav_mesh: NavigationMesh) -> void:
+	var map: RID = get_world_3d().navigation_map
+	NavigationServer3D.map_set_cell_size(map, nav_mesh.cell_size)
+	NavigationServer3D.map_set_cell_height(map, nav_mesh.cell_height)
+	navigation_mesh = nav_mesh
+	is_ready = true
+	baked.emit()
 
 
 ## Camino (puntos de mundo) de 'from' a 'to' por la malla; vacío si todavía no se horneó o no hay camino.

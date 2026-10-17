@@ -292,7 +292,7 @@ func command_attack_object(target: Node3D) -> void:
 	_striking_object = false
 	_object_attack_timer = randf_range(0.0, 0.6) # que no golpeen todos a la vez
 	_nav_path = PackedVector3Array()
-	_nav_refresh_timer = 0.0
+	_nav_refresh_timer = randf_range(0.0, 0.3) # escalonado: no calculan todos el camino en el mismo cuadro
 	is_wandering = false
 	_stop_attack_tween()
 	current_state = State.ATTACK_OBJECT
@@ -365,6 +365,15 @@ func _direction_toward_object(delta: float, straight: Vector3) -> Vector3:
 	return straight.normalized()
 
 
+func _find_hit_receiver(from: Node) -> Node:
+	var node: Node = from
+	while node:
+		if node.has_method("take_hit") or node.has_method("take_damage"):
+			return node
+		node = node.get_parent()
+	return null
+
+
 func _finish_object_strike() -> void:
 	_striking_object = false
 	_stop_attack_tween()
@@ -373,11 +382,15 @@ func _finish_object_strike() -> void:
 		var to_object: Vector3 = object_target.global_position - global_position
 		to_object.y = 0.0
 		if to_object.length() <= object_attack_range * 1.8:
-			# Los objetos reaccionan con take_hit (radio, farolas) o take_damage (props reactivos)
-			if object_target.has_method("take_hit"):
-				object_target.take_hit(attack_damage)
-			elif object_target.has_method("take_damage"):
-				object_target.take_damage(attack_damage)
+			# Igual que la guitarra y el fusil: sube por el árbol hasta el nodo que sabe recibir el golpe
+			# (la radio lo recibe en RadioShit, aunque el objetivo sea su malla "Radio"). No hace falta
+			# ninguna hitbox: el golpe es una llamada directa a take_hit() / take_damage().
+			var receiver: Node = _find_hit_receiver(object_target)
+			if receiver:
+				if receiver.has_method("take_hit"):
+					receiver.take_hit(attack_damage)
+				else:
+					receiver.take_damage(attack_damage)
 	_play_anim(ANIM_IDLE)
 
 
