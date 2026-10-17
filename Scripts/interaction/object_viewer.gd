@@ -14,6 +14,7 @@ class_name ObjectViewer
 var rotation_speed_degrees: float = 140.0 ## Velocidad con el stick al máximo (grados/seg)
 var rotation_response_curve: float = 1.5 ## 1 = lineal; más alto = más fino cerca del centro
 var invert_y: bool = false
+var drag_degrees_per_pixel: float = 0.45 ## Giro con el mouse: grados por píxel arrastrado
 var auto_fit: bool = true ## Escala y centra el clon para que entre aunque se lo rote
 var fit_fraction: float = 0.9 ## Cuánto del campo visual puede ocupar como máximo (0.1 a 1.0)
 var scale_multiplier: float = 1.0
@@ -178,6 +179,17 @@ func rotate_with_stick(delta: float) -> void:
 	var yaw: float = dir.x * step # stick a la derecha => la cara frontal gira hacia la derecha
 	var pitch: float = dir.y * step * (-1.0 if invert_y else 1.0) # stick arriba => la cara frontal sube
 
+	var rotation_step: Basis = Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch)
+	pivot.transform.basis = (rotation_step * pivot.transform.basis).orthonormalized()
+
+
+## Rotación arrastrando el mouse (botón izquierdo), con los mismos ejes de cámara que el stick.
+func rotate_by_drag(relative: Vector2) -> void:
+	if pivot == null or relative == Vector2.ZERO:
+		return
+	var per_pixel: float = deg_to_rad(drag_degrees_per_pixel)
+	var yaw: float = relative.x * per_pixel
+	var pitch: float = relative.y * per_pixel * (-1.0 if invert_y else 1.0)
 	var rotation_step: Basis = Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch)
 	pivot.transform.basis = (rotation_step * pivot.transform.basis).orthonormalized()
 

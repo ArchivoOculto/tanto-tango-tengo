@@ -16,9 +16,14 @@ const MIN_REWIND_SECONDS: float = 0.5
 ## Categoría de todos los cassettes.
 const CATEGORY: StringName = &"cassette"
 
+## Género de la canción. El nivel sortea uno por partida y solo el cassette de ESE género sirve para terminarlo.
+enum Genre { NONE, TANGO, FOLKLORE, ROCK }
+
 @export_group("Cinta")
 ## La canción grabada. La reproduce la radio.
 @export var track: AudioStream
+## Género del cassette (NONE = no sirve como llave del nivel).
+@export var genre: Genre = Genre.NONE
 
 var _rewind_action: ObjectAction
 

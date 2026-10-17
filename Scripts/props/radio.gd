@@ -128,6 +128,7 @@ func _ready() -> void:
 	# La canción suena DESDE la radio (audio posicional), no como un sonido global
 	_player = AudioStreamPlayer3D.new()
 	_player.name = "TapePlayer"
+	_player.bus = AudioBuses.MUSIC # la canción va al bus de música (slider de Opciones)
 	_player.volume_db = volume_db
 	_player.unit_size = unit_size
 	_player.max_distance = max_distance
@@ -160,6 +161,14 @@ func _is_action_available(action: ObjectAction) -> bool:
 	if action.id == eject_to_inventory_action_id:
 		return state == State.PLAYING_TAPE
 	return true
+
+
+## Baja el volumen de la canción hasta el silencio en 'duration' segundos (final del nivel).
+func fade_out_music(duration: float) -> void:
+	if _player == null or not _player.playing:
+		return
+	var tween: Tween = create_tween()
+	tween.tween_property(_player, "volume_db", -60.0, maxf(duration, 0.01))
 
 
 func is_playing_tape() -> bool:

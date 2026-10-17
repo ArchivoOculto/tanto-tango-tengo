@@ -2,12 +2,26 @@ class_name Enemy
 extends CharacterBody3D
 
 # --- ESTADOS ---
-enum State { WANDER, CHASE, ATTACK, FLEE, COOLDOWN, DEAD }
+enum State { WANDER, CHASE, ATTACK, FLEE, COOLDOWN, DEAD, ATTACK_OBJECT }
+
+## ATTACK_OBJECT: cuando suena la música correcta (ver Level00Manager) los enemigos dejan de patrullar y van
+## a golpear un objeto (la radio) para hacer saltar el cassette. Se activa con command_attack_object() y se
+## apaga con release_object_target(). Mientras tanto ignoran al jugador (ver ignore_player_in_attack_object).
 
 @export_group("IA & Detección")
 @export var detection_radius: float = 1.0     ## Distancia dentro del territorio para empezar a perseguir
 @export var attack_range: float = 0.5         ## Distancia para activar el ataque
 @export var attack_cooldown: float = 2.0      ## Tiempo de espera entre ataques
+
+@export_group("Atacar objeto (radio)")
+@export var object_attack_range: float = 0.7  ## Distancia al objeto para empezar a golpearlo
+@export var object_attack_cooldown: float = 1.5  ## Pausa entre golpes al objeto
+## OBJETO que ataca este enemigo en ATTACK_OBJECT. Vacío = el que indica el nivel (Level00Manager.enemy_attack_target,
+## por defecto la radio). Si se asigna acá, tiene prioridad sobre el del nivel.
+@export var attack_object_target: Node3D
+## En ATTACK_OBJECT el objetivo PRINCIPAL es el objeto: se ignora al jugador por completo (no lo persiguen
+## ni lo atacan). Desactivar para que lo defiendan cuando el jugador se les acerca.
+@export var ignore_player_in_attack_object: bool = true
 
 @export_group("Stats & Velocidades")
 @export var max_health: float = 100.0
@@ -71,6 +85,13 @@ var retreat_timer: float = 0.0
 var zone_area: Area3D = null
 var current_target_player: Node3D = null
 
+var object_target: Node3D = null ## Objeto a atacar (null = comportamiento normal)
+var _striking_object: bool = false
+var _nav_path: PackedVector3Array = PackedVector3Array()
+var _nav_path_index: int = 0
+var _nav_refresh_timer: float = 0.0
+var _object_attack_timer: float = 0.0
+
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var enemy_material: StandardMaterial3D
 var original_albedo_color: Color = Color.WHITE
@@ -84,6 +105,7 @@ var original_attack_mesh_scale: Vector3 = Vector3.ONE
 
 
 func _ready() -> void:
+	add_to_group("enemies")
 	current_health = max_health
 	spawn_position = global_position
 	target_position = spawn_position
@@ -146,6 +168,9 @@ func _process_state_machine(delta: float) -> void:
 			velocity.x = 0.0
 			velocity.z = 0.0
 
+		State.ATTACK_OBJECT:
+			_process_attack_object(delta, player_ref, dist_to_player)
+
 		State.FLEE:
 			flee_timer -= delta
 			if player_ref:
@@ -169,7 +194,9 @@ func _process_state_machine(delta: float) -> void:
 			_handle_wander(delta)
 			
 			if cooldown_timer <= 0.0:
-				if is_player_in_territory and dist_to_player <= detection_radius:
+				if is_instance_valid(object_target):
+					current_state = State.ATTACK_OBJECT # la música correcta sigue sonando: de vuelta a la radio
+				elif is_player_in_territory and dist_to_player <= detection_radius:
 					current_state = State.CHASE
 				else:
 					current_state = State.WANDER
@@ -184,6 +211,11 @@ func _start_attack(player_ref: Node3D) -> void:
 		attack_dir.y = 0.0
 		_rotate_visuals(attack_dir.normalized(), 1.0)
 
+	_begin_attack_telegraph()
+
+
+## Animación de ataque + esfera roja que crece (la misma para golpear al jugador o a un objeto).
+func _begin_attack_telegraph() -> void:
 	_play_anim(ANIM_ATTACK)
 
 	# --- ANIMACIÓN DE INTENSIDAD, ALPHA Y ESCALA ---
@@ -234,6 +266,9 @@ func _update_attack_intensity_and_alpha(intensity: float, alpha: float) -> void:
 
 # Señal emitida al completar la animación de ataque (último frame)
 func _on_animation_finished(anim_name: String) -> void:
+	if anim_name == ANIM_ATTACK and current_state == State.ATTACK_OBJECT and _striking_object:
+		_finish_object_strike()
+		return
 	if anim_name == ANIM_ATTACK and current_state == State.ATTACK:
 		if is_instance_valid(current_target_player):
 			_try_hit_player(current_target_player)
@@ -244,6 +279,106 @@ func _on_animation_finished(anim_name: String) -> void:
 		flee_timer = 1.2
 		current_target_player = null
 		_play_anim(ANIM_WALK)
+
+
+# --- ATACAR UN OBJETO (LA RADIO) ---
+
+## Ordena atacar 'target' (se llama con group "enemies" desde Level00Manager).
+func command_attack_object(target: Node3D) -> void:
+	var chosen: Node3D = attack_object_target if is_instance_valid(attack_object_target) else target
+	if current_state == State.DEAD or not is_instance_valid(chosen):
+		return
+	object_target = chosen
+	_striking_object = false
+	_object_attack_timer = randf_range(0.0, 0.6) # que no golpeen todos a la vez
+	_nav_path = PackedVector3Array()
+	_nav_refresh_timer = 0.0
+	is_wandering = false
+	_stop_attack_tween()
+	current_state = State.ATTACK_OBJECT
+
+
+## Vuelve al comportamiento normal (patrulla).
+func release_object_target() -> void:
+	object_target = null
+	_striking_object = false
+	if current_state == State.DEAD:
+		return
+	_stop_attack_tween()
+	if current_state == State.ATTACK_OBJECT:
+		current_state = State.WANDER
+		is_wandering = false
+		wait_timer = 0.0
+
+
+func _process_attack_object(delta: float, player_ref: Node3D, dist_to_player: float) -> void:
+	if not is_instance_valid(object_target):
+		release_object_target()
+		return
+
+	# Golpeando: quieto hasta que termine la animación (_finish_object_strike)
+	if _striking_object:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		return
+
+	# Por defecto el jugador se ignora: el objetivo principal es el objeto
+	if not ignore_player_in_attack_object and player_ref and dist_to_player <= attack_range:
+		_start_attack(player_ref)
+		return
+
+	_object_attack_timer -= delta
+	var to_object: Vector3 = object_target.global_position - global_position
+	to_object.y = 0.0
+	if to_object.length() <= object_attack_range:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		_rotate_visuals(to_object.normalized(), delta * 2.0)
+		_play_anim(ANIM_IDLE)
+		if _object_attack_timer <= 0.0:
+			_striking_object = true
+			_begin_attack_telegraph()
+	else:
+		var move_dir: Vector3 = _direction_toward_object(delta, to_object)
+		velocity.x = move_dir.x * chase_speed
+		velocity.z = move_dir.z * chase_speed
+		_rotate_visuals(move_dir, delta)
+		_play_anim(ANIM_WALK)
+
+
+## Dirección hacia el objeto rodeando obstáculos (alambrados) con la malla de navegación; sin malla o
+## sin camino, va en línea recta.
+func _direction_toward_object(delta: float, straight: Vector3) -> Vector3:
+	_nav_refresh_timer -= delta
+	if _nav_refresh_timer <= 0.0:
+		_nav_refresh_timer = 0.3
+		_nav_path = RuntimeNavigation.find_path(get_world_3d(), global_position, object_target.global_position)
+		_nav_path_index = 0
+
+	# Primer punto del camino que todavía no alcanzó (en el plano)
+	while _nav_path_index < _nav_path.size():
+		var step: Vector3 = _nav_path[_nav_path_index] - global_position
+		step.y = 0.0
+		if step.length() > 0.12:
+			return step.normalized()
+		_nav_path_index += 1
+	return straight.normalized()
+
+
+func _finish_object_strike() -> void:
+	_striking_object = false
+	_stop_attack_tween()
+	_object_attack_timer = object_attack_cooldown
+	if is_instance_valid(object_target):
+		var to_object: Vector3 = object_target.global_position - global_position
+		to_object.y = 0.0
+		if to_object.length() <= object_attack_range * 1.8:
+			# Los objetos reaccionan con take_hit (radio, farolas) o take_damage (props reactivos)
+			if object_target.has_method("take_hit"):
+				object_target.take_hit(attack_damage)
+			elif object_target.has_method("take_damage"):
+				object_target.take_damage(attack_damage)
+	_play_anim(ANIM_IDLE)
 
 
 func _try_hit_player(player_ref: Node3D) -> void:
@@ -296,6 +431,7 @@ func take_damage(amount: float, knockback_impulse: Vector3 = Vector3.ZERO) -> vo
 
 	current_health -= amount
 	current_target_player = null
+	_striking_object = false
 
 	_stop_attack_tween()
 
@@ -334,7 +470,7 @@ func _apply_gravity(delta: float) -> void:
 
 
 func _apply_friction(delta: float) -> void:
-	if current_state != State.CHASE and current_state != State.FLEE and not is_wandering:
+	if current_state != State.CHASE and current_state != State.FLEE and current_state != State.ATTACK_OBJECT and not is_wandering:
 		velocity.x = lerp(velocity.x, 0.0, friction * delta)
 		velocity.z = lerp(velocity.z, 0.0, friction * delta)
 

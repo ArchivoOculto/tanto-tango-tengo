@@ -211,7 +211,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return # modo fusil o inventario abiertos: no inspeccionar (al cerrar reactivarían el movimiento)
 
 	if _is_inspecting:
-		if _handle_menu_input(event):
+		# Mouse: arrastrar con el botón izquierdo rota el objeto
+		if event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
+			viewer.rotate_by_drag((event as InputEventMouseMotion).relative)
+			get_viewport().set_input_as_handled()
+		elif _handle_menu_input(event):
 			get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("interact") and _can_open():
 		_open_inspection()

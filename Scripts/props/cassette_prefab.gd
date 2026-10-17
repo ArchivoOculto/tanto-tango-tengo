@@ -28,6 +28,8 @@ class_name CassettePrefab
 @export_multiline var description: String = "Una cinta magnética sin etiqueta. Quizás haya algo grabado."
 ## Identificador único del ítem. Vacío = se genera uno propio a partir de la ruta del nodo en el nivel.
 @export var item_id: StringName = &""
+## Género de la canción: el nivel sortea uno y solo el cassette de ese género lo termina.
+@export var genre: CassetteItem.Genre = CassetteItem.Genre.NONE
 ## Opcional: un CassetteItem armado a mano que reemplaza a los datos de arriba.
 @export var item_override: CassetteItem
 
@@ -70,6 +72,7 @@ func _build_item() -> CassetteItem:
 	data.display_name = title
 	data.description = description
 	data.track = track
+	data.genre = genre
 	return data
 
 

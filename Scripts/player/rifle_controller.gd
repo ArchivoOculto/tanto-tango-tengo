@@ -75,6 +75,9 @@ enum State { IDLE, ENTERING, AIMING, EXITING }
 @export_range(10.0, 89.0) var pitch_limit_degrees: float = 70.0
 @export_range(0.0, 180.0) var yaw_limit_degrees: float = 0.0 ## 0 = giro libre; si no, máximo a cada lado desde donde empezó
 @export var invert_y: bool = false
+## Apuntar con el mouse: grados de giro por píxel de movimiento (0 = desactivado). El mouse se captura
+## mientras se apunta (y se libera al salir del modo fusil).
+@export_range(0.0, 1.0, 0.01) var mouse_sensitivity_degrees: float = 0.12
 @export var field_of_view: float = 65.0
 
 @export_group("Cámara")
@@ -111,6 +114,9 @@ var _reticle: Control
 var _reticle_tween: Tween
 
 var _state: State = State.IDLE
+var _mouse_delta: Vector2 = Vector2.ZERO
+var _mouse_mode_before: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
+var _mouse_captured: bool = false
 var _yaw: float = 0.0
 var _pitch: float = 0.0
 var _yaw_center: float = 0.0
@@ -156,6 +162,10 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		if _state == State.AIMING and mouse_sensitivity_degrees > 0.0:
+			_mouse_delta += (event as InputEventMouseMotion).relative
+		return
 	if event.is_action_pressed("rifle_toggle"):
 		if _state == State.IDLE or _state == State.EXITING:
 			enter_rifle_mode()
@@ -326,6 +336,7 @@ func _finish_enter(target: Transform3D) -> void:
 	_camera.fov = field_of_view
 	_hide_head_props()
 	_show_reticle()
+	_capture_mouse()
 	rifle_aim_ready.emit()
 
 
@@ -345,7 +356,43 @@ func _process_aiming(delta: float) -> void:
 		_reticle.queue_redraw()
 
 
+## El mouse apunta mientras se mantiene el modo fusil: se captura para poder girar sin límite de pantalla.
+func _capture_mouse() -> void:
+	if mouse_sensitivity_degrees <= 0.0 or _mouse_captured:
+		return
+	_mouse_mode_before = Input.mouse_mode
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_mouse_captured = true
+	_mouse_delta = Vector2.ZERO
+
+
+func _release_mouse() -> void:
+	_mouse_delta = Vector2.ZERO
+	if _mouse_captured:
+		Input.mouse_mode = _mouse_mode_before
+		_mouse_captured = false
+
+
+## Gira la mirada: 'right' y 'down' en radianes (positivo = hacia la derecha / hacia abajo).
+func _rotate_aim(right: float, down: float) -> void:
+	_yaw -= right # a la derecha => la mirada gira a la derecha
+	_pitch += down * (1.0 if invert_y else -1.0)
+
+	var pitch_limit: float = deg_to_rad(pitch_limit_degrees)
+	_pitch = clampf(_pitch, -pitch_limit, pitch_limit)
+
+	if yaw_limit_degrees > 0.0:
+		var yaw_limit: float = deg_to_rad(yaw_limit_degrees)
+		_yaw = _yaw_center + clampf(wrapf(_yaw - _yaw_center, -PI, PI), -yaw_limit, yaw_limit)
+
+
 func _update_aim(delta: float) -> void:
+	# Mouse: movimiento acumulado desde el último cuadro
+	if _mouse_delta != Vector2.ZERO:
+		var per_pixel: float = deg_to_rad(mouse_sensitivity_degrees)
+		_rotate_aim(_mouse_delta.x * per_pixel, _mouse_delta.y * per_pixel)
+		_mouse_delta = Vector2.ZERO
+
 	# Get_vector ya aplica la zona muerta configurada en cada acción.
 	var stick: Vector2 = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
 	if stick == Vector2.ZERO:
@@ -356,15 +403,7 @@ func _update_aim(delta: float) -> void:
 	var dir: Vector2 = stick.normalized() * strength
 	var step: float = deg_to_rad(aim_speed_degrees) * delta
 
-	_yaw -= dir.x * step # stick a la derecha => la mirada gira a la derecha
-	_pitch += dir.y * step * (1.0 if invert_y else -1.0)
-
-	var pitch_limit: float = deg_to_rad(pitch_limit_degrees)
-	_pitch = clampf(_pitch, -pitch_limit, pitch_limit)
-
-	if yaw_limit_degrees > 0.0:
-		var yaw_limit: float = deg_to_rad(yaw_limit_degrees)
-		_yaw = _yaw_center + clampf(wrapf(_yaw - _yaw_center, -PI, PI), -yaw_limit, yaw_limit)
+	_rotate_aim(dir.x * step, dir.y * step)
 
 
 func _aim_direction() -> Vector3:
@@ -443,6 +482,7 @@ func _process_exiting(delta: float) -> void:
 
 func _finish_exit() -> void:
 	_state = State.IDLE
+	_release_mouse()
 	CameraDirector.exit_first_person()
 
 	if is_instance_valid(_player):
@@ -461,6 +501,7 @@ func _on_zone_forced(_zone: CameraZone3D) -> void:
 
 func _exit_tree() -> void:
 	# Por si el jugador se libera (cambio de escena / warp) con el modo activo.
+	_release_mouse()
 	if _state != State.IDLE:
 		_state = State.IDLE
 		CameraDirector.exit_first_person()

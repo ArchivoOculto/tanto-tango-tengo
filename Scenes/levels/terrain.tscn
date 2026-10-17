@@ -786,9 +786,10 @@ size = Vector3(2.5684447, 0.5, 0.90000004)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
-[node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("radio")]
+[node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("radio", "enemies_root")]
 script = ExtResource("99_lvl00")
 radio = NodePath("../InteractiveProps/RadioShit")
+enemies_root = NodePath("../Enemies")
 
 [node name="Enviroment" type="Node3D" parent="." unique_id=1603349986]
 
@@ -818,6 +819,7 @@ draw_pass_1 = SubResource("RibbonTrailMesh_gml2b")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2189108, 0, -0.856882)
 stream = ExtResource("19_4rn8p")
 autoplay = true
+bus = &"Ambience"
 
 [node name="GameCamara" type="Camera3D" parent="." unique_id=2072088570]
 transform = Transform3D(0.32538348, -0.58481115, 0.7430488, -1.28155095e-08, 0.78581095, 0.6184668, -0.94558215, -0.20123889, 0.2556899, 1.9873594, 0.6, -3.753883)
@@ -1668,6 +1670,7 @@ transform = Transform3D(1.9106859e-15, 4.371139e-08, -1, 1, -4.371139e-08, 0, -4
 track = ExtResource("61_track")
 title = "Goyeneche"
 description = "Una cinta recopilando los mejores temas del Polaco"
+genre = 1
 cover_texture = ExtResource("38_lkd08")
 
 [node name="Folklore_Cassette" parent="Area 003/CassetteShit" unique_id=480792458 instance=ExtResource("51_cassprefab")]
@@ -1675,12 +1678,14 @@ transform = Transform3D(3.752374e-08, 0.85844314, -0.5129087, 1, -4.371139e-08, 
 track = ExtResource("38_m0byy")
 title = "Canciones con fundamento"
 description = "Un albúm de 196, pilar fundamental del Movimiento del Nuevo Cancionero"
+genre = 2
 
 [node name="Rock_Cassette" parent="Area 003/CassetteShit" unique_id=695514843 instance=ExtResource("51_cassprefab")]
 transform = Transform3D(-0.99593586, -0.05991805, -0.06724286, 0.06899411, -0.027651727, -0.9972337, 0.057892922, -0.99782014, 0.031673346, 0.07692623, 0.1363678, -0.07577155)
 track = ExtResource("38_erfj3")
 title = "Gulp!"
 description = "Una cinta de 1985"
+genre = 3
 cover_texture = ExtResource("39_m0byy")
 
 [node name="CassetteMesh1" parent="Area 003/CassetteShit" unique_id=1905706799 instance=ExtResource("33_1e2yc")]
@@ -1752,32 +1757,41 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.016736865, 0.2754364, -1.58
 
 [node name="Enemies" type="Node3D" parent="." unique_id=205248485]
 
-[node name="enemy" parent="Enemies" unique_id=1534867834 instance=ExtResource("4_0ac8p")]
+[node name="enemy" parent="Enemies" unique_id=1534867834 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -3.1637936, 0.591499, -1.0284445)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy2" parent="Enemies" unique_id=2023733705 instance=ExtResource("4_0ac8p")]
+[node name="enemy2" parent="Enemies" unique_id=2023733705 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.30000004, -0.9636663)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy3" parent="Enemies" unique_id=14609056 instance=ExtResource("4_0ac8p")]
+[node name="enemy3" parent="Enemies" unique_id=14609056 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.3341706, 0.47622633, -3.1463363)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy4" parent="Enemies" unique_id=957438640 instance=ExtResource("4_0ac8p")]
+[node name="enemy4" parent="Enemies" unique_id=957438640 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.811871, 0.5442436, -2.2247493)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy5" parent="Enemies" unique_id=958582147 instance=ExtResource("4_0ac8p")]
+[node name="enemy5" parent="Enemies" unique_id=958582147 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.38322985, -2.5336437)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy6" parent="Enemies" unique_id=1073073934 instance=ExtResource("4_0ac8p")]
+[node name="enemy6" parent="Enemies" unique_id=1073073934 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.9704452, 0.79438186, -2.6311767)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy7" parent="Enemies" unique_id=1801862524 instance=ExtResource("4_0ac8p")]
+[node name="enemy7" parent="Enemies" unique_id=1801862524 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -1.7587423, 0.55366504, -0.40380657)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy8" parent="Enemies" unique_id=1531772174 instance=ExtResource("4_0ac8p")]
+[node name="enemy8" parent="Enemies" unique_id=1531772174 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.1000001, 0.47009218, -1.6924458)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
-[node name="enemy9" parent="Enemies" unique_id=1110767978 instance=ExtResource("4_0ac8p")]
+[node name="enemy9" parent="Enemies" unique_id=1110767978 node_paths=PackedStringArray("attack_object_target") instance=ExtResource("4_0ac8p")]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, -2.613318, 0.567855, -0.4068327)
+attack_object_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
 [node name="EnemyPatrolZone" type="Area3D" parent="Enemies" unique_id=1330319728]
 collision_layer = 0
