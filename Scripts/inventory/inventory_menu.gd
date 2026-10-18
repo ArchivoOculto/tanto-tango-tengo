@@ -110,9 +110,13 @@ func _process(delta: float) -> void:
 
 ## Condiciones para abrirlo: no se abre sobre otro menú, en pleno modo fusil, en una cinemática ni
 ## con el jugador bloqueado (intro, final del juego).
-func can_open() -> bool:
+## 'from_pause': el menú de pausa ya validó todo y el árbol está en pausa (el jugador "no puede procesar"
+## y las cámaras forzadas no importan), así que solo se exige que no esté ya abierto.
+func can_open(from_pause: bool = false) -> bool:
 	if is_open:
 		return false
+	if from_pause:
+		return true
 	var player: Node = get_tree().get_first_node_in_group("player")
 	if player == null or not player.can_process() or not player.is_physics_processing():
 		return false # bloqueado por el juego o congelado por otro menú
@@ -123,8 +127,8 @@ func can_open() -> bool:
 	return true
 
 
-func open() -> bool:
-	if not can_open():
+func open(from_pause: bool = false) -> bool:
+	if not can_open(from_pause):
 		return false
 	_set_picker_mode(false)
 	_frozen_player = get_tree().get_first_node_in_group("player")

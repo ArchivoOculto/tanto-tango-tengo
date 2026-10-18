@@ -31,16 +31,13 @@
 [ext_resource type="Texture2D" uid="uid://c18g1tneohyow" path="res://Assets/2D/256x256/Brick/Horror_Brick_06-256x256.png" id="23_pbqc1"]
 [ext_resource type="Texture2D" uid="uid://cm3bma1b0kovi" path="res://Assets/2D/256x256/Stains/Horror_Stain_09-256x256.png" id="28_atwpt"]
 [ext_resource type="Texture2D" uid="uid://dnlw747uk3bq2" path="res://Assets/2D/endpicture.png" id="28_swpjm"]
-[ext_resource type="PackedScene" uid="uid://bt6xbrelu3kx" path="res://Assets/3D/radio/Radio.tscn" id="32_tsagk"]
 [ext_resource type="PackedScene" uid="uid://bfeb1ihbgumys" path="res://Assets/3D/Cassette/Cassette_mesh.tscn" id="33_1e2yc"]
-[ext_resource type="PackedScene" uid="uid://bl5winfaxheex" path="res://Scenes/interaction/interactable_object.tscn" id="34_cm1ky"]
 [ext_resource type="AudioStream" uid="uid://do4fhi2epkfe8" path="res://Assets/Audio/Cassette tracks/Superlogico_track.mp3" id="38_erfj3"]
 [ext_resource type="Texture2D" uid="uid://cuo6ue5le0qy" path="res://Assets/3D/Cassette/goyeneche.png" id="38_lkd08"]
 [ext_resource type="AudioStream" uid="uid://coathd3xnu2ok" path="res://Assets/Audio/Cassette tracks/Cachapecero_track.mp3" id="38_m0byy"]
 [ext_resource type="Texture2D" uid="uid://bd6vr3uq20s2t" path="res://Assets/3D/Cassette/redondos.png" id="39_m0byy"]
-[ext_resource type="Script" uid="uid://dqorn1gv08dnd" path="res://Scripts/props/radio.gd" id="50_radio"]
 [ext_resource type="PackedScene" uid="uid://lrbh4p4114u4" path="res://Scenes/props/Cassette_Prefab.tscn" id="51_cassprefab"]
-[ext_resource type="Script" uid="uid://cffuuu1umlvih" path="res://Scripts/inventory/object_action.gd" id="52_oaction"]
+[ext_resource type="PackedScene" path="res://Scenes/props/Radio_Prefab.tscn" id="53_radioprefab"]
 [ext_resource type="Script" uid="uid://dvf2vtx0lbe0q" path="res://Scripts/ui/context_visibility.gd" id="60_ctxvis"]
 [ext_resource type="AudioStream" uid="uid://cqj3wboih4mfw" path="res://Assets/Audio/Cassette tracks/Garua_track.mp3" id="61_track"]
 [ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level/level00_manager.gd" id="99_lvl00"]
@@ -364,17 +361,6 @@ size = Vector3(0.45635986, 0.52490234, 0.31799316)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gim56"]
 size = Vector3(0.9861206, 1.0680664, 0.48059082)
-
-[sub_resource type="Resource" id="Resource_playtape"]
-script = ExtResource("52_oaction")
-id = &"play_tape"
-label = "reproducir cinta"
-required_item_category = &"cassette"
-picker_title = "elegir cinta"
-consume_required_item = true
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ekr8f"]
-size = Vector3(1, 0.5, 0.75)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kfsa1"]
 size = Vector3(0.25, 0.25, 0.2)
@@ -776,20 +762,25 @@ size = Vector3(1, 1, 1.4)
 size = Vector3(1, 1, 0.9)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gppgl"]
-size = Vector3(2.6, 0.5, 2.7)
+size = Vector3(2.6, 0.5, 2.8773437)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_pbqc1"]
-size = Vector3(2.5611815, 0.5, 2.929883)
+size = Vector3(2.5611815, 0.5, 2.4182618)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5ftdt"]
-size = Vector3(2.5684447, 0.5, 0.90000004)
+size = Vector3(2.5684447, 0.5, 1.5)
 
 [node name="Level_0" type="Node3D" unique_id=851549258]
 
-[node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("radio", "enemies_root")]
+[node name="Level00Manager" type="Node" parent="." unique_id=1900000001 node_paths=PackedStringArray("radio", "enemy_attack_target", "enemies_root", "patrol_zone")]
 script = ExtResource("99_lvl00")
 radio = NodePath("../InteractiveProps/RadioShit")
+enemy_attack_target = NodePath("../InteractiveProps/RadioShit")
 enemies_root = NodePath("../Enemies")
+patrol_zone = NodePath("../Enemies/EnemyPatrolZone")
+enemy_scene = ExtResource("4_0ac8p")
+enemy_respawn_delay = 3.0
+respawn_min_player_distance = 0.1
 
 [node name="Enviroment" type="Node3D" parent="." unique_id=1603349986]
 
@@ -1090,44 +1081,12 @@ override_camera_speed = true
 custom_smoothing = 2.0
 door_action_delay = 2.0
 
-[node name="RadioShit" type="StaticBody3D" parent="InteractiveProps" unique_id=1201380270 node_paths=PackedStringArray("interactable", "visual", "eject_point", "landing_point")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08043003, 0, 0)
-collision_layer = 9
-script = ExtResource("50_radio")
-interactable = NodePath("Radio/Interactable_object")
-visual = NodePath("Radio")
+[node name="RadioShit" parent="InteractiveProps" unique_id=1201380270 instance=ExtResource("53_radioprefab")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3843887, 0.35301754, -3.88642)
 volume_db = -8.0
-eject_point = NodePath("CassetteEject")
-landing_point = NodePath("CassetteLanding")
-
-[node name="CassetteEject" type="Marker3D" parent="InteractiveProps/RadioShit" unique_id=1900000101]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3036, 0.6, -3.85)
-
-[node name="CassetteLanding" type="Marker3D" parent="InteractiveProps/RadioShit" unique_id=1900000102]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.9470956, 0.12, -3.82)
-
-[node name="Radio" parent="InteractiveProps/RadioShit" unique_id=524702442 instance=ExtResource("32_tsagk")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3039587, 0.35301754, -3.88642)
-
-[node name="Interactable_object" parent="InteractiveProps/RadioShit/Radio" unique_id=313652406 node_paths=PackedStringArray("area_3d") instance=ExtResource("34_cm1ky")]
-display_name = "Radio"
-description = "Además cuenta con reproductor de cassettes"
-area_3d = NodePath("Area3D")
-actions = Array[ExtResource("52_oaction")]([SubResource("Resource_playtape")])
-outline_color = Color(0.71844184, 0.03650001, 0.73, 1)
-outline_width = 1.0
-scale_multiplier = 1.25
-
-[node name="Area3D" type="Area3D" parent="InteractiveProps/RadioShit/Radio/Interactable_object" unique_id=33361644]
-collision_layer = 0
-collision_mask = 2
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractiveProps/RadioShit/Radio/Interactable_object/Area3D" unique_id=913862442]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03817749, 0.0057063997, 0.22660351)
-shape = SubResource("BoxShape3D_ekr8f")
 
 [node name="RadioAltar" type="CollisionShape3D" parent="InteractiveProps/RadioShit" unique_id=948099745]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3034425, 0.22840476, -3.8922005)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0005162, -0.12461278, -0.0057805)
 shape = SubResource("BoxShape3D_kfsa1")
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="InteractiveProps/RadioShit/RadioAltar" unique_id=953193764]
@@ -1906,7 +1865,7 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_06" unique_id=277393503]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.89417136, -1.7264743, 4.5296097)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.89417136, -1.7264743, 4.440938)
 shape = SubResource("BoxShape3D_gppgl")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
@@ -1920,26 +1879,25 @@ camera_anchor = NodePath("CamAnchor")
 follow_smoothing = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_06B" unique_id=2128571954]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.080590725, -0.5, 0.011816025)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.080590725, -0.5, 0.26762664)
 shape = SubResource("BoxShape3D_pbqc1")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06B" unique_id=1112542435]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.5, 1.9999999)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.19999999, 1.9999999)
 
-[node name="CamZone_06C" type="Area3D" parent="CamZones" unique_id=1065818961 node_paths=PackedStringArray("camera_anchor", "look_target")]
+[node name="CamZone_06C" type="Area3D" parent="CamZones" unique_id=1065818961 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4468079, 0.82978106, -1.6734003)
 script = ExtResource("3_hvvm8")
 camera_anchor = NodePath("CamAnchor")
-look_target = NodePath("../../InteractiveProps/RadioShit/Radio")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CamZones/CamZone_06C" unique_id=1495136859]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08422232, -0.5, -1.9141461)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08422232, -0.5, -1.714146)
 shape = SubResource("BoxShape3D_5ftdt")
 debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
 
 [node name="CamAnchor" type="Marker3D" parent="CamZones/CamZone_06C" unique_id=1305012528]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.062622786, -0.09536964, -1.5541359)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.063, -0.2, -0.654)
 
 [editable path="InteractiveProps/Puzzle_Hint/interactable_picture"]
 [editable path="Area 003/Farolito_Open"]

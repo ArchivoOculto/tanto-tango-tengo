@@ -4,6 +4,7 @@
 [ext_resource type="SpriteFrames" uid="uid://ch8pra0ijdexb" path="res://Resources/ui/ui_buttons_frames.tres" id="1_m23wo"]
 
 [node name="InventoryMenu" type="CanvasLayer" unique_id=1276957701]
+process_mode = 3
 layer = 127
 visible = false
 script = ExtResource("1_invmenu")

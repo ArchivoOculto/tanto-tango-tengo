@@ -15,6 +15,8 @@ var _fade_rect: ColorRect
 
 
 func _ready() -> void:
+	# El fundido tiene que correr también con el juego en pausa (salir al menú desde la pausa)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_fade_layer()
 
 

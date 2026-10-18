@@ -6,20 +6,24 @@ class_name Level00Manager
 ## INICIO / REINICIO (cada vez que se carga el nivel):
 ##   1. Pantalla en negro (se oye la lluvia). Se SORTEA el género de la noche (Tango, Folklore o Rock)
 ##      y aparece el mensaje "Esta noche quiero escuchar un ...".
-##   2. Pasan 'intro_black_duration' segundos con el jugador SIN controles.
-##   3. Empieza el fade in: el jugador recupera los controles y el mensaje se apaga solo.
+##   2. Pasan 'intro_black_duration' segundos con el jugador SIN controles; entonces el mensaje se apaga.
+##   3. Recién cuando el mensaje ya no está empieza el fade in al juego: el jugador recupera los controles.
 ##
 ## OBJETIVO:
 ##   El cassette cuyo 'genre' (ver CassetteItem / CassettePrefab) coincide con el sorteado es la llave del
 ##   nivel. Al ponerlo en la radio aparece una barra de carga al centro inferior que avanza MIENTRAS suena
-##   (si la cinta sale de la radio, la barra se frena y retoma al volver a ponerla). Al completarse
+##   (si la cinta sale de la radio, la barra se frena y retoma al volver a ponerla; si un golpe la hace saltar
+##   dice "saltó la cinta" en rojo; si el jugador guarda el cassette en el inventario, la barra se oculta hasta
+##   que lo vuelva a reproducir). Al completarse
 ##   'progress_duration' segundos de música correcta, el nivel termina: fundido a negro y pantalla de inicio.
 ##
 ## ENEMIGOS:
 ##   Mientras suena la música correcta, todos los enemigos pasan al estado ATTACK_OBJECT: van a golpear la
 ##   radio para hacer saltar el cassette. Además, cada 'enemy_respawn_delay' segundos, si quedan
-##   'respawn_max_alive' enemigos o menos, hay una chance de que reaparezcan de 1 a 3 en cualquiera de las
-##   posiciones originales.
+##   'respawn_max_alive' enemigos o menos, hay una chance de que reaparezcan de 1 a 3 en un punto cualquiera
+##   del Area3D de su EnemyPatrolZone.
+##
+## PAUSA: crea el menú de pausa (PauseMenu): Esc / Start. "salir al menú principal" vuelve al inicio.
 ##
 ## El fundido usa el de WarpManager (capa 128, por encima de las barras 4:3 y de toda la UI).
 
@@ -36,27 +40,26 @@ signal restart_requested
 
 ## Pantalla de inicio: a donde se vuelve al completar el nivel.
 const MAIN_MENU_SCENE: String = "res://Scenes/ui/main_menu.tscn"
-## Malla de navegación horneada de los enemigos.
-const NAVMESH_PATH: String = "res://Resources/navigation/level0_navmesh.tres"
-
 const GENRE_MESSAGES: Dictionary = {
 	CassetteItem.Genre.TANGO: "Esta noche quiero escuchar un [i]Tango[/i]",
 	CassetteItem.Genre.FOLKLORE: "Esta noche quiero escuchar [i]Folklore[/i]",
 	CassetteItem.Genre.ROCK: "Esta noche quiero escuchar un [i]Rock[/i]",
 }
 
+## Duración del fade a negro al salir al menú principal desde la pausa.
+const PAUSE_EXIT_FADE: float = 0.8
+
 enum ForcedGenre { RANDOM, TANGO, FOLKLORE, ROCK }
 
 @export_group("Inicio / Reinicio")
 ## Desactivar para probar el nivel en el editor sin esperar la intro.
 @export var play_intro: bool = true
-## Segundos con la pantalla en negro (solo lluvia) antes de que empiece el fade in.
+## Segundos con la pantalla en negro y el mensaje a la vista, contados desde el inicio de la intro. Pasado
+## ese tiempo el mensaje se apaga, y recién cuando desapareció empieza el fade in.
 @export_range(0.0, 30.0, 0.1, "or_greater", "suffix:s") var intro_black_duration: float = 3.0
 ## Duración del fade in que revela la pantalla.
 @export_range(0.0, 30.0, 0.1, "or_greater", "suffix:s") var intro_fade_in_duration: float = 4.0
-## Cuánto sigue visible el mensaje una vez que empieza el fade in, antes de apagarse.
-@export_range(0.0, 10.0, 0.1, "suffix:s") var message_hold_after_fade: float = 2.5
-## Duración del fade out del mensaje.
+## Duración del fade out del mensaje (el fade in al juego espera a que termine).
 @export_range(0.0, 10.0, 0.1, "suffix:s") var message_fade_out_duration: float = 1.5
 
 @export_group("Objetivo")
@@ -73,21 +76,13 @@ enum ForcedGenre { RANDOM, TANGO, FOLKLORE, ROCK }
 @export var enemy_attack_target: Node3D
 ## Nodo que contiene a los enemigos del nivel (sus posiciones iniciales son los puntos de reaparición).
 @export var enemies_root: Node3D
-## Puntos de reaparición EXTRA (Marker3D), además de las posiciones originales de los enemigos. Útiles para
-## que reaparezcan del lado de la radio si el sector original no tiene paso hasta ella.
-@export var extra_spawn_points: Array[Marker3D] = []
-## Navegación de los enemigos hacia el objeto. DESACTIVADA por defecto: la radio está en el mismo sector que los
-## enemigos y llegan en línea recta sin gastar nada. Activarla solo si se agregan obstáculos (paredes, props)
-## que los traben; usa una malla ya horneada (no hornea en el juego).
-@export var use_navigation: bool = false
-## Malla de navegación ya horneada para los enemigos. Vacío = se usa Resources/navigation/level0_navmesh.tres
-## si existe (lo normal). Sin malla, los enemigos van en línea recta.
-@export var navigation_mesh: NavigationMesh
-## SOLO PARA DESARROLLO: vuelve a hornear la malla al correr el nivel desde el editor y la guarda en
-## Resources/navigation/level0_navmesh.tres. Dejar desactivado: hornear en el juego es lo que más pesa.
-@export var rebake_navigation_now: bool = false
-## Margen (m) alrededor de los enemigos y la radio donde se genera la navegación (al hornear).
-@export_range(0.0, 20.0, 0.5, "suffix:m") var nav_bake_margin: float = 4.0
+## Territorio de los enemigos: reaparecen en un punto cualquiera de su Area3D. Vacío = se busca una
+## EnemyPatrolZone entre los hijos de 'enemies_root'.
+@export var patrol_zone: EnemyPatrolZone
+## Escena de los enemigos que reaparecen. Vacío = la misma de los enemigos que ya están en el nivel.
+@export var enemy_scene: PackedScene
+## Escala de los enemigos que reaparecen (los del nivel están a 0.3).
+@export_range(0.05, 2.0, 0.05) var enemy_spawn_scale: float = 0.3
 ## Cada cuántos segundos, con la música correcta sonando, se evalúa si reaparecen enemigos.
 @export_range(1.0, 120.0, 0.5, "or_greater", "suffix:s") var enemy_respawn_delay: float = 12.0
 ## Probabilidad (0 a 1) de que reaparezcan enemigos en cada evaluación.
@@ -96,8 +91,12 @@ enum ForcedGenre { RANDOM, TANGO, FOLKLORE, ROCK }
 @export var respawn_max_alive: int = 2
 @export var respawn_min_count: int = 1
 @export var respawn_max_count: int = 3
-## No reaparecen más cerca que esto del jugador (si hay otras posiciones disponibles).
+## No reaparecen más cerca que esto del jugador (se reintenta con otro punto de la zona).
 @export_range(0.0, 20.0, 0.1, "suffix:m") var respawn_min_player_distance: float = 2.0
+
+@export_group("Pausa")
+## Crea el menú de pausa (Esc / Start) en este nivel.
+@export var pause_enabled: bool = true
 
 @export_group("Final")
 ## Texto que aparece sobre el negro al completar el nivel.
@@ -119,9 +118,8 @@ var _prev_player_process_mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT
 var _ending: bool = false
 var _correct_playing: bool = false
 var _respawn_timer: float = 0.0
-var _enemy_scene: PackedScene
-var _enemy_spawn_transforms: Array[Transform3D] = []
-var _navigation: RuntimeNavigation
+var _pause_menu: PauseMenu
+var _message_tween: Tween
 var _progress_bar: TapeProgressBar
 var _message_layer: CanvasLayer
 var _message_label: RichTextLabel
@@ -136,10 +134,10 @@ func _ready() -> void:
 
 	_player = get_tree().get_first_node_in_group("player") as Player
 	_choose_target_genre()
-	_collect_enemy_spawns()
+	_setup_enemy_respawn()
 	_build_progress_bar()
-	_build_navigation()
 	_connect_radio()
+	_build_pause_menu()
 
 	if play_intro:
 		_run_intro()
@@ -148,16 +146,10 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if _ending or not is_instance_valid(radio):
+	if _ending or not is_instance_valid(radio) or not _correct_playing:
 		return
 
-	var playing_correct: bool = _correct_playing and radio.is_playing_tape()
-	if is_instance_valid(_progress_bar):
-		_progress_bar.set_paused(not playing_correct)
-	if not _correct_playing:
-		return
-
-	if playing_correct:
+	if radio.is_playing_tape():
 		progress_seconds = minf(progress_seconds + delta, progress_duration)
 		var ratio: float = progress_seconds / progress_duration
 		_progress_bar.set_progress(ratio)
@@ -222,10 +214,14 @@ func _run_intro() -> void:
 		if not is_inside_tree():
 			return
 
+	# El mensaje se apaga por completo ANTES de que empiece a revelarse el juego
+	await _hide_genre_message()
+	if not is_inside_tree():
+		return
+
 	# El jugador recupera los controles justo cuando empieza a revelarse la pantalla
 	_set_player_locked(false)
 	intro_fade_started.emit()
-	_hide_genre_message_later()
 	await WarpManager.fade_in(intro_fade_in_duration)
 
 
@@ -234,7 +230,8 @@ func _show_genre_message() -> void:
 	_message_label = _make_message_label(GENRE_MESSAGES.get(target_genre, ""))
 	_message_layer = _message_label.get_parent() as CanvasLayer
 	_message_label.modulate.a = 0.0
-	create_tween().tween_property(_message_label, "modulate:a", 1.0, 1.0).set_delay(0.5)
+	_message_tween = create_tween()
+	_message_tween.tween_property(_message_label, "modulate:a", 1.0, 1.0).set_delay(0.5)
 
 
 ## Texto centrado (acepta BBCode: [i]cursiva[/i]) en la capa 129, por encima del fundido a negro.
@@ -261,16 +258,17 @@ func _make_message_label(bbcode_text: String) -> RichTextLabel:
 	return label
 
 
-func _hide_genre_message_later() -> void:
+## Apaga el mensaje con un fade out y espera a que termine (libera su capa).
+func _hide_genre_message() -> void:
 	if not is_instance_valid(_message_label):
 		return
-	var tween: Tween = create_tween()
-	tween.tween_interval(message_hold_after_fade)
-	tween.tween_property(_message_label, "modulate:a", 0.0, message_fade_out_duration)
-	tween.finished.connect(func():
-		if is_instance_valid(_message_layer):
-			_message_layer.queue_free()
-	)
+	if _message_tween and _message_tween.is_valid():
+		_message_tween.kill() # por si el fade in del mensaje todavía no terminó
+	_message_tween = create_tween()
+	_message_tween.tween_property(_message_label, "modulate:a", 0.0, message_fade_out_duration)
+	await _message_tween.finished
+	if is_instance_valid(_message_layer):
+		_message_layer.queue_free()
 
 
 # ---------------------------------------------------------------- OBJETIVO
@@ -287,12 +285,35 @@ func _connect_radio() -> void:
 		return
 	radio.tape_play_started.connect(_on_tape_play_started)
 	radio.tape_ejected.connect(_on_tape_stopped)
-	radio.tape_finished.connect(_on_tape_stopped)
+	radio.tape_finished.connect(_on_tape_finished)
+	radio.tape_jumped.connect(_on_tape_jumped)
+	Inventory.item_added.connect(_on_inventory_item_added)
 
 
 func _on_tape_play_started(item: ItemData) -> void:
 	if is_correct_item(item):
 		_set_correct_playing(true)
+	else:
+		_progress_bar.set_state(TapeProgressBar.State.PAUSED) # suena otra cinta: la barra queda quieta
+
+
+## Un golpe (del jugador o de un enemigo) hizo saltar la cinta de la radio.
+func _on_tape_jumped(item: ItemData) -> void:
+	if is_correct_item(item):
+		_progress_bar.set_state(TapeProgressBar.State.TAPE_JUMPED)
+
+
+func _on_tape_finished(item: ItemData) -> void:
+	_on_tape_stopped(item)
+	if is_correct_item(item):
+		_progress_bar.set_state(TapeProgressBar.State.PAUSED)
+
+
+## El jugador guardó el cassette correcto en el inventario (sacándolo de la radio o juntándolo del suelo):
+## la barra se oculta hasta que lo vuelva a reproducir.
+func _on_inventory_item_added(entry: InventoryEntry) -> void:
+	if entry != null and is_correct_item(entry.item):
+		_progress_bar.hide_bar()
 
 
 func _on_tape_stopped(_item: ItemData) -> void:
@@ -306,6 +327,7 @@ func _set_correct_playing(playing: bool) -> void:
 	_respawn_timer = 0.0
 	if playing:
 		_progress_bar.show_bar()
+		_progress_bar.set_state(TapeProgressBar.State.PLAYING)
 		_progress_bar.set_progress(progress_seconds / progress_duration)
 		get_tree().call_group("enemies", "command_attack_object", _attack_target())
 	else:
@@ -314,71 +336,18 @@ func _set_correct_playing(playing: bool) -> void:
 
 # ---------------------------------------------------------------- ENEMIGOS
 
-## Navegación para que los enemigos rodeen los alambrados camino a la radio: usa una malla YA HORNEADA
-## (sin costo de horneado en el juego). Solo se hornea si se pide explícitamente (rebake_navigation_now).
-func _build_navigation() -> void:
-	var wants_rebake: bool = rebake_navigation_now and OS.has_feature("editor")
-	if not (use_navigation or wants_rebake):
-		return # por defecto: sin navegación, sin costo
-	if not is_instance_valid(radio) or _enemy_spawn_transforms.is_empty():
-		return
-
-	var prebaked: NavigationMesh = navigation_mesh
-	if prebaked == null and ResourceLoader.exists(NAVMESH_PATH):
-		prebaked = load(NAVMESH_PATH) as NavigationMesh
-
-	if prebaked != null and not wants_rebake:
-		_navigation = RuntimeNavigation.new()
-		_navigation.name = "RuntimeNavigation"
-		get_parent().add_child.call_deferred(_navigation)
-		_use_prebaked_later.call_deferred(prebaked)
-		return
-
-	if not wants_rebake:
-		return # sin malla horneada: línea recta, sin costo extra
-
-	var target_position: Vector3 = _attack_target().global_position
-	var min_point: Vector3 = target_position
-	var max_point: Vector3 = target_position
-	for t in _enemy_spawn_transforms:
-		min_point = min_point.min(t.origin)
-		max_point = max_point.max(t.origin)
-	var bounds := AABB(min_point, max_point - min_point).grow(nav_bake_margin)
-	bounds.position.y = min_point.y - 1.0
-	bounds.size.y = 4.0
-
-	_navigation = RuntimeNavigation.new()
-	_navigation.name = "RuntimeNavigation"
-	_navigation.save_path = NAVMESH_PATH
-	get_parent().add_child.call_deferred(_navigation)
-	_bake_navigation_later.call_deferred(bounds)
-
-
-func _use_prebaked_later(prebaked: NavigationMesh) -> void:
-	await get_tree().process_frame
-	if is_instance_valid(_navigation) and _navigation.is_inside_tree():
-		_navigation.use_prebaked(prebaked)
-
-
-func _bake_navigation_later(bounds: AABB) -> void:
-	await get_tree().process_frame
-	if is_instance_valid(_navigation) and _navigation.is_inside_tree():
-		_navigation.bake_area(get_parent(), bounds)
-
-
-func _collect_enemy_spawns() -> void:
-	for marker in extra_spawn_points:
-		if is_instance_valid(marker):
-			_enemy_spawn_transforms.append(marker.global_transform)
+## Prepara la reaparición: el territorio (EnemyPatrolZone) y la escena de los enemigos, tomados de los
+## que ya están en el nivel si no se asignaron a mano.
+func _setup_enemy_respawn() -> void:
 	if enemies_root == null:
 		enemies_root = get_parent().get_node_or_null("Enemies") as Node3D
 	if enemies_root == null:
 		return
 	for child in enemies_root.get_children():
-		if child is Enemy:
-			_enemy_spawn_transforms.append((child as Enemy).global_transform)
-			if _enemy_scene == null and (child as Enemy).scene_file_path != "":
-				_enemy_scene = load((child as Enemy).scene_file_path) as PackedScene
+		if patrol_zone == null and child is EnemyPatrolZone:
+			patrol_zone = child as EnemyPatrolZone
+		elif enemy_scene == null and child is Enemy and child.scene_file_path != "":
+			enemy_scene = load(child.scene_file_path) as PackedScene
 
 
 func _alive_enemy_count() -> int:
@@ -392,7 +361,7 @@ func _alive_enemy_count() -> int:
 
 ## Con la música correcta sonando y pocos enemigos vivos, hay una chance de que reaparezcan 1 a 3.
 func _try_respawn_enemies() -> void:
-	if _enemy_scene == null or _enemy_spawn_transforms.is_empty() or enemies_root == null:
+	if enemy_scene == null or patrol_zone == null or enemies_root == null:
 		return
 	if _alive_enemy_count() > respawn_max_alive:
 		return
@@ -401,17 +370,20 @@ func _try_respawn_enemies() -> void:
 
 	var spawn_count: int = randi_range(maxi(respawn_min_count, 1), maxi(respawn_max_count, respawn_min_count))
 	for i in spawn_count:
-		_spawn_enemy_at(_pick_spawn_transform())
+		_spawn_enemy_at(_pick_spawn_point())
 
 
-func _pick_spawn_transform() -> Transform3D:
-	var candidates: Array[Transform3D] = []
-	for t in _enemy_spawn_transforms:
-		if not is_instance_valid(_player) or t.origin.distance_to(_player.global_position) >= respawn_min_player_distance:
-			candidates.append(t)
-	if candidates.is_empty():
-		candidates = _enemy_spawn_transforms
-	return candidates.pick_random()
+## Punto al azar dentro de la zona de patrulla, lejos del jugador (se reintenta unas veces; si no hay
+## lugar, se usa el último).
+func _pick_spawn_point() -> Vector3:
+	var point: Vector3 = patrol_zone.get_random_point()
+	if not is_instance_valid(_player):
+		return point
+	for attempt in 8:
+		if point.distance_to(_player.global_position) >= respawn_min_player_distance:
+			break
+		point = patrol_zone.get_random_point()
+	return point
 
 
 ## Qué objeto atacan los enemigos: el asignado en 'enemy_attack_target' o, si no hay, la radio (su malla,
@@ -425,11 +397,13 @@ func _attack_target() -> Node3D:
 	return radio
 
 
-func _spawn_enemy_at(spawn_transform: Transform3D) -> void:
-	var enemy := _enemy_scene.instantiate() as Enemy
+func _spawn_enemy_at(point: Vector3) -> void:
+	var enemy := enemy_scene.instantiate() as Enemy
+	# Posición antes de entrar al árbol: así el enemigo ya nace con su punto de partida correcto
+	enemy.transform = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * enemy_spawn_scale),
+			enemies_root.to_local(point + Vector3.UP * 0.05))
+	enemy.zone_area = patrol_zone
 	enemies_root.add_child(enemy)
-	enemy.global_transform = spawn_transform
-	enemy.spawn_position = spawn_transform.origin
 	if _correct_playing and is_instance_valid(_attack_target()):
 		enemy.command_attack_object(_attack_target())
 
@@ -441,6 +415,8 @@ func _begin_ending() -> void:
 	if _ending:
 		return
 	_ending = true
+	if is_instance_valid(_pause_menu):
+		_pause_menu.enabled = false
 	get_tree().call_group("enemies", "release_object_target")
 
 	_set_player_locked(true)
@@ -464,14 +440,35 @@ func _begin_ending() -> void:
 	_leave_level()
 
 
-func _leave_level() -> void:
+func _leave_level(force_main_menu: bool = false) -> void:
 	restart_requested.emit()
 	CameraDirector.reset() # zonas/forzados/modo fusil/barras 4:3 fuera antes de cambiar de escena
 	Inventory.reset() # el inventario no sobrevive al nivel
-	if restart_scene:
+	if restart_scene and not force_main_menu:
 		get_tree().change_scene_to_packed(restart_scene)
 	else:
 		get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+
+
+# ---------------------------------------------------------------- PAUSA
+
+func _build_pause_menu() -> void:
+	if not pause_enabled:
+		return
+	_pause_menu = PauseMenu.create_in(self)
+	_pause_menu.main_menu_requested.connect(_on_pause_main_menu_requested)
+
+
+## "salir al menú principal" desde la pausa: fundido a negro y de vuelta a la pantalla de inicio.
+func _on_pause_main_menu_requested() -> void:
+	if _ending:
+		return
+	_ending = true
+	await WarpManager.fade_out(PAUSE_EXIT_FADE) # WarpManager sigue activo con el juego en pausa
+	if not is_inside_tree():
+		return
+	get_tree().paused = false # la escena nueva no puede nacer en pausa
+	_leave_level(true)
 
 
 # ---------------------------------------------------------------- JUGADOR

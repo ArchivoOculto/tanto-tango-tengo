@@ -22,7 +22,17 @@ class_name Radio
 ## La canción sale del cassette (CassetteItem.track). Si el ítem no es un CassetteItem se usa
 ## 'fallback_track'.
 ##
-## IMPORTANTE: para que la guitarra la detecte, el StaticBody3D necesita estar en la capa 4 o 8
+## ESCENA REUTILIZABLE: Scenes/props/Radio_Prefab.tscn ya trae todo armado (malla, menú, cuerpo, marcadores) y
+## sirve en cualquier nivel: se instancia, se coloca y se personaliza desde el Inspector ('title', 'description',
+## 'fallback_track', 'volume_db'...). Igual que CassettePrefab, arma sola lo que falta al iniciarse (ej: la
+## acción "reproducir cinta").
+##
+## DOS Area3D:
+##  - Zona de interacción (hija del InteractableObject): desde dónde el jugador puede abrir el menú.
+##  - Zona de golpes ('hit_area', capa 8 "props"): ajustada al tamaño de la malla. La guitarra la detecta
+##    (WeaponHitbox) y los enemigos miden contra ella a qué distancia están (get_closest_hit_point).
+##
+## IMPORTANTE: para que la guitarra y el fusil la detecten, el StaticBody3D necesita estar en la capa 4 o 8
 ## (collision_layer = 9 conserva la capa 1 de "mundo" y suma la 8 de "props").
 
 ## Se activó "reproducir cinta": el cassette ya está dentro de la radio y empieza a sonar.
@@ -33,12 +43,20 @@ signal tape_ejected(item: ItemData)
 signal tape_finished(item: ItemData)
 ## La radio recibió un golpe (con o sin cinta).
 signal hit_received
+## Un golpe (del jugador o de un enemigo) hizo saltar la cinta de la radio. Se emite junto con tape_ejected.
+signal tape_jumped(item: ItemData)
 
 enum State { IDLE, PLAYING_TAPE, TAPE_FINISHED }
 
 @export var interactable: InteractableObject ## El menú de la radio. Vacío = se busca entre sus hijos.
 @export var visual: Node3D ## Nodo que se sacude. Vacío = el primer hijo 3D que tenga una malla.
+@export var hit_area: Area3D ## Zona de golpes ajustada a la malla. Vacío = se busca un hijo llamado "HitArea".
 @export var play_tape_action_id: StringName = &"play_tape"
+
+@export_group("Menú (nombre y descripción)")
+## Se aplican al InteractableObject de la radio. Vacío = se respeta lo que tenga el InteractableObject.
+@export var title: String = "Radio"
+@export_multiline var description: String = "Además cuenta con reproductor de cassettes"
 
 @export_group("Reproducción")
 ## Canción de respaldo si el ítem insertado no es un CassetteItem.
@@ -99,7 +117,17 @@ func _ready() -> void:
 		var found: Array[Node] = find_children("*", "InteractableObject", true, false)
 		if not found.is_empty():
 			interactable = found[0] as InteractableObject
+	if hit_area == null:
+		hit_area = find_child("HitArea", true, false) as Area3D
+	if hit_area == null:
+		push_warning("Radio: no se encontró la zona de golpes ('hit_area'); los enemigos medirán contra el centro de la malla.")
+
 	if interactable:
+		if title != "":
+			interactable.display_name = title
+		if description != "":
+			interactable.description = description
+		_ensure_play_action()
 		interactable.action_triggered.connect(_on_action_triggered)
 		interactable.opened.connect(func(): _menu_open = true)
 		interactable.closed.connect(func(): _menu_open = false)
@@ -150,6 +178,35 @@ func _process(delta: float) -> void:
 	_player.pitch_scale = maxf(lerpf(_player.pitch_scale, target, weight), 0.05)
 	if absf(_player.pitch_scale - target) < 0.001:
 		_player.pitch_scale = target
+
+
+## Si el menú no trae la acción "reproducir cinta" (ej: una radio recién instanciada), la crea: acepta
+## cualquier cassette del inventario y lo consume (queda "dentro" de la radio).
+func _ensure_play_action() -> void:
+	for existing in interactable.actions:
+		if existing != null and existing.id == play_tape_action_id:
+			return
+	var action := ObjectAction.new()
+	action.id = play_tape_action_id
+	action.label = "reproducir cinta"
+	action.required_item_category = &"cassette"
+	action.picker_title = "elegir cinta"
+	action.consume_required_item = true
+	interactable.add_action(action)
+
+
+## Punto de la zona de golpes más cercano a 'from' (mundo). Los enemigos lo usan para saber a qué distancia
+## están de la radio de verdad. Sin zona de golpes, la posición del modelo.
+func get_closest_hit_point(from: Vector3) -> Vector3:
+	var shapes: Array[CollisionShape3D] = AreaShapes.shapes_of(hit_area)
+	if shapes.is_empty():
+		return (visual if visual else self).global_position
+	var best: Vector3 = AreaShapes.closest_point(shapes[0], from)
+	for i in range(1, shapes.size()):
+		var candidate: Vector3 = AreaShapes.closest_point(shapes[i], from)
+		if candidate.distance_squared_to(from) < best.distance_squared_to(from):
+			best = candidate
+	return best
 
 
 ## Qué acciones del menú de la radio están disponibles ahora.
@@ -331,6 +388,7 @@ func _eject_tape() -> void:
 	var source: InteractableObject = entry.source as InteractableObject
 	if is_instance_valid(source):
 		source.drop_to_world(_eject_position(), _landing_position(), hop_height, hop_duration)
+	tape_jumped.emit(entry.item)
 	tape_ejected.emit(entry.item)
 
 

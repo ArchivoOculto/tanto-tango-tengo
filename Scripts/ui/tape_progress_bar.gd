@@ -5,6 +5,11 @@ class_name TapeProgressBar
 ## La crea y la maneja Level00Manager. Capa 127: por encima de las barras 4:3 (126) y por debajo del
 ## fundido a negro (128). Estética del inventario: fondo gris translúcido, texto en minúsculas con borde.
 
+## PLAYING: suena la cinta correcta. PAUSED: la barra quieta (cinta afuera, otra cinta o canción terminada).
+## TAPE_JUMPED: un golpe hizo saltar la cinta de la radio (texto rojo).
+enum State { PLAYING, PAUSED, TAPE_JUMPED }
+
+const COLOR_JUMPED: Color = Color(1.0, 0.25, 0.25)
 const BAR_SIZE: Vector2 = Vector2(260.0, 10.0)
 const BOTTOM_MARGIN: float = 22.0
 const PADDING: float = 3.0
@@ -77,20 +82,44 @@ func set_progress(ratio: float) -> void:
 		_fill.size.x = BAR_SIZE.x * _ratio
 
 
-## Cambia el texto y la opacidad: en pausa (cinta afuera o terminada) se ve más apagada.
-func set_paused(paused: bool) -> void:
+## Cambia el texto, el color y la opacidad según el estado.
+func set_state(state: State) -> void:
 	if not is_instance_valid(_label):
 		return
-	_label.text = "en pausa" if paused else "reproduciendo"
-	_fill.color.a = 0.45 if paused else 0.85
+	match state:
+		State.PLAYING:
+			_label.text = "reproduciendo"
+		State.PAUSED:
+			_label.text = "en pausa"
+		State.TAPE_JUMPED:
+			_label.text = "saltó la cinta"
+	if state == State.TAPE_JUMPED:
+		_label.add_theme_color_override("font_color", COLOR_JUMPED)
+	else:
+		_label.remove_theme_color_override("font_color")
+	_fill.color.a = 0.85 if state == State.PLAYING else 0.45
 
 
-## Aparece con un fade (la primera vez que suena el cassette correcto).
+## Aparece con un fade (cada vez que suena el cassette correcto).
 func show_bar() -> void:
 	if visible and is_instance_valid(_root) and _root.modulate.a >= 1.0:
 		return
 	visible = true
-	if _fade_tween and _fade_tween.is_valid():
-		_fade_tween.kill()
+	_kill_fade()
 	_fade_tween = create_tween()
 	_fade_tween.tween_property(_root, "modulate:a", 1.0, 0.6)
+
+
+## Se apaga con un fade (el jugador guardó el cassette en el inventario). Vuelve con show_bar().
+func hide_bar() -> void:
+	if not visible or not is_instance_valid(_root):
+		return
+	_kill_fade()
+	_fade_tween = create_tween()
+	_fade_tween.tween_property(_root, "modulate:a", 0.0, 0.3)
+	_fade_tween.tween_callback(func() -> void: visible = false)
+
+
+func _kill_fade() -> void:
+	if _fade_tween and _fade_tween.is_valid():
+		_fade_tween.kill()

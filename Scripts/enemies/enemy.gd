@@ -7,6 +7,9 @@ enum State { WANDER, CHASE, ATTACK, FLEE, COOLDOWN, DEAD, ATTACK_OBJECT }
 ## ATTACK_OBJECT: cuando suena la música correcta (ver Level00Manager) los enemigos dejan de patrullar y van
 ## a golpear un objeto (la radio) para hacer saltar el cassette. Se activa con command_attack_object() y se
 ## apaga con release_object_target(). Mientras tanto ignoran al jugador (ver ignore_player_in_attack_object).
+##
+## Son enemigos MUY primitivos: van en línea recta hacia su objetivo (el jugador, la radio) sin esquivar nada.
+## Su única regla es no salir nunca de su EnemyPatrolZone (ver _keep_inside_zone).
 
 @export_group("IA & Detección")
 @export var detection_radius: float = 1.0     ## Distancia dentro del territorio para empezar a perseguir
@@ -35,7 +38,7 @@ enum State { WANDER, CHASE, ATTACK, FLEE, COOLDOWN, DEAD, ATTACK_OBJECT }
 @export var retreat_speed_mult: float = 2.66  ## Multiplica base_speed para retroceder tras daño
 
 @export_group("Wander AI")
-@export var wander_radius: float = 10.0
+@export var wander_radius: float = 10.0       ## Radio de patrulla alrededor del punto de partida (siempre dentro de su zona)
 @export var min_wait_time: float = 1.0
 @export var max_wait_time: float = 3.0
 
@@ -86,10 +89,8 @@ var zone_area: Area3D = null
 var current_target_player: Node3D = null
 
 var object_target: Node3D = null ## Objeto a atacar (null = comportamiento normal)
+var _object_receiver: Node = null ## Nodo del objeto que sabe recibir el golpe (take_hit / take_damage)
 var _striking_object: bool = false
-var _nav_path: PackedVector3Array = PackedVector3Array()
-var _nav_path_index: int = 0
-var _nav_refresh_timer: float = 0.0
 var _object_attack_timer: float = 0.0
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -113,7 +114,8 @@ func _ready() -> void:
 	_setup_attack_mesh_material()
 	_setup_material()
 	_play_anim(ANIM_IDLE)
-	_pick_new_wander_target()
+	# El primer destino de patrulla se elige después de esperar un rato: para entonces ya conoce su zona
+	wait_timer = randf_range(0.0, max_wait_time)
 
 	if animation_player:
 		animation_player.animation_finished.connect(_on_animation_finished)
@@ -131,6 +133,7 @@ func _physics_process(delta: float) -> void:
 		_process_state_machine(delta)
 
 	_apply_friction(delta)
+	_keep_inside_zone(delta)
 	move_and_slide()
 
 
@@ -289,10 +292,9 @@ func command_attack_object(target: Node3D) -> void:
 	if current_state == State.DEAD or not is_instance_valid(chosen):
 		return
 	object_target = chosen
+	_object_receiver = _find_hit_receiver(chosen)
 	_striking_object = false
 	_object_attack_timer = randf_range(0.0, 0.6) # que no golpeen todos a la vez
-	_nav_path = PackedVector3Array()
-	_nav_refresh_timer = randf_range(0.0, 0.3) # escalonado: no calculan todos el camino en el mismo cuadro
 	is_wandering = false
 	_stop_attack_tween()
 	current_state = State.ATTACK_OBJECT
@@ -301,6 +303,7 @@ func command_attack_object(target: Node3D) -> void:
 ## Vuelve al comportamiento normal (patrulla).
 func release_object_target() -> void:
 	object_target = null
+	_object_receiver = null
 	_striking_object = false
 	if current_state == State.DEAD:
 		return
@@ -328,7 +331,7 @@ func _process_attack_object(delta: float, player_ref: Node3D, dist_to_player: fl
 		return
 
 	_object_attack_timer -= delta
-	var to_object: Vector3 = object_target.global_position - global_position
+	var to_object: Vector3 = _object_aim_point() - global_position
 	to_object.y = 0.0
 	if to_object.length() <= object_attack_range:
 		velocity.x = 0.0
@@ -339,30 +342,20 @@ func _process_attack_object(delta: float, player_ref: Node3D, dist_to_player: fl
 			_striking_object = true
 			_begin_attack_telegraph()
 	else:
-		var move_dir: Vector3 = _direction_toward_object(delta, to_object)
+		var move_dir: Vector3 = to_object.normalized()
 		velocity.x = move_dir.x * chase_speed
 		velocity.z = move_dir.z * chase_speed
 		_rotate_visuals(move_dir, delta)
 		_play_anim(ANIM_WALK)
 
 
-## Dirección hacia el objeto rodeando obstáculos (alambrados) con la malla de navegación; sin malla o
-## sin camino, va en línea recta.
-func _direction_toward_object(delta: float, straight: Vector3) -> Vector3:
-	_nav_refresh_timer -= delta
-	if _nav_refresh_timer <= 0.0:
-		_nav_refresh_timer = 0.3
-		_nav_path = RuntimeNavigation.find_path(get_world_3d(), global_position, object_target.global_position)
-		_nav_path_index = 0
-
-	# Primer punto del camino que todavía no alcanzó (en el plano)
-	while _nav_path_index < _nav_path.size():
-		var step: Vector3 = _nav_path[_nav_path_index] - global_position
-		step.y = 0.0
-		if step.length() > 0.12:
-			return step.normalized()
-		_nav_path_index += 1
-	return straight.normalized()
+## Hacia dónde apunta el enemigo para golpear el objeto: el punto de su zona de golpes más cercano (la radio
+## lo sabe calcular, ver Radio.get_closest_hit_point), así la distancia se mide a la superficie y no al pivote
+## del modelo. Si el objeto no tiene zona de golpes, su posición.
+func _object_aim_point() -> Vector3:
+	if is_instance_valid(_object_receiver) and _object_receiver.has_method("get_closest_hit_point"):
+		return _object_receiver.get_closest_hit_point(global_position)
+	return object_target.global_position
 
 
 func _find_hit_receiver(from: Node) -> Node:
@@ -379,13 +372,12 @@ func _finish_object_strike() -> void:
 	_stop_attack_tween()
 	_object_attack_timer = object_attack_cooldown
 	if is_instance_valid(object_target):
-		var to_object: Vector3 = object_target.global_position - global_position
+		var to_object: Vector3 = _object_aim_point() - global_position
 		to_object.y = 0.0
 		if to_object.length() <= object_attack_range * 1.8:
-			# Igual que la guitarra y el fusil: sube por el árbol hasta el nodo que sabe recibir el golpe
-			# (la radio lo recibe en RadioShit, aunque el objetivo sea su malla "Radio"). No hace falta
-			# ninguna hitbox: el golpe es una llamada directa a take_hit() / take_damage().
-			var receiver: Node = _find_hit_receiver(object_target)
+			# Igual que la guitarra y el fusil: el golpe es una llamada directa a take_hit() / take_damage()
+			# del nodo que sabe recibirlo (la radio lo recibe en su raíz, aunque el objetivo sea su malla).
+			var receiver: Node = _object_receiver if is_instance_valid(_object_receiver) else _find_hit_receiver(object_target)
 			if receiver:
 				if receiver.has_method("take_hit"):
 					receiver.take_hit(attack_damage)
@@ -431,9 +423,16 @@ func _handle_wander(delta: float) -> void:
 			_pick_new_wander_target()
 
 
+## Nuevo destino de patrulla alrededor del punto de partida. Si el enemigo tiene zona, el destino siempre cae
+## dentro de ella (si no, quedaría empujando contra el borde sin llegar nunca).
 func _pick_new_wander_target() -> void:
-	var random_offset: Vector2 = Vector2.RIGHT.rotated(randf() * TAU) * randf_range(1.0, wander_radius)
-	target_position = spawn_position + Vector3(random_offset.x, 0.0, random_offset.y)
+	target_position = spawn_position
+	for attempt in 6:
+		var random_offset: Vector2 = Vector2.RIGHT.rotated(randf() * TAU) * randf_range(1.0, wander_radius)
+		var candidate: Vector3 = spawn_position + Vector3(random_offset.x, 0.0, random_offset.y)
+		if zone_area == null or not zone_area.has_method("contains_point") or zone_area.contains_point(candidate):
+			target_position = candidate
+			break
 	is_wandering = true
 
 
@@ -474,6 +473,29 @@ func _handle_retreat(delta: float) -> void:
 	if retreat_timer <= 0.0:
 		is_retreating = false
 		_play_anim(ANIM_IDLE)
+
+
+# --- ZONA DE PATRULLA ---
+
+## Regla única de movimiento: el enemigo no sale de su EnemyPatrolZone. Si el paso de este cuadro lo sacaría,
+## se anula (o se desliza por el borde si en un eje solo todavía entra). Un enemigo que ya está afuera (nació
+## o lo empujaron afuera) no se traba: avanza libre hasta volver a entrar.
+func _keep_inside_zone(delta: float) -> void:
+	if zone_area == null or not zone_area.has_method("contains_point"):
+		return
+	var here: Vector3 = global_position
+	if not zone_area.contains_point(here):
+		return
+	var step := Vector3(velocity.x, 0.0, velocity.z) * delta
+	if step == Vector3.ZERO or zone_area.contains_point(here + step):
+		return
+	if zone_area.contains_point(here + Vector3(step.x, 0.0, 0.0)):
+		velocity.z = 0.0
+	elif zone_area.contains_point(here + Vector3(0.0, 0.0, step.z)):
+		velocity.x = 0.0
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
 
 
 # --- FÍSICAS Y VISUALES ---

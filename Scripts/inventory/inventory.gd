@@ -123,8 +123,9 @@ func _find_index(item: Variant) -> int:
 
 # ---------------------------------------------------------------- MENÚ
 
-func open_menu() -> bool:
-	return is_instance_valid(_menu) and _menu.open()
+## 'from_pause' = lo abre el menú de pausa (el juego está en pausa): ver InventoryMenu.can_open().
+func open_menu(from_pause: bool = false) -> bool:
+	return is_instance_valid(_menu) and _menu.open(from_pause)
 
 
 ## Cierre forzado (daño, reinicio): no avisa la cancelación de un selector.

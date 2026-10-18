@@ -1,0 +1,55 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://dqorn1gv08dnd" path="res://Scripts/props/radio.gd" id="1_radio"]
+[ext_resource type="PackedScene" uid="uid://bt6xbrelu3kx" path="res://Assets/3D/radio/Radio.tscn" id="2_mesh"]
+[ext_resource type="PackedScene" uid="uid://bl5winfaxheex" path="res://Scenes/interaction/interactable_object.tscn" id="3_inter"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_zone"]
+size = Vector3(1, 0.5, 0.75)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hit"]
+size = Vector3(0.2016, 0.2373, 0.073)
+
+[node name="Radio_Prefab" type="StaticBody3D" unique_id=1201380270 node_paths=PackedStringArray("interactable", "visual", "hit_area", "eject_point", "landing_point")]
+collision_layer = 9
+script = ExtResource("1_radio")
+interactable = NodePath("Radio/Interactable_object")
+visual = NodePath("Radio")
+hit_area = NodePath("Radio/HitArea")
+eject_point = NodePath("CassetteEject")
+landing_point = NodePath("CassetteLanding")
+
+[node name="Radio" parent="." unique_id=524702442 instance=ExtResource("2_mesh")]
+
+[node name="Interactable_object" parent="Radio" unique_id=313652406 node_paths=PackedStringArray("area_3d") instance=ExtResource("3_inter")]
+area_3d = NodePath("InteractionZone")
+outline_color = Color(0.71844184, 0.03650001, 0.73, 1)
+outline_width = 1.0
+scale_multiplier = 1.25
+
+[node name="InteractionZone" type="Area3D" parent="Radio/Interactable_object" unique_id=33361644]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Radio/Interactable_object/InteractionZone" unique_id=913862442]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03817749, 0.0057063997, 0.22660351)
+shape = SubResource("BoxShape3D_zone")
+
+[node name="HitArea" type="Area3D" parent="Radio" unique_id=1900000201]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Radio/HitArea" unique_id=1900000202]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.109, 0.00183)
+shape = SubResource("BoxShape3D_hit")
+
+[node name="BodyCollision" type="CollisionShape3D" parent="." unique_id=1900000203]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.109, 0.00183)
+shape = SubResource("BoxShape3D_hit")
+
+[node name="CassetteEject" type="Marker3D" parent="." unique_id=1900000101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.036)
+
+[node name="CassetteLanding" type="Marker3D" parent="." unique_id=1900000102]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.357, -0.233, 0.066)
