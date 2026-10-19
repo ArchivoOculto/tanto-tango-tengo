@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"ui_menu_confirm"
+bus = "UI"
+volume_db = -5.0
+volume_variation_db = 0.5
+pitch_variation = 0.02
+max_distance = 10.0
+max_voices = 2
+description = "Aceptar/activar un botón, una acción de objeto o elegir en el selector.\nArchivos: ui_menu_confirm_01.wav, ui_menu_confirm_02.wav\nSe dispara desde: Scripts/ui/menu_base.gd, interactable_object.gd (_trigger_action), inventory_menu.gd (_confirm_picker)"

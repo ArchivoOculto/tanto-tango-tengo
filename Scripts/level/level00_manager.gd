@@ -51,6 +51,10 @@ const PAUSE_EXIT_FADE: float = 0.8
 
 enum ForcedGenre { RANDOM, TANGO, FOLKLORE, ROCK }
 
+@export_group("Cursor")
+## Oculta el cursor del mouse durante el juego (se muestra solo en los menús y la pausa, que lo piden ellos).
+@export var hide_cursor_in_game: bool = true
+
 @export_group("Inicio / Reinicio")
 ## Desactivar para probar el nivel en el editor sin esperar la intro.
 @export var play_intro: bool = true
@@ -132,6 +136,8 @@ func _ready() -> void:
 	InteractionFocus.reset()
 	GameplayInput.reset()
 
+	if hide_cursor_in_game:
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	_player = get_tree().get_first_node_in_group("player") as Player
 	_choose_target_genre()
 	_setup_enemy_respawn()

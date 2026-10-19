@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"mus_menu_theme"
+bus = "Music"
+volume_db = -6.0
+max_distance = 10.0
+loop = true
+max_voices = 1
+description = "FUTURO: tema de la pantalla de inicio.\nArchivos: mus_menu_theme_01.ogg\nSe dispara desde: Scripts/ui/main_menu.gd → Audio.play_music(SoundIds.MUS_MENU_THEME)"

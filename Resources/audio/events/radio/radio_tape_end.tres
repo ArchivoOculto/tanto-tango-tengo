@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"radio_tape_end"
+volume_db = -3.0
+pitch_variation = 0.02
+spatial = true
+max_distance = 15.0
+max_voices = 1
+description = "La cinta llega al final (clic de stop).\nArchivos: radio_tape_end_01.wav\nSe dispara desde: Scripts/props/radio.gd → _on_track_finished()"

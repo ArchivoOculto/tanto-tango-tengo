@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"ui_menu_cancel"
+bus = "UI"
+volume_db = -6.0
+pitch_variation = 0.02
+max_distance = 10.0
+max_voices = 1
+description = "Cancelar/cerrar un panel o volver atrás.\nArchivos: ui_menu_cancel_01.wav\nSe dispara desde: Scripts/ui/menu_base.gd → ui_cancel, inventory_menu.gd → cancelar selector"

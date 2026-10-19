@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"player_guitar_swing"
+volume_db = -3.0
+volume_variation_db = 1.5
+pitch_variation = 0.06
+spatial = true
+max_voices = 2
+description = "Guitarrazo en el aire (el swing, antes de impactar).\nArchivos: player_guitar_swing_01.wav, player_guitar_swing_02.wav, player_guitar_swing_03.wav\nSe dispara desde: Scripts/player/combat_controller.gd → start_attack() / activate_hitbox()"

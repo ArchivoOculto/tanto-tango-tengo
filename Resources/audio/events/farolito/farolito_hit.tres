@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"farolito_hit"
+bus = "Reverb"
+volume_db = -3.0
+volume_variation_db = 2.0
+pitch_variation = 0.05
+spatial = true
+max_distance = 20.0
+max_voices = 2
+cooldown = 0.1
+description = "Golpe seco/metálico de la farola cuando la golpean. (YA EXISTE: Assets/Audio/farolito_bang.wav)\nArchivos: farolito_hit_01.wav, farolito_hit_02.wav\nSe dispara desde: Scripts/props/farolito.gd → _play_hit_audio()"

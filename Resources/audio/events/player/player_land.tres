@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"player_land"
+volume_db = -5.0
+volume_variation_db = 2.0
+pitch_variation = 0.06
+spatial = true
+max_distance = 10.0
+max_voices = 2
+cooldown = 0.08
+description = "Aterrizaje después de un salto o caída.\nArchivos: player_land_01.wav, player_land_02.wav, player_land_03.wav\nSe dispara desde: Scripts/player/player.gd → _physics_process() cuando pasa de aire a piso (is_on_floor)"

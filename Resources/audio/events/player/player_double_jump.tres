@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"player_double_jump"
+volume_db = -4.0
+volume_variation_db = 1.5
+pitch_variation = 0.05
+spatial = true
+max_distance = 10.0
+max_voices = 2
+description = "Segundo salto en el aire.\nArchivos: player_double_jump_01.wav, player_double_jump_02.wav\nSe dispara desde: Scripts/player/player.gd → _handle_jump() (salto en el aire)"

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"enemy_idle"
+volume_db = -8.0
+volume_variation_db = 2.0
+pitch_variation = 0.1
+spatial = true
+max_distance = 10.0
+max_voices = 2
+cooldown = 4.0
+description = "Murmullo/gruñido ocasional mientras patrulla.\nArchivos: enemy_idle_01.wav, enemy_idle_02.wav, enemy_idle_03.wav\nSe dispara desde: Scripts/enemies/enemy.gd → _handle_wander()"

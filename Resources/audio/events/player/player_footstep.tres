@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"player_footstep"
+volume_db = -6.0
+volume_variation_db = 2.0
+pitch_variation = 0.08
+spatial = true
+max_distance = 10.0
+max_voices = 3
+cooldown = 0.12
+description = "Pisada del jugador al caminar sobre el piso del nivel.\nArchivos: player_footstep_01.wav, player_footstep_02.wav, player_footstep_03.wav, player_footstep_04.wav\nSe dispara desde: Scripts/player/player_animation.gd → update_locomotion() (o una pista de métodos en la animación de caminar, en el cuadro en que apoya el pie)"

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"farolito_buzz_loop"
+volume_db = -18.0
+spatial = true
+max_distance = 6.0
+loop = true
+max_voices = 6
+description = "Zumbido eléctrico suave y continuo mientras la farola está encendida.\nArchivos: farolito_buzz_loop_01.ogg\nSe dispara desde: Scripts/props/farolito.gd → mientras is_on (usar SoundEmitter o Audio.play_on con handle)"

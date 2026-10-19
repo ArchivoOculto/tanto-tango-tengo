@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"amb_rain_loop"
+bus = "Ambience"
+volume_db = -6.0
+max_distance = 10.0
+loop = true
+max_voices = 1
+description = "Lluvia constante del nivel. (YA EXISTE: Assets/Audio/rain_sound.wav)\nArchivos: amb_rain_loop_01.ogg\nSe dispara desde: Nodo de lluvia en Scenes/levels/terrain.tscn → migrar a un SoundEmitter con autoplay"

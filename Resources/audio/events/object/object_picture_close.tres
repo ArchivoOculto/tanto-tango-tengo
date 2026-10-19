@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"object_picture_close"
+volume_db = -6.0
+pitch_variation = 0.03
+max_distance = 10.0
+max_voices = 1
+description = "Cerrar una imagen/cuadro.\nArchivos: object_picture_close_01.wav\nSe dispara desde: Scripts/interaction/interactable_picture.gd → _close_inspection()"

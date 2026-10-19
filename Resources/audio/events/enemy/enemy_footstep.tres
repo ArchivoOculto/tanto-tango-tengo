@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"enemy_footstep"
+volume_db = -10.0
+volume_variation_db = 2.0
+pitch_variation = 0.1
+spatial = true
+max_distance = 8.0
+cooldown = 0.15
+description = "Pisada del enemigo (más baja que la del jugador).\nArchivos: enemy_footstep_01.wav, enemy_footstep_02.wav, enemy_footstep_03.wav\nSe dispara desde: Scripts/enemies/enemy.gd → animación de caminar (_play_anim(ANIM_WALK))"

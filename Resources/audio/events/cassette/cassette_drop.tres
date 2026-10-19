@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"cassette_drop"
+volume_db = -4.0
+volume_variation_db = 2.0
+pitch_variation = 0.06
+spatial = true
+max_voices = 2
+cooldown = 0.05
+description = "El cassette cae al piso y rebota (al salir despedido de la radio).\nArchivos: cassette_drop_01.wav, cassette_drop_02.wav, cassette_drop_03.wav\nSe dispara desde: Scripts/interaction/interactable_object.gd → drop_to_world() (cada rebote/aterrizaje)"

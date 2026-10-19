@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"radio_static_loop"
+volume_db = -24.0
+spatial = true
+max_distance = 8.0
+loop = true
+max_voices = 1
+description = "OPCIONAL: siseo de cinta muy leve por debajo de la música mientras suena.\nArchivos: radio_static_loop_01.ogg\nSe dispara desde: Scripts/props/radio.gd → mientras state == PLAYING_TAPE"

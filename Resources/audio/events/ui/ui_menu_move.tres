@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"ui_menu_move"
+bus = "UI"
+volume_db = -8.0
+volume_variation_db = 0.5
+pitch_variation = 0.03
+max_distance = 10.0
+max_voices = 2
+cooldown = 0.03
+description = "Moverse entre botones/filas de un menú.\nArchivos: ui_menu_move_01.wav, ui_menu_move_02.wav, ui_menu_move_03.wav\nSe dispara desde: Scripts/ui/menu_base.gd, inventory_menu.gd → cambio de selección (focus_entered / inventory_up/down)"

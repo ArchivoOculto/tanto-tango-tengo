@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"door_open"
+volume_db = -3.0
+volume_variation_db = 1.5
+pitch_variation = 0.04
+spatial = true
+max_distance = 18.0
+max_voices = 2
+description = "Se abre la puerta/reja.\nArchivos: door_open_01.wav, door_open_02.wav\nSe dispara desde: Scripts/props/door.gd → open()"

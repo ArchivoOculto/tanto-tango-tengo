@@ -24,15 +24,15 @@ enum InfoPanel { NONE, OPTIONS, CONTROLS }
 ## [texto, acciones (teclado y mouse), ícono del stick (-1 = ninguno), texto extra de teclado]
 const CONTROL_ROWS: Array = [
 	["moverse", ["move_forward", "move_left", "move_back", "move_right"], 9, ""],
-	["saltar / doble salto", ["jump"], -1, ""],
-	["atacar", ["attack"], -1, ""],
-	["interactuar", ["interact"], -1, ""],
+	["saltar / sacar cassette", ["jump", "object_action_2"], -1, ""],
+	["atacar / reproducir cinta", ["attack", "object_action"], -1, ""],
+	["interactuar / cerrar menú", ["interact"], -1, ""],
+	["guardar objeto", ["object_save"], -1, ""],
 	["apuntar (mantener)", ["rifle_toggle"], -1, ""],
 	["disparar", ["rifle_shoot"], -1, ""],
 	["mirar / rotar objeto", ["aim_left", "aim_right", "aim_up", "aim_down"], 8, "mouse"],
 	["inventario", ["inventory"], -1, ""],
 	["pausa", ["pause"], -1, ""],
-	["acciones de objeto", ["object_action", "object_action_2", "object_save"], -1, ""],
 ]
 
 ## Botón del mando (índice de Godot) -> cuadro del atlas de íconos (Resources/ui/ui_buttons_frames.tres).

@@ -816,6 +816,7 @@ bus = &"Ambience"
 transform = Transform3D(0.32538348, -0.58481115, 0.7430488, -1.28155095e-08, 0.78581095, 0.6184668, -0.94558215, -0.20123889, 0.2556899, 1.9873594, 0.6, -3.753883)
 current = true
 script = ExtResource("2_pmkc2")
+deadzone_vertical = 0.2
 collision_mask = 0
 
 [node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]

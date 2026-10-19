@@ -1,0 +1,497 @@
+====================================================================================================
+LISTA DE SONIDOS — TANTO TANGO TENGO
+Acciones implementadas hasta ahora. 61 sonidos.
+====================================================================================================
+
+CÓMO LEER ESTA LISTA
+  Cada sonido tiene un ID (ej: player_jump). El ID es el nombre del evento en el juego, el nombre de los
+  archivos de audio (con un número de variación al final) y el nombre del evento en
+  Resources/audio/events/<categoria>/<id>.tres. Los .tres YA ESTÁN CREADOS y vacíos: para entregar un
+  sonido solo hay que exportar los archivos con el nombre indicado, ponerlos en su carpeta y arrastrarlos
+  al campo 'Streams' de su evento. Ver Docs/sistema_de_audio.md.
+
+CONVENCIÓN DE NOMBRES
+  <categoria>_<objeto>_<accion>_<NN>.<ext>        todo en minúsculas, inglés, sin espacios ni tildes
+  - categoria: player, enemy, farolito, radio, cassette, object, door, puzzle, level, ui, amb, mus
+  - NN: variación, desde 01 (dos dígitos). Con más de una variación, el juego elige una al azar cada vez.
+  - Loops: sufijo _loop en el ID (ej: amb_rain_loop, farolito_buzz_loop).
+  - Ejemplo completo: player_footstep_03.wav  →  evento player_footstep, tercera variación.
+
+CARPETAS
+  Assets/Audio/SFX/<categoria>/   efectos del mundo (player, enemy, farolito, radio, cassette, object, door, puzzle, level)
+  Assets/Audio/UI/                sonidos de menús e interfaz
+  Assets/Audio/Ambience/          ambientes en loop
+  Assets/Audio/Music/             música (temas; las canciones de los cassettes también)
+
+FORMATOS TÉCNICOS
+  - Efectos cortos (< 3 s):   .wav  PCM 16 bit, 44.1 kHz.
+  - Loops, ambientes, música: .ogg  (Vorbis, calidad 5–6). Pesan mucho menos que el .wav.
+  - Sonidos 3D (columna "3D = sí"): exportar en MONO, o no se perciben bien posicionados.
+  - Sonidos planos (UI, plano): pueden ser estéreo.
+  - Normalizar a unos -3 dBFS de pico y NO comprimir de más: el volumen de cada sonido se ajusta
+    después en su evento (volume_db), y los jugadores regulan el volumen general en Opciones.
+  - Loops sin corte audible: marcar el loop en la importación de Godot (Loop Mode: Forward).
+
+REFERENCIA RÁPIDA DE COLUMNAS
+  3D = sí  → suena posicional (más lejos, más bajo). Plano → siempre al mismo volumen.
+  Bus      → por dónde sale: SFX / UI / Ambience / Music / Reverb (ver AudioBuses).
+  Variantes→ cantidad recomendada de archivos distintos.
+
+
+----------------------------------------------------------------------------------------------------
+JUGADOR    (carpeta: Assets/Audio/SFX/player/)
+----------------------------------------------------------------------------------------------------
+
+[player_footstep]  Pisada del jugador al caminar sobre el piso del nivel.
+   Archivos : player_footstep_01.wav, player_footstep_02.wav, player_footstep_03.wav, player_footstep_04.wav
+   Ficha    : bus SFX | 3D = sí | 4 variantes | una vez
+   Se dispara: Scripts/player/player_animation.gd → update_locomotion() (o una pista de métodos en la animación de caminar, en el cuadro en que apoya el pie)
+   Notas    : Mono. Muy corta (60–150 ms). 4 variaciones mínimo para que no se note el loop.
+   Estado   : pendiente
+
+[player_jump]  Salto del jugador (esfuerzo/despegue).
+   Archivos : player_jump_01.wav, player_jump_02.wav, player_jump_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/player/player.gd → _handle_jump() (primer salto)
+   Estado   : pendiente
+
+[player_double_jump]  Segundo salto en el aire.
+   Archivos : player_double_jump_01.wav, player_double_jump_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/player/player.gd → _handle_jump() (salto en el aire)
+   Notas    : Distinto del salto normal para que se perciba el doble salto.
+   Estado   : pendiente
+
+[player_land]  Aterrizaje después de un salto o caída.
+   Archivos : player_land_01.wav, player_land_02.wav, player_land_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/player/player.gd → _physics_process() cuando pasa de aire a piso (is_on_floor)
+   Estado   : pendiente
+
+[player_guitar_swing]  Guitarrazo en el aire (el swing, antes de impactar).
+   Archivos : player_guitar_swing_01.wav, player_guitar_swing_02.wav, player_guitar_swing_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/player/combat_controller.gd → start_attack() / activate_hitbox()
+   Notas    : Un 'whoosh' corto con cuerpo de madera/cuerdas.
+   Estado   : pendiente
+
+[player_guitar_hit]  Impacto del guitarrazo contra algo golpeable (enemigo, farola, radio, prop).
+   Archivos : player_guitar_hit_01.wav, player_guitar_hit_02.wav, player_guitar_hit_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/player/weapon_hitbox.gd → _process_hit() cuando el golpe conecta
+   Notas    : Suena además del sonido propio del objeto golpeado (farolito_hit, radio_hit, enemy_hurt).
+   Estado   : pendiente
+
+[player_damage]  El jugador recibe daño (quejido/golpe seco). Plano, para que se sienta cerca.
+   Archivos : player_damage_01.wav, player_damage_02.wav, player_damage_03.wav
+   Ficha    : bus SFX | plano | 3 variantes | una vez
+   Se dispara: Scripts/player/player.gd → take_damage()
+   Estado   : pendiente
+
+[player_rifle_enter]  Entrar al modo fusil (levantar la guitarra-fusil).
+   Archivos : player_rifle_enter_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/player/rifle_controller.gd → enter_rifle_mode()
+   Estado   : pendiente
+
+[player_rifle_exit]  Salir del modo fusil (bajar el arma).
+   Archivos : player_rifle_exit_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/player/rifle_controller.gd → exit_rifle_mode()
+   Estado   : pendiente
+
+[player_rifle_shoot]  Disparo del fusil.
+   Archivos : player_rifle_shoot_01.wav, player_rifle_shoot_02.wav, player_rifle_shoot_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/player/rifle_controller.gd → al disparar (GameplayInput.just_pressed rifle_shoot)
+   Notas    : Que se distinga del golpe de guitarra.
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+ENEMIGOS    (carpeta: Assets/Audio/SFX/enemy/)
+----------------------------------------------------------------------------------------------------
+
+[enemy_spawn]  Un enemigo aparece/reaparece en el nivel.
+   Archivos : enemy_spawn_01.wav, enemy_spawn_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/level/level00_manager.gd → _spawn_enemy_at()
+   Estado   : pendiente
+
+[enemy_alert]  El enemigo detecta al jugador y empieza a perseguirlo.
+   Archivos : enemy_alert_01.wav, enemy_alert_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/enemies/enemy.gd → al pasar al estado CHASE (_process_state_machine)
+   Estado   : pendiente
+
+[enemy_footstep]  Pisada del enemigo (más baja que la del jugador).
+   Archivos : enemy_footstep_01.wav, enemy_footstep_02.wav, enemy_footstep_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/enemies/enemy.gd → animación de caminar (_play_anim(ANIM_WALK))
+   Estado   : pendiente
+
+[enemy_idle]  Murmullo/gruñido ocasional mientras patrulla.
+   Archivos : enemy_idle_01.wav, enemy_idle_02.wav, enemy_idle_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/enemies/enemy.gd → _handle_wander()
+   Notas    : Disparar al azar cada varios segundos, no continuo.
+   Estado   : pendiente
+
+[enemy_attack_windup]  Carga del ataque (acompaña la esfera roja que crece).
+   Archivos : enemy_attack_windup_01.wav
+   Ficha    : bus SFX | 3D = sí | 1 variante | una vez
+   Se dispara: Scripts/enemies/enemy.gd → _begin_attack_telegraph()
+   Notas    : Sonido que va creciendo ~0.5–1 s. Sirve para anticipar el golpe.
+   Estado   : pendiente
+
+[enemy_attack_hit]  El golpe del enemigo conecta con el jugador.
+   Archivos : enemy_attack_hit_01.wav, enemy_attack_hit_02.wav, enemy_attack_hit_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/enemies/enemy.gd → _try_hit_player()
+   Estado   : pendiente
+
+[enemy_strike_object]  El enemigo golpea un objeto (la radio) en el estado ATTACK_OBJECT.
+   Archivos : enemy_strike_object_01.wav, enemy_strike_object_02.wav, enemy_strike_object_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/enemies/enemy.gd → _finish_object_strike()
+   Notas    : El objeto golpeado responde además con su propio sonido (radio_hit).
+   Estado   : pendiente
+
+[enemy_hurt]  El enemigo recibe un golpe.
+   Archivos : enemy_hurt_01.wav, enemy_hurt_02.wav, enemy_hurt_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/enemies/enemy.gd → take_damage()
+   Estado   : pendiente
+
+[enemy_die]  Muerte del enemigo.
+   Archivos : enemy_die_01.wav, enemy_die_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/enemies/enemy.gd → die()
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+FAROLITOS    (carpeta: Assets/Audio/SFX/farolito/)
+----------------------------------------------------------------------------------------------------
+
+[farolito_hit]  Golpe seco/metálico de la farola cuando la golpean. (YA EXISTE: Assets/Audio/farolito_bang.wav)
+   Archivos : farolito_hit_01.wav, farolito_hit_02.wav
+   Ficha    : bus Reverb | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/farolito.gd → _play_hit_audio()
+   Notas    : Hoy el farolito lo reproduce con su propio AudioStreamPlayer3D; migrar a Audio.play_on().
+   Estado   : pendiente
+
+[farolito_flicker]  Parpadeo eléctrico de la lámpara al encender/apagar. (YA EXISTE: Assets/Audio/BulbSound.wav)
+   Archivos : farolito_flicker_01.wav, farolito_flicker_02.wav, farolito_flicker_03.wav
+   Ficha    : bus Reverb | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/props/farolito.gd → _play_random_flicker_audio()
+   Notas    : Hoy usa su propio reproductor; migrar. Idealmente 3 variantes del mismo sonido.
+   Estado   : pendiente
+
+[farolito_on]  Clic/zumbido corto al quedar encendida.
+   Archivos : farolito_on_01.wav, farolito_on_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/farolito.gd → toggled(true) / _apply_current_state()
+   Estado   : pendiente
+
+[farolito_off]  Clic/apagón corto al quedar apagada.
+   Archivos : farolito_off_01.wav, farolito_off_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/farolito.gd → toggled(false) / _apply_current_state()
+   Estado   : pendiente
+
+[farolito_buzz_loop]  Zumbido eléctrico suave y continuo mientras la farola está encendida.
+   Archivos : farolito_buzz_loop_01.ogg
+   Ficha    : bus SFX | 3D = sí | 1 variante | LOOP
+   Se dispara: Scripts/props/farolito.gd → mientras is_on (usar SoundEmitter o Audio.play_on con handle)
+   Notas    : Loop sin corte audible. Muy bajo; solo se oye de cerca.
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+RADIO    (carpeta: Assets/Audio/SFX/radio/)
+----------------------------------------------------------------------------------------------------
+
+[radio_insert_tape]  Meter un cassette en la radio.
+   Archivos : radio_insert_tape_01.wav, radio_insert_tape_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/radio.gd → _on_action_triggered() (acción 'reproducir cinta')
+   Estado   : pendiente
+
+[radio_play_start]  Clic de 'play' y arranque de la cinta (antes de la música).
+   Archivos : radio_play_start_01.wav
+   Ficha    : bus SFX | 3D = sí | 1 variante | una vez
+   Se dispara: Scripts/props/radio.gd → _start_playback()
+   Estado   : pendiente
+
+[radio_eject]  El cassette salta de la radio (por golpe o desde el menú).
+   Archivos : radio_eject_01.wav, radio_eject_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/radio.gd → _eject_tape() y _eject_to_inventory()
+   Notas    : Un 'pop' mecánico con resorte.
+   Estado   : pendiente
+
+[radio_hit]  La radio recibe un golpe (vibración metálica/plástica).
+   Archivos : radio_hit_01.wav, radio_hit_02.wav, radio_hit_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/props/radio.gd → take_hit()
+   Notas    : Suena aunque no tenga cassette puesto.
+   Estado   : pendiente
+
+[radio_tape_end]  La cinta llega al final (clic de stop).
+   Archivos : radio_tape_end_01.wav
+   Ficha    : bus SFX | 3D = sí | 1 variante | una vez
+   Se dispara: Scripts/props/radio.gd → _on_track_finished()
+   Estado   : pendiente
+
+[radio_static_loop]  OPCIONAL: siseo de cinta muy leve por debajo de la música mientras suena.
+   Archivos : radio_static_loop_01.ogg
+   Ficha    : bus SFX | 3D = sí | 1 variante | LOOP
+   Se dispara: Scripts/props/radio.gd → mientras state == PLAYING_TAPE
+   Notas    : Opcional; dar carácter de cassette gastado.
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+CASSETTES    (carpeta: Assets/Audio/SFX/cassette/)
+----------------------------------------------------------------------------------------------------
+
+[cassette_pickup]  Guardar un cassette en el inventario.
+   Archivos : cassette_pickup_01.wav, cassette_pickup_02.wav
+   Ficha    : bus SFX | plano | 2 variantes | una vez
+   Se dispara: Scripts/interaction/interactable_object.gd → _commit_to_inventory()
+   Estado   : pendiente
+
+[cassette_drop]  El cassette cae al piso y rebota (al salir despedido de la radio).
+   Archivos : cassette_drop_01.wav, cassette_drop_02.wav, cassette_drop_03.wav
+   Ficha    : bus SFX | 3D = sí | 3 variantes | una vez
+   Se dispara: Scripts/interaction/interactable_object.gd → drop_to_world() (cada rebote/aterrizaje)
+   Notas    : Plástico liviano. Pensado para sonar 2–3 veces por caída.
+   Estado   : pendiente
+
+[cassette_rewind]  Rebobinar el cassette desde el inventario (~1 s).
+   Archivos : cassette_rewind_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/inventory/cassette_item.gd → do_inventory_action() ('rewind')
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+OBJETOS INTERACTUABLES    (carpeta: Assets/Audio/SFX/object/)
+----------------------------------------------------------------------------------------------------
+
+[object_inspect_open]  Abrir el visor 3D de un objeto.
+   Archivos : object_inspect_open_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/interaction/interactable_object.gd → _open_inspection()
+   Estado   : pendiente
+
+[object_inspect_close]  Cerrar el visor de un objeto.
+   Archivos : object_inspect_close_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/interaction/interactable_object.gd → _close_inspection()
+   Estado   : pendiente
+
+[object_picture_open]  Abrir una imagen/cuadro.
+   Archivos : object_picture_open_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/interaction/interactable_picture.gd → _open_inspection()
+   Notas    : Puede sonar a papel o foto.
+   Estado   : pendiente
+
+[object_picture_close]  Cerrar una imagen/cuadro.
+   Archivos : object_picture_close_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/interaction/interactable_picture.gd → _close_inspection()
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+PUERTAS Y ALCANTARILLA    (carpeta: Assets/Audio/SFX/door/)
+----------------------------------------------------------------------------------------------------
+
+[door_open]  Se abre la puerta/reja.
+   Archivos : door_open_01.wav, door_open_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/door.gd → open()
+   Estado   : pendiente
+
+[door_close]  Se cierra la puerta/reja.
+   Archivos : door_close_01.wav, door_close_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/door.gd → close()
+   Estado   : pendiente
+
+[door_sewer_open]  Se abre la tapa de la alcantarilla (metal pesado).
+   Archivos : door_sewer_open_01.wav, door_sewer_open_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/door_alcantarilla.gd → open()
+   Estado   : pendiente
+
+[door_sewer_close]  Se cierra la tapa de la alcantarilla.
+   Archivos : door_sewer_close_01.wav, door_sewer_close_02.wav
+   Ficha    : bus SFX | 3D = sí | 2 variantes | una vez
+   Se dispara: Scripts/props/door_alcantarilla.gd → close()
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+PUZZLE    (carpeta: Assets/Audio/SFX/puzzle/)
+----------------------------------------------------------------------------------------------------
+
+[puzzle_solved]  Puzzle de farolas resuelto (jingle corto de acierto).
+   Archivos : puzzle_solved_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/puzzle/puzzle_manager.gd → _on_puzzle_solved()
+   Estado   : pendiente
+
+[puzzle_unsolved]  El puzzle vuelve a quedar sin resolver.
+   Archivos : puzzle_unsolved_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/puzzle/puzzle_manager.gd → _on_puzzle_unsolved()
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+NIVEL (progreso y final)    (carpeta: Assets/Audio/SFX/level/)
+----------------------------------------------------------------------------------------------------
+
+[level_warp]  Pasar de un lugar a otro (warp), acompaña el fundido.
+   Archivos : level_warp_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/level/warp_manager.gd → warp_to_scene() / relocate_player()
+   Estado   : pendiente
+
+[level_progress_start]  Aparece la barra de carga: se puso el cassette correcto.
+   Archivos : level_progress_start_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/level/level00_manager.gd → _set_correct_playing(true)
+   Notas    : Un sonido de 'esto es lo que quería'; cálido.
+   Estado   : pendiente
+
+[level_progress_pause]  La música correcta se corta (cinta expulsada/terminada) y la barra se frena.
+   Archivos : level_progress_pause_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/level/level00_manager.gd → _set_correct_playing(false)
+   Notas    : Descendente, tipo 'cinta que se frena'.
+   Estado   : pendiente
+
+[level_progress_complete]  La barra se completa: empieza el final del nivel.
+   Archivos : level_progress_complete_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/level/level00_manager.gd → level_completed
+   Estado   : pendiente
+
+[level_ending_message]  Aparece el texto final sobre el negro (nota suave).
+   Archivos : level_ending_message_01.wav
+   Ficha    : bus SFX | plano | 1 variante | una vez
+   Se dispara: Scripts/level/level00_manager.gd → _begin_ending() (al mostrar el mensaje)
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+INTERFAZ Y MENÚS    (carpeta: Assets/Audio/UI/)
+----------------------------------------------------------------------------------------------------
+
+[ui_menu_move]  Moverse entre botones/filas de un menú.
+   Archivos : ui_menu_move_01.wav, ui_menu_move_02.wav, ui_menu_move_03.wav
+   Ficha    : bus UI | plano | 3 variantes | una vez
+   Se dispara: Scripts/ui/menu_base.gd, inventory_menu.gd → cambio de selección (focus_entered / inventory_up/down)
+   Notas    : Clic muy corto y suave: se dispara mucho.
+   Estado   : pendiente
+
+[ui_menu_confirm]  Aceptar/activar un botón, una acción de objeto o elegir en el selector.
+   Archivos : ui_menu_confirm_01.wav, ui_menu_confirm_02.wav
+   Ficha    : bus UI | plano | 2 variantes | una vez
+   Se dispara: Scripts/ui/menu_base.gd, interactable_object.gd (_trigger_action), inventory_menu.gd (_confirm_picker)
+   Estado   : pendiente
+
+[ui_menu_cancel]  Cancelar/cerrar un panel o volver atrás.
+   Archivos : ui_menu_cancel_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/ui/menu_base.gd → ui_cancel, inventory_menu.gd → cancelar selector
+   Estado   : pendiente
+
+[ui_menu_error]  Acción no disponible (no hay cassette, menú bloqueado).
+   Archivos : ui_menu_error_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/interaction/interactable_object.gd → _trigger_action() cuando no hay candidatos
+   Estado   : pendiente
+
+[ui_slider_tick]  Ajustar un slider de volumen (un 'tic' por paso).
+   Archivos : ui_slider_tick_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/ui/menu_base.gd → value_changed de los sliders
+   Notas    : Para el slider de Master/Music/SFX conviene que el tic suene por el bus que se ajusta.
+   Estado   : pendiente
+
+[ui_toggle]  Activar/desactivar una opción (pantalla completa).
+   Archivos : ui_toggle_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/ui/menu_base.gd → FullscreenCheck.toggled
+   Estado   : pendiente
+
+[ui_inventory_open]  Abrir el inventario.
+   Archivos : ui_inventory_open_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/inventory/inventory_menu.gd → open() / open_picker()
+   Estado   : pendiente
+
+[ui_inventory_close]  Cerrar el inventario.
+   Archivos : ui_inventory_close_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/inventory/inventory_menu.gd → close()
+   Estado   : pendiente
+
+[ui_pause_open]  Abrir el menú de pausa.
+   Archivos : ui_pause_open_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/ui/pause_menu.gd → open()
+   Estado   : pendiente
+
+[ui_pause_close]  Cerrar el menú de pausa.
+   Archivos : ui_pause_close_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/ui/pause_menu.gd → close()
+   Estado   : pendiente
+
+[ui_game_start]  'Nueva partida': arranca el juego.
+   Archivos : ui_game_start_01.wav
+   Ficha    : bus UI | plano | 1 variante | una vez
+   Se dispara: Scripts/ui/main_menu.gd → _on_new_game_pressed()
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+AMBIENTES (loops)    (carpeta: Assets/Audio/Ambience/)
+----------------------------------------------------------------------------------------------------
+
+[amb_rain_loop]  Lluvia constante del nivel. (YA EXISTE: Assets/Audio/rain_sound.wav)
+   Archivos : amb_rain_loop_01.ogg
+   Ficha    : bus Ambience | plano | 1 variante | LOOP
+   Se dispara: Nodo de lluvia en Scenes/levels/terrain.tscn → migrar a un SoundEmitter con autoplay
+   Notas    : Hoy es un AudioStreamPlayer3D en el nivel con bus Ambience.
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+MÚSICA    (carpeta: Assets/Audio/Music/)
+----------------------------------------------------------------------------------------------------
+
+[mus_menu_theme]  FUTURO: tema de la pantalla de inicio.
+   Archivos : mus_menu_theme_01.ogg
+   Ficha    : bus Music | plano | 1 variante | LOOP
+   Se dispara: Scripts/ui/main_menu.gd → Audio.play_music(SoundIds.MUS_MENU_THEME)
+   Notas    : Las canciones de los cassettes NO usan eventos: van en CassetteItem.track (ver notas).
+   Estado   : pendiente
+
+----------------------------------------------------------------------------------------------------
+AUDIO QUE YA EXISTE EN EL PROYECTO (para migrar a este sistema)
+----------------------------------------------------------------------------------------------------
+
+  Assets/Audio/farolito_bang.wav       → farolito_hit_01.wav          (mover a Assets/Audio/SFX/farolito/)
+  Assets/Audio/BulbSound.wav           → farolito_flicker_01.wav      (mover a Assets/Audio/SFX/farolito/)
+  Assets/Audio/rain_sound.wav          → amb_rain_loop_01.ogg         (convertir a .ogg; Assets/Audio/Ambience/)
+  Assets/Audio/Cassette tracks/*.mp3   → son el CONTENIDO de los cassettes (CassetteItem.track), no eventos.
+                                         Sugerencia de nombre: mus_cassette_<genero>_<nombre>.mp3
+                                         (mus_cassette_tango_garua.mp3, mus_cassette_folklore_cachapecero.mp3,
+                                         mus_cassette_rock_superlogico.mp3) en Assets/Audio/Music/.
+  Mover/renombrar SIEMPRE desde el editor de Godot (para que se actualicen las referencias de las escenas).
+
+ORDEN SUGERIDO DE PRODUCCIÓN (de lo que más se oye a lo que menos)
+  1. ui_menu_move, ui_menu_confirm, ui_menu_cancel   (se usan constantemente)
+  2. player_footstep, player_jump, player_land, player_guitar_swing, player_guitar_hit, player_damage
+  3. radio_insert_tape, radio_eject, radio_hit, cassette_pickup, cassette_drop   (el puzzle principal)
+  4. enemy_* (hurt, attack_hit, die, strike_object, attack_windup)
+  5. level_progress_start / pause / complete, level_ending_message
+  6. door_*, puzzle_*, farolito_*, object_*, resto de ui_*
+  7. Opcionales: radio_static_loop, farolito_buzz_loop, enemy_idle, mus_menu_theme

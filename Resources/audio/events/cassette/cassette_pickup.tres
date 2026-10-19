@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"cassette_pickup"
+volume_db = -3.0
+volume_variation_db = 1.0
+pitch_variation = 0.05
+max_distance = 10.0
+max_voices = 1
+description = "Guardar un cassette en el inventario.\nArchivos: cassette_pickup_01.wav, cassette_pickup_02.wav\nSe dispara desde: Scripts/interaction/interactable_object.gd → _commit_to_inventory()"

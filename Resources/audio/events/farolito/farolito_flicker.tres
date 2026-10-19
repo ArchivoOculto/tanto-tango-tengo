@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"farolito_flicker"
+bus = "Reverb"
+volume_db = -6.0
+volume_variation_db = 2.0
+pitch_variation = 0.08
+spatial = true
+max_distance = 20.0
+max_voices = 3
+description = "Parpadeo eléctrico de la lámpara al encender/apagar. (YA EXISTE: Assets/Audio/BulbSound.wav)\nArchivos: farolito_flicker_01.wav, farolito_flicker_02.wav, farolito_flicker_03.wav\nSe dispara desde: Scripts/props/farolito.gd → _play_random_flicker_audio()"

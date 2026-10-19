@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"enemy_strike_object"
+volume_db = -3.0
+volume_variation_db = 2.0
+pitch_variation = 0.06
+spatial = true
+max_distance = 14.0
+max_voices = 3
+cooldown = 0.1
+description = "El enemigo golpea un objeto (la radio) en el estado ATTACK_OBJECT.\nArchivos: enemy_strike_object_01.wav, enemy_strike_object_02.wav, enemy_strike_object_03.wav\nSe dispara desde: Scripts/enemies/enemy.gd → _finish_object_strike()"
