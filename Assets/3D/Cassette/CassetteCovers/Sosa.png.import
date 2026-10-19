@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cuo6ue5le0qy"
-path.s3tc="res://.godot/imported/goyeneche.png-8ecbd3381b35a8f92e8c41eedec80e7a.s3tc.ctex"
+uid="uid://wc0xjp3k6n1"
+path.s3tc="res://.godot/imported/Sosa.png-cde218ce2d808a669e10d106fa4f6e66.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Assets/3D/Cassette/goyeneche.png"
-dest_files=["res://.godot/imported/goyeneche.png-8ecbd3381b35a8f92e8c41eedec80e7a.s3tc.ctex"]
+source_file="res://Assets/3D/Cassette/CassetteCovers/Sosa.png"
+dest_files=["res://.godot/imported/Sosa.png-cde218ce2d808a669e10d106fa4f6e66.s3tc.ctex"]
 
 [params]
 

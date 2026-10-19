@@ -11,7 +11,11 @@ size = Vector3(0.1, 0.1, 0.1)
 script = ExtResource("1_cassp")
 interactable = NodePath("Interactable_object")
 
+[node name="Cover" type="Sprite3D" parent="." unique_id=875973469]
+transform = Transform3D(0.008, 0, 0, 0, 0.008, 0, 0, 0, 0.008, 0, 0, 0.0027295798)
+
 [node name="CassetteMesh" parent="." unique_id=76099914 instance=ExtResource("2_cmesh")]
+transform = Transform3D(-2.1855694e-08, 0.5, 0, -0.5, -2.1855694e-08, 0, 0, 0, 0.5, 0, 0, 0)
 
 [node name="Interactable_object" parent="." unique_id=556021010 node_paths=PackedStringArray("area_3d") instance=ExtResource("3_cinter")]
 area_3d = NodePath("Area3D")

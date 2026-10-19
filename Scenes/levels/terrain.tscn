@@ -33,11 +33,9 @@
 [ext_resource type="Texture2D" uid="uid://dnlw747uk3bq2" path="res://Assets/2D/endpicture.png" id="28_swpjm"]
 [ext_resource type="PackedScene" uid="uid://bfeb1ihbgumys" path="res://Assets/3D/Cassette/Cassette_mesh.tscn" id="33_1e2yc"]
 [ext_resource type="AudioStream" uid="uid://do4fhi2epkfe8" path="res://Assets/Audio/Cassette tracks/Superlogico_track.mp3" id="38_erfj3"]
-[ext_resource type="Texture2D" uid="uid://cuo6ue5le0qy" path="res://Assets/3D/Cassette/goyeneche.png" id="38_lkd08"]
 [ext_resource type="AudioStream" uid="uid://coathd3xnu2ok" path="res://Assets/Audio/Cassette tracks/Cachapecero_track.mp3" id="38_m0byy"]
-[ext_resource type="Texture2D" uid="uid://bd6vr3uq20s2t" path="res://Assets/3D/Cassette/redondos.png" id="39_m0byy"]
 [ext_resource type="PackedScene" uid="uid://lrbh4p4114u4" path="res://Scenes/props/Cassette_Prefab.tscn" id="51_cassprefab"]
-[ext_resource type="PackedScene" path="res://Scenes/props/Radio_Prefab.tscn" id="53_radioprefab"]
+[ext_resource type="PackedScene" uid="uid://j01yus61pcn3" path="res://Scenes/props/Radio_Prefab.tscn" id="53_radioprefab"]
 [ext_resource type="Script" uid="uid://dvf2vtx0lbe0q" path="res://Scripts/ui/context_visibility.gd" id="60_ctxvis"]
 [ext_resource type="AudioStream" uid="uid://cqj3wboih4mfw" path="res://Assets/Audio/Cassette tracks/Garua_track.mp3" id="61_track"]
 [ext_resource type="Script" uid="uid://dnga3infj726x" path="res://Scripts/level/level00_manager.gd" id="99_lvl00"]
@@ -741,7 +739,7 @@ size = Vector3(1, 0.7, 4.5)
 size = Vector3(1, 0.7, 0.90000004)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2xxps"]
-size = Vector3(2.857, 1.75, 4.318)
+size = Vector3(2, 0.3, 4)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
 size = Vector3(2.9, 0.9, 1.8)
@@ -1626,27 +1624,25 @@ shape = SubResource("BoxShape3D_0q7x7")
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 1.4020483, 1.7511978, -3.8672168)
 
 [node name="Tango_Cassette" parent="Area 003/CassetteShit" unique_id=1321475971 instance=ExtResource("51_cassprefab")]
-transform = Transform3D(1.9106859e-15, 4.371139e-08, -1, 1, -4.371139e-08, 0, -4.371139e-08, -1, -4.371139e-08, 0.11618829, 0.15488815, 0.00017761439)
+transform = Transform3D(-4.3711392e-08, 0, 1.0000001, 0, 1, 0, -1.0000001, 0, -4.3711392e-08, 0.11618829, 0.15488815, -0.00045452267)
 track = ExtResource("61_track")
 title = "Goyeneche"
-description = "Una cinta recopilando los mejores temas del Polaco"
+description = "Una cinta recopilando los mejores temas del Polaco."
 genre = 1
-cover_texture = ExtResource("38_lkd08")
 
 [node name="Folklore_Cassette" parent="Area 003/CassetteShit" unique_id=480792458 instance=ExtResource("51_cassprefab")]
-transform = Transform3D(3.752374e-08, 0.85844314, -0.5129087, 1, -4.371139e-08, 0, -2.241995e-08, -0.5129087, -0.85844314, 0.071713686, 0.15488815, 0.08276224)
+transform = Transform3D(-9.465641e-08, -0.9329624, -0.35997337, -1, 1.1875888e-07, -4.48399e-08, 8.4583974e-08, 0.35997337, -0.9329624, 0.044501543, 0.14567184, 0.09193018)
 track = ExtResource("38_m0byy")
 title = "Canciones con fundamento"
-description = "Un albúm de 196, pilar fundamental del Movimiento del Nuevo Cancionero"
+description = "Un albúm de 1965, pilar fundamental del Movimiento del Nuevo Cancionero."
 genre = 2
 
 [node name="Rock_Cassette" parent="Area 003/CassetteShit" unique_id=695514843 instance=ExtResource("51_cassprefab")]
-transform = Transform3D(-0.99593586, -0.05991805, -0.06724286, 0.06899411, -0.027651727, -0.9972337, 0.057892922, -0.99782014, 0.031673346, 0.07692623, 0.1363678, -0.07577155)
+transform = Transform3D(-0.7346398, -0.6777006, -0.032034826, 0.06899411, -0.02765173, -0.9972337, 0.67494017, -0.73481786, 0.06707141, 0.062805176, 0.12672806, -0.09089253)
 track = ExtResource("38_erfj3")
 title = "Gulp!"
-description = "Una cinta de 1985"
+description = "Albúm debut de Patricio Rey, año 1985."
 genre = 3
-cover_texture = ExtResource("39_m0byy")
 
 [node name="CassetteMesh1" parent="Area 003/CassetteShit" unique_id=1905706799 instance=ExtResource("33_1e2yc")]
 transform = Transform3D(0.041278377, -0.49759483, 0.02637206, 0.0034463308, 0.026746854, 0.4992722, -0.49828127, -0.04103653, 0.0056378543, -0.020816505, 0.13148117, 0.00017762184)
@@ -1759,7 +1755,7 @@ collision_mask = 6
 script = ExtResource("13_o33xq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Enemies/EnemyPatrolZone" unique_id=1108543497]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150129, 1.0103036, -1.8051605)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3761296, 0.38530362, -1.5642836)
 shape = SubResource("BoxShape3D_2xxps")
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]

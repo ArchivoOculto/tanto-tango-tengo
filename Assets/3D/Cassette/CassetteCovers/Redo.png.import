@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bd6vr3uq20s2t"
-path.s3tc="res://.godot/imported/redondos.png-6407d1058a9c9bb436f9e734629fd5dc.s3tc.ctex"
+uid="uid://2w5cscmkd4ki"
+path.s3tc="res://.godot/imported/Redo.png-6c70c234789d4faa09cd1a8c5d6fb1af.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Assets/3D/Cassette/redondos.png"
-dest_files=["res://.godot/imported/redondos.png-6407d1058a9c9bb436f9e734629fd5dc.s3tc.ctex"]
+source_file="res://Assets/3D/Cassette/CassetteCovers/Redo.png"
+dest_files=["res://.godot/imported/Redo.png-6c70c234789d4faa09cd1a8c5d6fb1af.s3tc.ctex"]
 
 [params]
 

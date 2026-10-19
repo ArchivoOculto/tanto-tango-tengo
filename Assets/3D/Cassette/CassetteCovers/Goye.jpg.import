@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://54qco66575q2"
-path.s3tc="res://.godot/imported/mercedes.png-b7159fd790c15d1b053063f35641fce0.s3tc.ctex"
+uid="uid://n8w1kxavotkj"
+path.s3tc="res://.godot/imported/Goye.jpg-ec69da938280acc6adf880c4fc95233e.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Assets/3D/Cassette/mercedes.png"
-dest_files=["res://.godot/imported/mercedes.png-b7159fd790c15d1b053063f35641fce0.s3tc.ctex"]
+source_file="res://Assets/3D/Cassette/CassetteCovers/Goye.jpg"
+dest_files=["res://.godot/imported/Goye.jpg-ec69da938280acc6adf880c4fc95233e.s3tc.ctex"]
 
 [params]
 
