@@ -94,7 +94,8 @@ Scripts/audio/          audio_manager, sound_event, sound_handle, sound_emitter,
 | `Bus` | SFX, UI, Ambience, Music o Reverb. Define qué slider lo controla. |
 | `Volume Db` / `Volume Variation Db` | Volumen base y cuánto varía al azar. |
 | `Pitch` / `Pitch Variation` | Tono base y variación (0.05 = ±5%): hace que repetidos suenen distinto. |
-| `Spatial`, `Max Distance`, `Unit Size` | Sonido 3D: a qué distancia se apaga y qué tan rápido. |
+| `Spatial`, `Max Distance`, `Unit Size`, `Attenuation` | Sonido 3D: a qué distancia se apaga (0 = nunca), qué tan rápido y con qué curva. |
+| `Random Start`, `Cut After Min/Max` | Tomar un "pedacito": empezar en un punto al azar de un audio largo y/o cortarlo a los N segundos (el parpadeo de las farolas, el golpe). |
 | `Loop` | Se repite hasta que se detenga con el handle. |
 | `Max Voices` | Cuántas copias del mismo evento pueden sonar a la vez (corta la más vieja). |
 | `Cooldown` | Tiempo mínimo entre disparos. Anti-spam. |
@@ -108,8 +109,34 @@ Scripts/audio/          audio_manager, sound_event, sound_handle, sound_emitter,
 - Los loops largos y la música van en `.ogg` (streaming); los efectos cortos en `.wav` (sin costo de decodificar).
 - Cuidado con los `.wav` largos: pesan mucho en memoria. Todo lo de más de ~3 s, a `.ogg`.
 
+## Audio dinámico (cuando el audio no es fijo)
+
+Algunos sonidos no tienen un archivo propio: la canción de la radio depende del cassette puesto. Para eso:
+
+```gdscript
+var music := Audio.play_stream_on(SoundIds.RADIO_TAPE_MUSIC, track, visual_node, start_at_seconds)
+music.finished.connect(_on_track_finished)   # terminó SOLO (no si se la detuvo con stop())
+music.get_position()                         # en qué segundo va (para recordarlo en el cassette)
+music.set_pitch_scale(1.1)                   # velocidad/tono en vivo (se multiplica por el pitch del evento)
+music.stop(0.5)                              # fundido hasta el silencio
+```
+
+El **evento** (`radio_tape_music`) define cómo suena (bus Music, volumen, 3D desde la radio, atenuación) y quien
+llama aporta el audio. Así la mezcla sigue en manos de sonido aunque el archivo sea dinámico.
+
+## Estado de la migración
+
+| Sonido | Antes | Ahora |
+|---|---|---|
+| Lluvia | `AudioStreamPlayer3D` en el nivel | `SoundEmitter` "RainSound" (autoplay) + evento `amb_rain_loop` |
+| Canción del cassette | `AudioStreamPlayer3D` dentro de la radio | `Audio.play_stream_on()` + evento `radio_tape_music` |
+| Parpadeo de farola | reproductor propio + exports en cada farola | evento `farolito_flicker` (Random Start + Cut After) |
+| Golpe de farola | reproductor propio + exports en cada farola | evento `farolito_hit` (pitch ±5%, corte 0.33–0.55 s) |
+
+Los valores de volumen, atenuación, pitch y recortes que tenían quedaron copiados en cada evento. Ya no se
+ajustan en las escenas sino en `Resources/audio/events/`.
+
 ## Qué falta hacer (programación)
 
-1. **Conectar las llamadas** en los scripts. La columna "Se dispara" de `lista_de_sonidos.txt` indica archivo y función de cada una.
-2. **Migrar** lo que hoy tiene su propio reproductor: farolito (golpe y parpadeo), radio (canción) y lluvia, al sistema.
-3. La canción de la radio es contenido del cassette (`CassetteItem.track`): sigue yendo por el reproductor de la radio, que ya sale por el bus **Music**.
+**Conectar las llamadas** del resto de los sonidos en los scripts. La columna "Se dispara" de
+`lista_de_sonidos.txt` indica archivo y función de cada una.

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"radio_tape_music"
+bus = "Music"
+volume_db = -8.0
+spatial = true
+max_distance = 0.0
+unit_size = 3.0
+max_voices = 1
+description = "La CANCIÓN del cassette que suena en la radio. Este evento NO lleva archivos: el audio lo aporta el cassette (CassetteItem.track, o 'fallback_track' de la radio). Acá se ajusta solo CÓMO suena: bus Music, volumen, 3D desde la radio y atenuación.\nSe dispara desde: Scripts/props/radio.gd → _start_playback() con Audio.play_stream_on()"

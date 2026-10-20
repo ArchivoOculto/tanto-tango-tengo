@@ -1,16 +1,20 @@
 [gd_resource type="Resource" script_class="SoundEvent" format=3]
 
 [ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+[ext_resource type="AudioStream" uid="uid://bh8ud2b80h8ko" path="res://Assets/Audio/farolito_bang.wav" id="2_bang"]
 
 [resource]
 script = ExtResource("1_event")
 id = &"farolito_hit"
+streams = Array[AudioStream]([ExtResource("2_bang")])
 bus = "Reverb"
-volume_db = -3.0
-volume_variation_db = 2.0
 pitch_variation = 0.05
 spatial = true
-max_distance = 20.0
+max_distance = 5.0
+unit_size = 15.0
+attenuation = 2
 max_voices = 2
-cooldown = 0.1
-description = "Golpe seco/metálico de la farola cuando la golpean. (YA EXISTE: Assets/Audio/farolito_bang.wav)\nArchivos: farolito_hit_01.wav, farolito_hit_02.wav\nSe dispara desde: Scripts/props/farolito.gd → _play_hit_audio()"
+random_start = false
+cut_after_min = 0.33
+cut_after_max = 0.55
+description = "Golpe seco/metálico de la farola cuando la golpean.\nArchivo actual: Assets/Audio/farolito_bang.wav (MIGRADO). Para variantes: farolito_hit_01.wav, farolito_hit_02.wav…\nSe corta a los 0.33–0.55 s y varía el pitch ±5% en cada golpe.\nSe dispara desde: Scripts/props/farolito.gd → _play_hit_audio()"

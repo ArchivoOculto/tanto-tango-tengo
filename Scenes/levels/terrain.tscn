@@ -23,7 +23,7 @@
 [ext_resource type="PackedScene" uid="uid://c2q6ct23ekrbw" path="res://Scenes/props/skull.tscn" id="13_15siy"]
 [ext_resource type="Script" uid="uid://pbxw6wcddk1v" path="res://Scripts/enemies/enemy_patrol_zone.gd" id="13_o33xq"]
 [ext_resource type="Texture2D" uid="uid://j8o0kfps01ft" path="res://Assets/2D/256x256/Misc/Horror_Misc_14-256x256.png" id="18_ihuaq"]
-[ext_resource type="AudioStream" uid="uid://c7no06wkl6pcb" path="res://Assets/Audio/rain_sound.wav" id="19_4rn8p"]
+[ext_resource type="Script" uid="uid://d2vwlx8st32x" path="res://Scripts/audio/sound_emitter.gd" id="19_rainem"]
 [ext_resource type="PackedScene" uid="uid://crufdju3qkiab" path="res://Scenes/interaction/interactable_picture.tscn" id="20_8hd5e"]
 [ext_resource type="Texture2D" uid="uid://baci3q4od8gxb" path="res://Assets/3D/metal_fence/gate_TexturesCom_Metal_PipeRusted2_1_82x0_47_512_albedo.png" id="20_gsbiq"]
 [ext_resource type="Texture2D" uid="uid://gyviasuhg3uv" path="res://Assets/3D/metal_fence/gate_TexturesCom_MetalVarious0026_1_seamless_S.png" id="21_7miuv"]
@@ -804,18 +804,17 @@ trail_lifetime = 0.1
 process_material = SubResource("ParticleProcessMaterial_sehdd")
 draw_pass_1 = SubResource("RibbonTrailMesh_gml2b")
 
-[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="Enviroment" unique_id=400223615]
+[node name="RainSound" type="Node3D" parent="Enviroment" unique_id=400223615]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2189108, 0, -0.856882)
-stream = ExtResource("19_4rn8p")
+script = ExtResource("19_rainem")
+event_id = &"amb_rain_loop"
 autoplay = true
-bus = &"Ambience"
 
 [node name="GameCamara" type="Camera3D" parent="." unique_id=2072088570]
 transform = Transform3D(0.32538348, -0.58481115, 0.7430488, -1.28155095e-08, 0.78581095, 0.6184668, -0.94558215, -0.20123889, 0.2556899, 1.9873594, 0.6, -3.753883)
 current = true
 script = ExtResource("2_pmkc2")
 deadzone_vertical = 0.2
-collision_mask = 0
 
 [node name="Player" parent="." unique_id=2045517250 instance=ExtResource("2_62tj5")]
 transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.6350739, 0.57362175, -3.4439516)
@@ -1082,7 +1081,6 @@ door_action_delay = 2.0
 
 [node name="RadioShit" parent="InteractiveProps" unique_id=1201380270 instance=ExtResource("53_radioprefab")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3843887, 0.35301754, -3.88642)
-volume_db = -8.0
 
 [node name="RadioAltar" type="CollisionShape3D" parent="InteractiveProps/RadioShit" unique_id=948099745]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0005162, -0.12461278, -0.0057805)

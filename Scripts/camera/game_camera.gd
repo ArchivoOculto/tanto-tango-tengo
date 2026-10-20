@@ -16,8 +16,9 @@ class_name GameCamera
 ##    También se aparta si el jugador camina hacia la cámara.
 ##  - RESORTE AMORTIGUADO: el viaje entre anchors arranca y frena con suavidad (sin tirón inicial) y no
 ##    depende de los cuadros por segundo. Hay una velocidad máxima de viaje.
-##  - COLISIÓN SUAVE: si hay una pared entre el foco y la cámara se acerca de inmediato (para no ver detrás
-##    de la pared) pero se aleja despacio al despejarse (sin "saltos" al rozar esquinas).
+##  - SIN COLISIONES CON EL DECORADO: la cámara ignora por completo paredes, alambrados y cualquier otra
+##    geometría; prefiere clipearse adentro de algo antes que dar tirones. Lo único que respeta es el
+##    cuerpo del jugador (ver arriba), que es una cuenta geométrica y no usa la física.
 ##  - SIN SALTOS DE MIRADA: no hay anticipación por velocidad (look-ahead) que mueva la cámara al arrancar
 ##    o frenar, y el foco nunca se "teletransporta" al cambiar de anchor.
 
@@ -43,12 +44,6 @@ class_name GameCamera
 
 @export_group("Proporciones (fracción de la altura del personaje)")
 @export var look_height_ratio: float = 0.55
-@export var collision_margin_ratio: float = 0.05
-
-@export_group("Colisión de cámara")
-@export var collision_mask: int = 1
-## Qué tan rápido se aleja la cámara de una pared una vez despejada (1/s). Acercarse es inmediato.
-@export_range(0.5, 20.0, 0.1) var clip_release_speed: float = 2.5
 
 @onready var player: Node3D = get_tree().get_first_node_in_group("player")
 
@@ -56,9 +51,8 @@ const MAX_FRAME_DELTA: float = 0.1 ## tope al delta: un tirón de rendimiento no
 
 var _player_height: float = 1.8
 var _focus: Vector3 = Vector3.ZERO ## punto al que apunta la cámara (suavizado)
-var _position: Vector3 = Vector3.ZERO ## posición suavizada del resorte, antes de colisiones
+var _position: Vector3 = Vector3.ZERO ## posición suavizada del resorte
 var _velocity: Vector3 = Vector3.ZERO ## velocidad del resorte
-var _clip_ratio: float = 1.0 ## 1 = sin pared de por medio; menor = acercada por una pared
 var _last_known_anchor_pos: Vector3 = Vector3.ZERO
 
 
@@ -105,8 +99,8 @@ func _process(delta: float) -> void:
 	# --- 3. NO ATRAVESAR AL JUGADOR (lo orbita) ---
 	_position = _keep_out_of_player(_position, target_position, delta)
 
-	# --- 4. COLISIÓN CON EL DECORADO (se acerca ya, se aleja despacio) ---
-	global_position = _apply_scenery_collision(_position, delta)
+	# --- 4. APLICAR POSICIÓN (sin colisiones con el decorado: se clipea antes que dar tirones) ---
+	global_position = _position
 
 	# --- 5. ORIENTACIÓN ---
 	_look_at_focus()
@@ -125,7 +119,6 @@ func snap_to_zone(zone: CameraZone3D) -> void:
 	_last_known_anchor_pos = target_position
 	_position = target_position
 	_velocity = Vector3.ZERO
-	_clip_ratio = 1.0
 	global_position = target_position
 
 	if player:
@@ -240,33 +233,3 @@ func _keep_out_of_player(pos: Vector3, anchor: Vector3, delta: float) -> Vector3
 	if inward_speed > 0.0:
 		_velocity += outward * inward_speed
 	return pushed
-
-
-func _apply_scenery_collision(wanted: Vector3, delta: float) -> Vector3:
-	var margin: float = _player_height * collision_margin_ratio
-	var clipped: Vector3 = _avoid_scenery(_focus, wanted, margin)
-	var wanted_length: float = _focus.distance_to(wanted)
-	if wanted_length < 0.001:
-		return wanted
-
-	var ratio: float = clampf(_focus.distance_to(clipped) / wanted_length, 0.0, 1.0)
-	if ratio < _clip_ratio:
-		_clip_ratio = ratio # acercarse al foco: inmediato, para no ver detrás de la pared
-	else:
-		_clip_ratio = lerpf(_clip_ratio, ratio, 1.0 - exp(-clip_release_speed * delta)) # alejarse: gradual
-	return _focus + (wanted - _focus) * _clip_ratio
-
-
-func _avoid_scenery(from: Vector3, to: Vector3, margin: float) -> Vector3:
-	var space_state := get_world_3d().direct_space_state
-	var query := PhysicsRayQueryParameters3D.create(from, to)
-	query.collision_mask = collision_mask
-	if player is CollisionObject3D:
-		query.exclude = [player.get_rid()]
-
-	var result: Dictionary = space_state.intersect_ray(query)
-	if result.is_empty():
-		return to
-
-	var direction: Vector3 = (from - to).normalized()
-	return result.position + direction * margin

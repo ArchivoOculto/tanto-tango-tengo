@@ -1,15 +1,19 @@
 [gd_resource type="Resource" script_class="SoundEvent" format=3]
 
 [ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+[ext_resource type="AudioStream" uid="uid://dft5rmctqrenm" path="res://Assets/Audio/BulbSound.wav" id="2_bulb"]
 
 [resource]
 script = ExtResource("1_event")
 id = &"farolito_flicker"
+streams = Array[AudioStream]([ExtResource("2_bulb")])
 bus = "Reverb"
-volume_db = -6.0
-volume_variation_db = 2.0
-pitch_variation = 0.08
 spatial = true
-max_distance = 20.0
+max_distance = 5.0
+unit_size = 15.0
+attenuation = 2
 max_voices = 3
-description = "Parpadeo eléctrico de la lámpara al encender/apagar. (YA EXISTE: Assets/Audio/BulbSound.wav)\nArchivos: farolito_flicker_01.wav, farolito_flicker_02.wav, farolito_flicker_03.wav\nSe dispara desde: Scripts/props/farolito.gd → _play_random_flicker_audio()"
+random_start = true
+cut_after_min = 0.15
+cut_after_max = 0.15
+description = "Parpadeo eléctrico de la lámpara: un pedacito de 0.15 s tomado en un punto al azar de un audio largo.\nArchivo actual: Assets/Audio/BulbSound.wav (MIGRADO; es un WAV largo, por eso se usa 'Random Start').\nSe dispara desde: Scripts/props/farolito.gd → _play_random_flicker_audio()"

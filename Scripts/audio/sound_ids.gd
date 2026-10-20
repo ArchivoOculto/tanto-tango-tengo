@@ -44,6 +44,7 @@ const RADIO_EJECT: StringName = &"radio_eject"
 const RADIO_HIT: StringName = &"radio_hit"
 const RADIO_TAPE_END: StringName = &"radio_tape_end"
 const RADIO_STATIC_LOOP: StringName = &"radio_static_loop"
+const RADIO_TAPE_MUSIC: StringName = &"radio_tape_music" # la canción del cassette (audio dinámico: Audio.play_stream_on)
 
 # ---------------------------------------------------------------- CASSETTES
 const CASSETTE_PICKUP: StringName = &"cassette_pickup"

@@ -1,6 +1,6 @@
 ====================================================================================================
 LISTA DE SONIDOS — TANTO TANGO TENGO
-Acciones implementadas hasta ahora. 61 sonidos.
+Acciones implementadas hasta ahora. 62 sonidos.
 ====================================================================================================
 
 CÓMO LEER ESTA LISTA
@@ -172,18 +172,18 @@ ENEMIGOS    (carpeta: Assets/Audio/SFX/enemy/)
 FAROLITOS    (carpeta: Assets/Audio/SFX/farolito/)
 ----------------------------------------------------------------------------------------------------
 
-[farolito_hit]  Golpe seco/metálico de la farola cuando la golpean. (YA EXISTE: Assets/Audio/farolito_bang.wav)
+[farolito_hit]  Golpe seco/metálico de la farola cuando la golpean. (MIGRADO: usa Assets/Audio/farolito_bang.wav)
    Archivos : farolito_hit_01.wav, farolito_hit_02.wav
    Ficha    : bus Reverb | 3D = sí | 2 variantes | una vez
    Se dispara: Scripts/props/farolito.gd → _play_hit_audio()
-   Notas    : Hoy el farolito lo reproduce con su propio AudioStreamPlayer3D; migrar a Audio.play_on().
+   Notas    : Migrado: el farolito ya lo reproduce con Audio.play_on(). Se corta a los 0.33–0.55 s y el pitch varía ±5% (todo configurado en el evento).
    Estado   : pendiente
 
-[farolito_flicker]  Parpadeo eléctrico de la lámpara al encender/apagar. (YA EXISTE: Assets/Audio/BulbSound.wav)
+[farolito_flicker]  Parpadeo eléctrico de la lámpara al encender/apagar. (MIGRADO: usa Assets/Audio/BulbSound.wav)
    Archivos : farolito_flicker_01.wav, farolito_flicker_02.wav, farolito_flicker_03.wav
    Ficha    : bus Reverb | 3D = sí | 3 variantes | una vez
    Se dispara: Scripts/props/farolito.gd → _play_random_flicker_audio()
-   Notas    : Hoy usa su propio reproductor; migrar. Idealmente 3 variantes del mismo sonido.
+   Notas    : Migrado. Es un WAV largo del que se toma un pedacito de 0.15 s en un punto al azar (Random Start + Cut After en el evento).
    Estado   : pendiente
 
 [farolito_on]  Clic/zumbido corto al quedar encendida.
@@ -247,6 +247,13 @@ RADIO    (carpeta: Assets/Audio/SFX/radio/)
    Se dispara: Scripts/props/radio.gd → mientras state == PLAYING_TAPE
    Notas    : Opcional; dar carácter de cassette gastado.
    Estado   : pendiente
+
+[radio_tape_music]  La CANCIÓN del cassette que suena en la radio (audio dinámico: lo aporta el cassette).
+   Archivos : NINGUNO en este evento. El audio es CassetteItem.track de cada cassette (o 'fallback_track' de la radio).
+   Ficha    : bus Music | 3D = sí | desde la radio | una vez
+   Se dispara: Scripts/props/radio.gd → _start_playback() con Audio.play_stream_on()
+   Notas    : Acá solo se ajusta CÓMO suena (volumen, atenuación, distancia). Ya migrado.
+   Estado   : MIGRADO
 
 ----------------------------------------------------------------------------------------------------
 CASSETTES    (carpeta: Assets/Audio/SFX/cassette/)
@@ -456,11 +463,11 @@ INTERFAZ Y MENÚS    (carpeta: Assets/Audio/UI/)
 AMBIENTES (loops)    (carpeta: Assets/Audio/Ambience/)
 ----------------------------------------------------------------------------------------------------
 
-[amb_rain_loop]  Lluvia constante del nivel. (YA EXISTE: Assets/Audio/rain_sound.wav)
+[amb_rain_loop]  Lluvia constante del nivel. (MIGRADO: usa Assets/Audio/rain_sound.wav)
    Archivos : amb_rain_loop_01.ogg
    Ficha    : bus Ambience | plano | 1 variante | LOOP
-   Se dispara: Nodo de lluvia en Scenes/levels/terrain.tscn → migrar a un SoundEmitter con autoplay
-   Notas    : Hoy es un AudioStreamPlayer3D en el nivel con bus Ambience.
+   Se dispara: Nodo SoundEmitter 'RainSound' en Scenes/levels/terrain.tscn (autoplay)
+   Notas    : Migrado. Ahora suena plana (igual en todo el nivel).
    Estado   : pendiente
 
 ----------------------------------------------------------------------------------------------------
@@ -475,7 +482,7 @@ MÚSICA    (carpeta: Assets/Audio/Music/)
    Estado   : pendiente
 
 ----------------------------------------------------------------------------------------------------
-AUDIO QUE YA EXISTE EN EL PROYECTO (para migrar a este sistema)
+AUDIO QUE YA EXISTÍA EN EL PROYECTO (YA MIGRADO: el sistema lo usa desde su ubicación actual)
 ----------------------------------------------------------------------------------------------------
 
   Assets/Audio/farolito_bang.wav       → farolito_hit_01.wav          (mover a Assets/Audio/SFX/farolito/)
@@ -485,7 +492,7 @@ AUDIO QUE YA EXISTE EN EL PROYECTO (para migrar a este sistema)
                                          Sugerencia de nombre: mus_cassette_<genero>_<nombre>.mp3
                                          (mus_cassette_tango_garua.mp3, mus_cassette_folklore_cachapecero.mp3,
                                          mus_cassette_rock_superlogico.mp3) en Assets/Audio/Music/.
-  Mover/renombrar SIEMPRE desde el editor de Godot (para que se actualicen las referencias de las escenas).
+  Mover/renombrar SIEMPRE desde el editor de Godot (para que se actualicen las referencias de los eventos y escenas).
 
 ORDEN SUGERIDO DE PRODUCCIÓN (de lo que más se oye a lo que menos)
   1. ui_menu_move, ui_menu_confirm, ui_menu_cancel   (se usan constantemente)

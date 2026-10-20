@@ -7,6 +7,12 @@ extends Node
 ##     Audio.play_on(SoundIds.FAROLITO_BUZZ_LOOP, self)             # 3D que sigue a un nodo
 ##     var handle := Audio.play(SoundIds.AMB_RAIN_LOOP); handle.stop(2.0)   # loops: se detienen con el handle
 ##     Audio.play_music(SoundIds.MUS_MENU_THEME, 1.5)               # música con crossfade
+##     Audio.play_stream_on(SoundIds.RADIO_TAPE_MUSIC, track, node, 12.0)   # audio que no es del evento (ver abajo)
+##
+## AUDIO DINÁMICO: algunos sonidos no tienen un archivo fijo: la canción de la radio depende del cassette
+## puesto. Para eso están los play_stream_*: el EVENTO define cómo suena (bus, volumen, 3D, atenuación) y quien
+## llama aporta el audio. El handle devuelto permite saber en qué punto está (get_position), cambiarle el
+## pitch (set_pitch_scale) y enterarse de cuándo termina (signal finished).
 ##
 ## POR QUÉ ASÍ (resumen, detalle en Docs/sistema_de_audio.md):
 ##  - Código y audio quedan separados: los programadores nombran EVENTOS (SoundIds); el equipo de sonido
@@ -35,6 +41,8 @@ class Voice extends RefCounted:
 	var started_msec: int = 0
 	var follow: Node3D
 	var fade_tween: Tween
+	var base_pitch: float = 1.0
+	var handle_ref: WeakRef
 
 var _events: Dictionary = {} # StringName -> SoundEvent
 var _voices_2d: Array[Voice] = []
@@ -80,6 +88,26 @@ func play_on(id: StringName, node: Node3D, volume_offset_db: float = 0.0) -> Sou
 	if not is_instance_valid(node):
 		return null
 	return _play(id, true, node.global_position, node, volume_offset_db)
+
+
+## Como play_on(), pero con el audio que aporta quien llama (la canción de un cassette). El evento define
+## bus, volumen, 3D y atenuación; 'start_at' = punto (s) desde donde empezar.
+func play_stream_on(id: StringName, stream: AudioStream, node: Node3D, start_at: float = 0.0,
+		volume_offset_db: float = 0.0) -> SoundHandle:
+	if not is_instance_valid(node):
+		return null
+	return _play(id, true, node.global_position, node, volume_offset_db, stream, start_at)
+
+
+## Como play_at(), con audio aportado por quien llama.
+func play_stream_at(id: StringName, stream: AudioStream, position: Vector3, start_at: float = 0.0,
+		volume_offset_db: float = 0.0) -> SoundHandle:
+	return _play(id, true, position, null, volume_offset_db, stream, start_at)
+
+
+## Como play(), con audio aportado por quien llama.
+func play_stream(id: StringName, stream: AudioStream, start_at: float = 0.0, volume_offset_db: float = 0.0) -> SoundHandle:
+	return _play(id, false, Vector3.ZERO, null, volume_offset_db, stream, start_at)
 
 
 ## Detiene todas las voces de un evento.
@@ -203,11 +231,12 @@ func _get_event(id: StringName) -> SoundEvent:
 
 # ---------------------------------------------------------------- REPRODUCCIÓN
 
-func _play(id: StringName, positional: bool, position: Vector3, follow: Node3D, offset_db: float) -> SoundHandle:
+func _play(id: StringName, positional: bool, position: Vector3, follow: Node3D, offset_db: float,
+		stream_override: AudioStream = null, start_at: float = 0.0) -> SoundHandle:
 	var event: SoundEvent = _get_event(id)
 	if event == null:
 		return null
-	if event.streams.is_empty():
+	if event.streams.is_empty() and stream_override == null:
 		if debug_log:
 			print("Audio: '%s' sin audio asignado (evento vacío)." % id)
 		return null
@@ -237,7 +266,18 @@ func _play(id: StringName, positional: bool, position: Vector3, follow: Node3D, 
 
 	var volume: float = event.volume_db + offset_db + randf_range(-event.volume_variation_db, event.volume_variation_db)
 	var pitch_value: float = maxf(event.pitch * (1.0 + randf_range(-event.pitch_variation, event.pitch_variation)), 0.05)
-	var stream: AudioStream = _pick_stream(event, id)
+	var stream: AudioStream = stream_override if stream_override != null else _pick_stream(event, id)
+	if event.loop:
+		_ensure_looping(stream)
+
+	# Recorte: empezar en un punto al azar y/o cortar a los N segundos
+	var cut_after: float = 0.0
+	if event.cut_after_max > 0.0 or event.cut_after_min > 0.0:
+		cut_after = randf_range(minf(event.cut_after_min, event.cut_after_max), maxf(event.cut_after_min, event.cut_after_max))
+	var start_position: float = start_at
+	if event.random_start and stream_override == null:
+		start_position = randf_range(0.0, maxf(0.0, stream.get_length() - cut_after))
+	voice.base_pitch = pitch_value
 
 	if use_3d:
 		var player := voice.player as AudioStreamPlayer3D
@@ -247,19 +287,29 @@ func _play(id: StringName, positional: bool, position: Vector3, follow: Node3D, 
 		player.pitch_scale = pitch_value
 		player.max_distance = event.max_distance
 		player.unit_size = event.unit_size
+		player.attenuation_model = event.attenuation as AudioStreamPlayer3D.AttenuationModel
 		player.global_position = position
-		player.play()
+		player.play(start_position)
 	else:
 		var player := voice.player as AudioStreamPlayer
 		player.stream = stream
 		player.bus = event.bus
 		player.volume_db = volume
 		player.pitch_scale = pitch_value
-		player.play()
+		player.play(start_position)
+
+	if cut_after > 0.0:
+		var generation: int = voice.generation
+		get_tree().create_timer(cut_after, true).timeout.connect(func() -> void:
+			if voice.active and voice.generation == generation:
+				_release_voice(voice)
+		)
 
 	if debug_log:
 		print("Audio: ▶ %s (%s, %.1f dB)" % [id, "3D" if use_3d else "2D", volume])
-	return SoundHandle.new(self, voice, voice.generation)
+	var handle := SoundHandle.new(self, voice, voice.generation)
+	voice.handle_ref = weakref(handle)
+	return handle
 
 
 func _pick_stream(event: SoundEvent, id: StringName) -> AudioStream:
@@ -329,9 +379,26 @@ func _on_voice_finished(voice: Voice) -> void:
 		voice.player.set("stream", stream)
 		voice.player.call("play")
 		return
+	var handle: SoundHandle = voice.handle_ref.get_ref() as SoundHandle if voice.handle_ref else null
 	voice.active = false
 	voice.follow = null
 	voice.generation += 1
+	if handle:
+		handle.finished.emit() # terminó solo (no por stop())
+
+
+## Para loops: si el audio no repite por sí mismo, se lo marca para que lo haga (sin el corte de volver a empezar a mano).
+func _ensure_looping(stream: AudioStream) -> void:
+	if stream is AudioStreamWAV:
+		var wav := stream as AudioStreamWAV
+		if wav.loop_mode == AudioStreamWAV.LOOP_DISABLED:
+			wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+			wav.loop_begin = 0
+			wav.loop_end = int(wav.get_length() * wav.mix_rate)
+	elif stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
+	elif stream is AudioStreamMP3:
+		(stream as AudioStreamMP3).loop = true
 
 
 # Usados por SoundHandle
@@ -342,6 +409,25 @@ func voice_is_active(voice: Voice, generation: int) -> bool:
 func voice_stop(voice: Voice, generation: int, fade_time: float) -> void:
 	if voice.generation == generation:
 		_stop_voice(voice, fade_time)
+
+
+func voice_get_position(voice: Voice, generation: int) -> float:
+	if not voice_is_active(voice, generation):
+		return 0.0
+	var player: Node = voice.player
+	return float(player.call("get_playback_position")) + AudioServer.get_time_since_last_mix()
+
+
+func voice_get_length(voice: Voice, generation: int) -> float:
+	if not voice_is_active(voice, generation):
+		return 0.0
+	var stream: AudioStream = voice.player.get("stream") as AudioStream
+	return stream.get_length() if stream else 0.0
+
+
+func voice_set_pitch(voice: Voice, generation: int, multiplier: float) -> void:
+	if voice_is_active(voice, generation):
+		voice.player.set("pitch_scale", maxf(voice.base_pitch * multiplier, 0.05))
 
 
 # ---------------------------------------------------------------- POOLS

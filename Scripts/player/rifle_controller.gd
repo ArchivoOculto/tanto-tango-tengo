@@ -58,8 +58,6 @@ enum State { IDLE, ENTERING, AIMING, EXITING }
 @export var behind_height_ratio: float = 0.15
 ## Si la cámara ya está dentro de este ángulo respecto de la espalda del jugador, no hace falta orbitar.
 @export_range(0.0, 90.0) var orbit_skip_angle_degrees: float = 12.0
-## Capas que frenan la órbita (el decorado): la cámara no atraviesa paredes mientras orbita.
-@export_flags_3d_physics var orbit_scenery_mask: int = 1
 ## Salida: duración fija del regreso a la GameCamera (llega siempre exacta, aunque la GameCamera siga moviéndose).
 @export var exit_duration: float = 0.5
 ## Salida forzada por una cinemática: más corta para que el plano de la cinemática se vea a tiempo.
@@ -310,24 +308,12 @@ func _process_orbit(delta: float) -> void:
 	var height: float = lerpf(_orbit_from_height, body_height * behind_height_ratio, weight)
 
 	var cam_pos: Vector3 = head + Vector3(sin(angle) * radius, height, cos(angle) * radius)
-	cam_pos = _clip_to_scenery(head, cam_pos)
 
 	var look_rot: Quaternion = Basis.looking_at(head - cam_pos, Vector3.UP).get_rotation_quaternion()
 	_camera.global_transform = Transform3D(Basis(_orbit_from_rot.slerp(look_rot, weight)), cam_pos)
 
 	if t >= 1.0:
 		_enter_phase = EnterPhase.APPROACH # ya está en la espalda: ahora sí, hacia la cabeza
-
-
-## Acorta la posición si hay decorado entre la cabeza y la cámara (que no atraviese paredes).
-func _clip_to_scenery(head: Vector3, cam_pos: Vector3) -> Vector3:
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(head, cam_pos)
-	query.collision_mask = orbit_scenery_mask
-	query.exclude = [_player.get_rid()]
-	var hit: Dictionary = _player.get_world_3d().direct_space_state.intersect_ray(query)
-	if hit.is_empty():
-		return cam_pos
-	return hit.position + (head - cam_pos).normalized() * _player.get_body_height() * 0.05
 
 
 func _finish_enter(target: Transform3D) -> void:

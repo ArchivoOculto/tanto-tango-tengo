@@ -7,7 +7,8 @@ class_name Radio
 ##  - Se puede INSPECCIONAR con su InteractableObject, pero no guardar (no tiene 'item').
 ##  - Su InteractableObject debe tener una ObjectAction (id "play_tape") con 'required_item' = el
 ##    cassette y 'consume_required_item' = true. Al activarla (□) el cassette sale del inventario,
-##    queda "dentro" de la radio y empieza a sonar su canción DESDE LA RADIO (audio 3D posicional).
+##    queda "dentro" de la radio y empieza a sonar su canción DESDE LA RADIO (audio 3D posicional) a través del sistema de audio: evento
+##    radio_tape_music (volumen, atenuación y distancia se ajustan ahí, en Resources/audio/events/radio/).
 ##  - Al GOLPEARLA se sacude (como los farolitos). Si tiene una cinta adentro, el cassette salta de la
 ##    radio, aterriza cerca y se puede volver a agarrar. La radio se calla y el cassette RECUERDA en
 ##    qué punto de la canción quedó: al volver a colocarlo, sigue desde ahí.
@@ -24,7 +25,7 @@ class_name Radio
 ##
 ## ESCENA REUTILIZABLE: Scenes/props/Radio_Prefab.tscn ya trae todo armado (malla, menú, cuerpo, marcadores) y
 ## sirve en cualquier nivel: se instancia, se coloca y se personaliza desde el Inspector ('title', 'description',
-## 'fallback_track', 'volume_db'...). Igual que CassettePrefab, arma sola lo que falta al iniciarse (ej: la
+## 'fallback_track'...). Igual que CassettePrefab, arma sola lo que falta al iniciarse (ej: la
 ## acción "reproducir cinta").
 ##
 ## DOS Area3D:
@@ -61,11 +62,6 @@ enum State { IDLE, PLAYING_TAPE, TAPE_FINISHED }
 @export_group("Reproducción")
 ## Canción de respaldo si el ítem insertado no es un CassetteItem.
 @export var fallback_track: AudioStream
-@export var volume_db: float = 0.0
-## Distancia (m) a la que la canción se oye a volumen pleno; más lejos se atenúa. El mundo es chico: valores bajos.
-@export var unit_size: float = 3.0
-## Distancia máxima a la que se oye (0 = sin límite).
-@export var max_distance: float = 0.0
 
 @export_group("Baile")
 @export var dance_enabled: bool = true
@@ -102,7 +98,8 @@ enum State { IDLE, PLAYING_TAPE, TAPE_FINISHED }
 
 var state: State = State.IDLE
 var _inserted: InventoryEntry = null
-var _player: AudioStreamPlayer3D
+var _music: SoundHandle ## la canción que está sonando (ver Audio.play_stream_on)
+var _pitch: float = 1.0 ## velocidad de la canción (1.0 = normal); el stick la altera con el menú abierto
 var _shake_tween: Tween
 var _rest_rotation: Vector3
 var _eject_pending: bool = false
@@ -153,31 +150,29 @@ func _ready() -> void:
 	else:
 		push_warning("Radio: no se encontró qué nodo sacudir (asignar 'visual').")
 
-	# La canción suena DESDE la radio (audio posicional), no como un sonido global
-	_player = AudioStreamPlayer3D.new()
-	_player.name = "TapePlayer"
-	_player.bus = AudioBuses.MUSIC # la canción va al bus de música (slider de Opciones)
-	_player.volume_db = volume_db
-	_player.unit_size = unit_size
-	_player.max_distance = max_distance
-	(visual if visual else self).add_child(_player)
-	_player.finished.connect(_on_track_finished)
+	# La canción suena a través del sistema de audio (evento radio_tape_music: bus Music, 3D desde la
+	# radio). Su volumen, atenuación y distancia se ajustan en ese evento, no acá.
 
 
 func _process(delta: float) -> void:
-	if _player == null:
+	if not _is_music_playing():
 		return
 	# Con el menú abierto y la cinta sonando, el stick derecho (el mismo que rota el objeto) "toca" el pitch
 	var target: float = 1.0
-	if _menu_open and state == State.PLAYING_TAPE and _player.playing:
+	if _menu_open and state == State.PLAYING_TAPE:
 		var stick: Vector2 = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
 		target = 1.0 + clampf(stick.x - stick.y * 0.5, -1.0, 1.0) * pitch_wobble_range
-	if is_equal_approx(_player.pitch_scale, target):
+	if is_equal_approx(_pitch, target):
 		return
 	var weight: float = 1.0 - exp(-pitch_smoothing * delta)
-	_player.pitch_scale = maxf(lerpf(_player.pitch_scale, target, weight), 0.05)
-	if absf(_player.pitch_scale - target) < 0.001:
-		_player.pitch_scale = target
+	_pitch = maxf(lerpf(_pitch, target, weight), 0.05)
+	if absf(_pitch - target) < 0.001:
+		_pitch = target
+	_music.set_pitch_scale(_pitch)
+
+
+func _is_music_playing() -> bool:
+	return _music != null and _music.is_playing()
 
 
 ## Si el menú no trae la acción "reproducir cinta" (ej: una radio recién instanciada), la crea: acepta
@@ -222,10 +217,8 @@ func _is_action_available(action: ObjectAction) -> bool:
 
 ## Baja el volumen de la canción hasta el silencio en 'duration' segundos (final del nivel).
 func fade_out_music(duration: float) -> void:
-	if _player == null or not _player.playing:
-		return
-	var tween: Tween = create_tween()
-	tween.tween_property(_player, "volume_db", -60.0, maxf(duration, 0.01))
+	if _is_music_playing():
+		_music.stop(duration) # fundido hasta el silencio; no cuenta como "terminó la canción"
 
 
 func is_playing_tape() -> bool:
@@ -309,7 +302,7 @@ func _kill_dance() -> void:
 
 
 func _resume_dance_if_playing() -> void:
-	if state == State.PLAYING_TAPE and _player and _player.playing:
+	if state == State.PLAYING_TAPE and _is_music_playing():
 		_start_dance()
 
 
@@ -340,19 +333,21 @@ func _start_playback() -> void:
 	var from: float = float(_inserted.state.get(CassetteItem.STATE_POSITION, 0.0))
 	if from >= track.get_length() - 0.05:
 		from = 0.0 # estaba prácticamente al final: se vuelve a empezar
-	_player.stream = track
-	_player.pitch_scale = 1.0
-	_player.play(from)
+	_pitch = 1.0
+	_music = Audio.play_stream_on(SoundIds.RADIO_TAPE_MUSIC, track, visual if visual else self, from)
+	if _music != null:
+		_music.finished.connect(_on_track_finished)
 
 
 ## Detiene la canción y devuelve el punto (en segundos) donde estaba.
 func _stop_playback() -> float:
-	if _player == null or not _player.playing:
+	if not _is_music_playing():
 		return 0.0
-	var length: float = _player.stream.get_length() if _player.stream else 0.0
-	var played: float = _player.get_playback_position() + AudioServer.get_time_since_last_mix()
-	_player.stop()
-	_player.pitch_scale = 1.0
+	var length: float = _music.get_length()
+	var played: float = _music.get_position()
+	_music.stop()
+	_music = null
+	_pitch = 1.0
 	return clampf(played, 0.0, length)
 
 
@@ -367,7 +362,8 @@ func _on_track_finished() -> void:
 		return
 	state = State.TAPE_FINISHED
 	_stop_dance()
-	_player.pitch_scale = 1.0
+	_music = null
+	_pitch = 1.0
 	_inserted.state[CassetteItem.STATE_POSITION] = 0.0 # terminó: si se vuelve a poner, arranca de cero
 	tape_finished.emit(_inserted.item)
 
