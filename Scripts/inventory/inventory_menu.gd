@@ -32,6 +32,7 @@ var _rows: Array[Label] = []
 var _action_rows: Array[Label] = [] ## Filas de las acciones del ítem seleccionado
 var _current_actions: Array[ObjectAction] = []
 var _current_entry: InventoryEntry
+var _hint_label: Label ## pista en amarillo bajo la descripción (ver ItemData.get_hint_text)
 
 # Modo selector
 var _picker_active: bool = false
@@ -64,9 +65,30 @@ func _ready() -> void:
 	viewer.name = "ObjectViewer"
 	add_child(viewer)
 	viewer.setup(_sub_viewport, _camera, _pivot, _view_3d)
+	_setup_hint_label()
 
 	ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cerrar", 2)
 	ButtonPrompt.setup_row(_rotate_hint, _rotate_hint.get_node("Icon"), "rotar objeto", 8)
+
+
+## La descripción pasa a una caja vertical, en el mismo lugar y con el mismo ancho, para que la pista en amarillo
+## quede justo debajo del texto sin importar cuántas líneas ocupe.
+func _setup_hint_label() -> void:
+	var parent: Node = _description_label.get_parent()
+	var index: int = _description_label.get_index()
+	var box := VBoxContainer.new()
+	box.name = "DescriptionBox"
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", MenuInfoPanel.TEXT_SEPARATION)
+	box.position = _description_label.position
+	box.size = _description_label.size
+	parent.add_child(box)
+	parent.move_child(box, index)
+	_description_label.reparent(box, false)
+	_description_label.custom_minimum_size = Vector2.ZERO # que mida lo que ocupa el texto, no un alto fijo
+	_description_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hint_label = MenuInfoPanel.make_hint_label(_description_label)
+	box.add_child(_hint_label)
 
 
 func _exit_tree() -> void:
@@ -330,6 +352,9 @@ func _trigger_item_action(event: InputEvent) -> bool:
 func _show_preview(entry: InventoryEntry) -> void:
 	_name_label.text = entry.item.get_label()
 	_description_label.text = entry.item.get_detail_text(entry)
+	var hint: String = entry.item.get_hint_text(entry)
+	_hint_label.text = hint
+	_hint_label.visible = hint != ""
 
 	var shown_3d: bool = false
 	if entry.item.preview_texture != null:
@@ -351,6 +376,7 @@ func _show_preview(entry: InventoryEntry) -> void:
 
 
 func _clear_preview() -> void:
+	_hint_label.visible = false
 	_image_2d.visible = false
 	_view_3d.visible = false
 	_rotate_hint.visible = false

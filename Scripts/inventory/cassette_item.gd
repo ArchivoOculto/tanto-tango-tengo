@@ -16,6 +16,10 @@ const MIN_REWIND_SECONDS: float = 0.5
 ## Categoría de todos los cassettes.
 const CATEGORY: StringName = &"cassette"
 
+## Pista que se agrega (en amarillo) a la descripción del cassette que sirve de llave en esta partida: por si el
+## jugador se distrajo cuando se mostró el género al comenzar.
+const KEY_HINT: String = "Cuentan que estas músicas pueden afectar a los fantasmas."
+
 ## Género de la canción. El nivel sortea uno por partida y solo el cassette de ESE género sirve para terminarlo.
 enum Genre { NONE, TANGO, FOLKLORE, ROCK }
 
@@ -61,6 +65,13 @@ func get_inventory_actions(entry: InventoryEntry) -> Array[ObjectAction]:
 func do_inventory_action(entry: InventoryEntry, action: ObjectAction) -> void:
 	if action != null and action.id == &"rewind":
 		set_position(entry, 0.0)
+
+
+## Solo el cassette cuyo género es el sorteado en esta partida (ver Inventory.key_genre) lleva la pista.
+func get_hint_text(_entry: InventoryEntry) -> String:
+	if genre != Genre.NONE and int(genre) == Inventory.key_genre:
+		return KEY_HINT
+	return ""
 
 
 func get_detail_text(entry: InventoryEntry) -> String:

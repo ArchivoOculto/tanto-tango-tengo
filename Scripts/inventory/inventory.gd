@@ -16,6 +16,10 @@ signal menu_closed
 
 const MENU_SCENE: PackedScene = preload("res://Scenes/ui/inventory_menu.tscn")
 
+## Género (CassetteItem.Genre, como int; 0 = NONE) sorteado en esta partida: el cassette de ESE género es la llave del
+## nivel. Lo fija Level00Manager al sortear y lo usan los cassettes para mostrar su pista (ItemData.get_hint_text).
+var key_genre: int = 0
+
 var _entries: Array[InventoryEntry] = []
 var _menu: InventoryMenu
 
@@ -107,6 +111,7 @@ func reset() -> void:
 	for entry in _entries:
 		entry.dispose()
 	_entries.clear()
+	key_genre = 0
 	changed.emit()
 
 

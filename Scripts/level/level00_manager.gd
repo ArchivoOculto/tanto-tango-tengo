@@ -195,6 +195,7 @@ func _choose_target_genre() -> void:
 		_:
 			target_genre = [CassetteItem.Genre.TANGO, CassetteItem.Genre.FOLKLORE,
 					CassetteItem.Genre.ROCK].pick_random()
+	Inventory.key_genre = int(target_genre) # el cassette de este género muestra su pista (ver CassetteItem)
 	target_genre_chosen.emit(target_genre)
 
 

@@ -6,6 +6,11 @@ room_size = 0.5
 damping = 0.3
 wet = 0.25
 
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_rain"]
+resource_name = "LowPassFilter"
+cutoff_hz = 20500.0
+db = 1
+
 [resource]
 bus/1/name = &"Music"
 bus/1/solo = false
@@ -39,3 +44,11 @@ bus/5/volume_db = -2.1147432
 bus/5/send = &"SFX"
 bus/5/effect/0/effect = SubResource("AudioEffectReverb_j3pel")
 bus/5/effect/0/enabled = true
+bus/6/name = &"Rain"
+bus/6/solo = false
+bus/6/mute = false
+bus/6/bypass_fx = false
+bus/6/volume_db = 0.0
+bus/6/send = &"Ambience"
+bus/6/effect/0/effect = SubResource("AudioEffectLowPassFilter_rain")
+bus/6/effect/0/enabled = false

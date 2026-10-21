@@ -48,6 +48,12 @@ func get_detail_text(_entry: InventoryEntry) -> String:
 	return description
 
 
+## Pista opcional que se muestra en amarillo al final de la descripción (inventario y menú del objeto).
+## Vacía por defecto. Las subclases la sobreescriben (ej: el cassette que sirve de llave de la partida).
+func get_hint_text(_entry: InventoryEntry) -> String:
+	return ""
+
+
 ## Categoría del ítem (ej: &"cassette"). Sirve para que una acción acepte "cualquier ítem de tal
 ## categoría" (ObjectAction.required_item_category). Las subclases la sobreescriben; vacía por defecto.
 func get_category() -> StringName:

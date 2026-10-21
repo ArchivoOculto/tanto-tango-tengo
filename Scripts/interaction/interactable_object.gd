@@ -163,7 +163,8 @@ func _ready() -> void:
 
 	if object_on_screen:
 		object_on_screen.visible = false
-		_info_panel = MenuInfoPanel.create(_get_canvas()) # fondo + nombre + descripción, como el inventario
+		MenuInfoPanel.shift_viewer(object_on_screen) # el visor a la derecha, el texto a la izquierda
+		_info_panel = MenuInfoPanel.create(_get_canvas()) # fondo + nombre + descripción
 
 	# 4. Visor 3D compartido
 	viewer = ObjectViewer.new()
@@ -322,7 +323,7 @@ func _open_inspection() -> void:
 		object_on_screen.visible = true
 	if _info_panel:
 		_get_canvas().layer = MENU_CANVAS_LAYER
-		_info_panel.set_info(get_menu_title(), get_menu_description())
+		_info_panel.set_info(get_menu_title(), get_menu_description(), get_menu_hint())
 		_info_panel.visible = true
 	_rebuild_menu_rows()
 
@@ -376,6 +377,11 @@ func get_menu_description() -> String:
 	if description != "":
 		return description
 	return item.get_detail_text(InventoryEntry.new(item, self)) if item != null else ""
+
+
+## Pista en amarillo bajo la descripción (ej: el cassette que sirve de llave en esta partida). Vacía = sin pista.
+func get_menu_hint() -> String:
+	return item.get_hint_text(InventoryEntry.new(item, self)) if item != null else ""
 
 
 ## Devuelve el control SIEMPRE: no depende de si el jugador sigue dentro del Area3D. Se usa la

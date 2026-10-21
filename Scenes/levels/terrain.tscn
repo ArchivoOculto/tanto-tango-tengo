@@ -32,8 +32,11 @@
 [ext_resource type="Texture2D" uid="uid://cm3bma1b0kovi" path="res://Assets/2D/256x256/Stains/Horror_Stain_09-256x256.png" id="28_atwpt"]
 [ext_resource type="Texture2D" uid="uid://dnlw747uk3bq2" path="res://Assets/2D/endpicture.png" id="28_swpjm"]
 [ext_resource type="PackedScene" uid="uid://bfeb1ihbgumys" path="res://Assets/3D/Cassette/Cassette_mesh.tscn" id="33_1e2yc"]
+[ext_resource type="Texture2D" uid="uid://n8w1kxavotkj" path="res://Assets/3D/Cassette/CassetteCovers/Goye.jpg" id="36_erfj3"]
 [ext_resource type="AudioStream" uid="uid://do4fhi2epkfe8" path="res://Assets/Audio/Cassette tracks/Superlogico_track.mp3" id="38_erfj3"]
+[ext_resource type="Texture2D" uid="uid://wc0xjp3k6n1" path="res://Assets/3D/Cassette/CassetteCovers/Sosa.png" id="38_lkd08"]
 [ext_resource type="AudioStream" uid="uid://coathd3xnu2ok" path="res://Assets/Audio/Cassette tracks/Cachapecero_track.mp3" id="38_m0byy"]
+[ext_resource type="Texture2D" uid="uid://2w5cscmkd4ki" path="res://Assets/3D/Cassette/CassetteCovers/Redo.png" id="40_4d4h8"]
 [ext_resource type="PackedScene" uid="uid://lrbh4p4114u4" path="res://Scenes/props/Cassette_Prefab.tscn" id="51_cassprefab"]
 [ext_resource type="PackedScene" uid="uid://j01yus61pcn3" path="res://Scenes/props/Radio_Prefab.tscn" id="53_radioprefab"]
 [ext_resource type="Script" uid="uid://dvf2vtx0lbe0q" path="res://Scripts/ui/context_visibility.gd" id="60_ctxvis"]
@@ -1628,19 +1631,28 @@ title = "Goyeneche"
 description = "Una cinta recopilando los mejores temas del Polaco."
 genre = 1
 
+[node name="Cover" parent="Area 003/CassetteShit/Tango_Cassette" index="0" unique_id=875973469]
+texture = ExtResource("36_erfj3")
+
 [node name="Folklore_Cassette" parent="Area 003/CassetteShit" unique_id=480792458 instance=ExtResource("51_cassprefab")]
-transform = Transform3D(-9.465641e-08, -0.9329624, -0.35997337, -1, 1.1875888e-07, -4.48399e-08, 8.4583974e-08, 0.35997337, -0.9329624, 0.044501543, 0.14567184, 0.09193018)
+transform = Transform3D(8.812058e-08, 0.9036864, 0.42819455, -1, 1.1875888e-07, -4.4839908e-08, -9.1373145e-08, -0.42819455, 0.9036864, 0.055978537, 0.14567184, 0.07814278)
 track = ExtResource("38_m0byy")
 title = "Canciones con fundamento"
 description = "Un albúm de 1965, pilar fundamental del Movimiento del Nuevo Cancionero."
 genre = 2
 
+[node name="Cover" parent="Area 003/CassetteShit/Folklore_Cassette" index="0" unique_id=875973469]
+texture = ExtResource("38_lkd08")
+
 [node name="Rock_Cassette" parent="Area 003/CassetteShit" unique_id=695514843 instance=ExtResource("51_cassprefab")]
-transform = Transform3D(-0.7346398, -0.6777006, -0.032034826, 0.06899411, -0.02765173, -0.9972337, 0.67494017, -0.73481786, 0.06707141, 0.062805176, 0.12672806, -0.09089253)
+transform = Transform3D(-0.73463976, -0.67770046, -0.032034833, -0.06899405, 0.027651653, 0.9972337, -0.6749401, 0.73481786, -0.067071326, 0.080904484, 0.12672806, -0.07919026)
 track = ExtResource("38_erfj3")
 title = "Gulp!"
 description = "Albúm debut de Patricio Rey, año 1985."
 genre = 3
+
+[node name="Cover" parent="Area 003/CassetteShit/Rock_Cassette" index="0" unique_id=875973469]
+texture = ExtResource("40_4d4h8")
 
 [node name="CassetteMesh1" parent="Area 003/CassetteShit" unique_id=1905706799 instance=ExtResource("33_1e2yc")]
 transform = Transform3D(0.041278377, -0.49759483, 0.02637206, 0.0034463308, 0.026746854, 0.4992722, -0.49828127, -0.04103653, 0.0056378543, -0.020816505, 0.13148117, 0.00017762184)
@@ -1897,3 +1909,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.063, -0.2, -0.654)
 [editable path="InteractiveProps/Puzzle_Hint/interactable_picture"]
 [editable path="Area 003/Farolito_Open"]
 [editable path="Area 003/farolitohanged"]
+[editable path="Area 003/CassetteShit/Tango_Cassette"]
+[editable path="Area 003/CassetteShit/Folklore_Cassette"]
+[editable path="Area 003/CassetteShit/Rock_Cassette"]

@@ -7,8 +7,8 @@
 script = ExtResource("1_event")
 id = &"amb_rain_loop"
 streams = Array[AudioStream]([ExtResource("2_rain")])
-bus = "Ambience"
+bus = "Rain"
 volume_db = 0.0
 loop = true
 max_voices = 1
-description = "Lluvia constante del nivel (plana: suena igual en todo el nivel).\nArchivo actual: Assets/Audio/rain_sound.wav (MIGRADO; ya viene con loop en la importación).\nSe dispara desde: nodo SoundEmitter 'RainSound' en Scenes/levels/terrain.tscn (autoplay)"
+description = "Lluvia constante del nivel (plana: suena igual en todo el nivel).\nBus Rain: en los interiores (zona 4:3 con 'indoor_audio') Audio la aleja y la filtra con un pasa-bajos.\nArchivo actual: Assets/Audio/rain_sound.wav (MIGRADO; ya viene con loop en la importación).\nSe dispara desde: nodo SoundEmitter 'RainSound' en Scenes/levels/terrain.tscn (autoplay)"

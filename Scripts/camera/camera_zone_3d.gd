@@ -13,6 +13,10 @@ class_name CameraZone3D
 @export_group("Formato 4:3")
 @export var force_4_3: bool = false ## Si es true, mientras esta zona esté activa la pantalla se recorta a 4:3 con barras negras (ver LetterboxController)
 @export var aspect_transition_duration: float = 0.6 ## Duración de la animación de las barras al entrar/salir de esta zona
+## Si 'force_4_3' es true, la zona cuenta como un INTERIOR: el 4:3 es la forma visual de marcar que se entró a una
+## construcción, así que la lluvia pasa a oírse lejana y filtrada (ver Audio.set_indoor_mix). Se apaga para usar
+## el 4:3 con otro fin (ej: una cinemática al aire libre). No tiene efecto si 'force_4_3' es false.
+@export var indoor_audio: bool = true
 
 
 func _ready() -> void:

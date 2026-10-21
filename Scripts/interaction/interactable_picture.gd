@@ -63,7 +63,8 @@ func _ready() -> void:
 
 	if sprite_on_screen:
 		sprite_on_screen.visible = false
-		_info_panel = MenuInfoPanel.create(_get_canvas()) # fondo + nombre + descripción, como el inventario
+		MenuInfoPanel.shift_viewer(sprite_on_screen) # la imagen a la derecha, el texto a la izquierda
+		_info_panel = MenuInfoPanel.create(_get_canvas()) # fondo + nombre + descripción
 	_refresh_visuals()
 
 	# 4. Inicializar Shader de Outline

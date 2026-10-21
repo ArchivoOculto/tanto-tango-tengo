@@ -14,8 +14,9 @@ class_name GameCamera
 ##  - NUNCA ATRAVIESA AL JUGADOR: la cámara respeta un radio alrededor del cuerpo del jugador. Si el viaje
 ##    al nuevo anchor pasaría por él, lo ORBITA (resbala por el costado), igual que al entrar al modo fusil.
 ##    También se aparta si el jugador camina hacia la cámara.
-##  - RESORTE AMORTIGUADO: el viaje entre anchors arranca y frena con suavidad (sin tirón inicial) y no
-##    depende de los cuadros por segundo. Hay una velocidad máxima de viaje.
+##  - VIAJE EN DOS RESORTES: el viaje entre anchors pasa por dos resortes amortiguados en cascada. Así la
+##    aceleración también arranca en cero (sin tirón inicial: antes pasaba de 0 a ~3,5 m/s en 0,2 s) y el
+##    final es igual de suave. No depende de los cuadros por segundo y hay una velocidad máxima de viaje.
 ##  - SIN COLISIONES CON EL DECORADO: la cámara ignora por completo paredes, alambrados y cualquier otra
 ##    geometría; prefiere clipearse adentro de algo antes que dar tirones. Lo único que respeta es el
 ##    cuerpo del jugador (ver arriba), que es una cuenta geométrica y no usa la física.
@@ -25,7 +26,7 @@ class_name GameCamera
 ##    foco) y sobre el cuerpo real (cápsula de colisión: pies, torso y cabeza), descontando las barras 4:3. Además hay
 ##    un margen duro ('frame_margin'): si el cuerpo lo pasa, la cámara gira al instante. Se desactiva solo en
 ##    cinemáticas (zonas forzadas).
-##  - ENEMIGOS: la cámara también los esquiva (misma cuenta geométrica que con el jugador, sin física).
+##  - ENEMIGOS: la cámara los ignora por completo, igual que al decorado: prefiere clipearse antes que moverse.
 
 @export var default_smoothing: float = 3.0 ## Suavizado del viaje si no hay zona activa (con zona, manda su 'follow_smoothing')
 
@@ -52,16 +53,13 @@ class_name GameCamera
 @export_group("Viaje entre anchors")
 ## Velocidad máxima de la cámara al viajar (m/s). 0 = sin límite.
 @export_range(0.0, 50.0, 0.1, "suffix:m/s") var max_travel_speed: float = 6.0
+## El viaje usa dos resortes en cascada y cada uno toma este porcentaje del tiempo de la zona ('follow_smoothing').
+## Más chico = arranque más seco y viaje más corto; más grande = arranque más suave y viaje más largo.
+@export_range(0.2, 1.0, 0.05) var travel_stage_scale: float = 0.6
 ## Radio alrededor del cuerpo del jugador que la cámara no invade (fracción de su altura).
 @export_range(0.0, 2.0, 0.05) var player_clearance_ratio: float = 0.6
 ## Radio mínimo, aunque el anchor esté pegado al jugador o este camine hacia la cámara (fracción de su altura).
 @export_range(0.0, 1.0, 0.05) var player_min_clearance_ratio: float = 0.2
-
-@export_group("Enemigos")
-## La cámara se aparta de los enemigos (cápsula de colisión de cada uno, sin usar la física).
-@export var avoid_enemies: bool = true
-## Distancia extra que la cámara respeta alrededor del radio de la cápsula de un enemigo.
-@export_range(0.0, 2.0, 0.05, "suffix:m") var enemy_clearance: float = 0.35
 
 @export_group("Proporciones (fracción de la altura del personaje)")
 @export var look_height_ratio: float = 0.55
@@ -73,18 +71,47 @@ const LETTERBOX_ASPECT: float = 4.0 / 3.0 ## mismo valor que LetterboxController
 const NEAR_DEPTH: float = 0.05 ## por debajo de esta profundidad un punto se considera "pegado/detrás" de la cámara
 const MIN_FOCUS_DISTANCE: float = 0.1
 const FRAME_GUARD_ITERATIONS: int = 4
-const ENEMY_LIST_REFRESH: float = 0.25 ## cada cuánto se vuelve a pedir la lista de enemigos (s)
 
 var _player_height: float = 1.8
 var _focus: Vector3 = Vector3.ZERO ## punto al que apunta la cámara (suavizado)
-var _position: Vector3 = Vector3.ZERO ## posición suavizada del resorte
-var _velocity: Vector3 = Vector3.ZERO ## velocidad del resorte
+var _lead: Spring = Spring.new() ## 1.er resorte: va hacia el anchor (con velocidad máxima)
+var _follow: Spring = Spring.new() ## 2.º resorte: la cámara va hacia el 1.º (de acá sale la posición real)
 var _last_known_anchor_pos: Vector3 = Vector3.ZERO
 
 var _player_shape: CollisionShape3D ## cápsula de colisión del jugador (define dónde están sus pies y su cabeza)
 var _player_body: BodyCapsule = BodyCapsule.new() ## cápsula del jugador, recalculada en cada cuadro
-var _enemies: Array[Node3D] = []
-var _enemy_refresh_left: float = 0.0
+
+
+## Resorte críticamente amortiguado (arranca y frena suave, sin rebotar ni depender del framerate).
+class Spring:
+	var position: Vector3 = Vector3.ZERO
+	var velocity: Vector3 = Vector3.ZERO
+
+	func reset(at: Vector3) -> void:
+		position = at
+		velocity = Vector3.ZERO
+
+	## Avanza un paso hacia 'target'. 'max_speed' > 0 limita cuánto puede "adelantarse" al destino.
+	func step(target: Vector3, smooth_time: float, delta: float, max_speed: float = 0.0) -> void:
+		smooth_time = maxf(smooth_time, 0.0001)
+		var omega: float = 2.0 / smooth_time
+		var x: float = omega * delta
+		var decay: float = 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x)
+
+		var change: Vector3 = position - target
+		if max_speed > 0.0:
+			change = change.limit_length(max_speed * smooth_time)
+		var limited_target: Vector3 = position - change
+
+		var temp: Vector3 = (velocity + omega * change) * delta
+		velocity = (velocity - omega * temp) * decay
+		var output: Vector3 = limited_target + (change + temp) * decay
+
+		# Sin sobrepasar el destino
+		if (target - position).dot(output - target) > 0.0:
+			output = target
+			velocity = Vector3.ZERO
+		position = output
 
 
 ## Extremos de una cápsula de colisión en el mundo. 'feet' y 'head' son los puntos más bajo y más alto.
@@ -105,7 +132,8 @@ func _ready() -> void:
 		_player_shape = player.get_node_or_null("CollisionShape3D") as CollisionShape3D
 		_refresh_player_body()
 
-	_position = global_position
+	_lead.reset(global_position)
+	_follow.reset(global_position)
 	_last_known_anchor_pos = global_position
 	if player:
 		_focus = _player_focus_point()
@@ -116,14 +144,13 @@ func _process(delta: float) -> void:
 		return
 	delta = minf(delta, MAX_FRAME_DELTA)
 	_refresh_player_body()
-	_refresh_enemy_list(delta)
 
 	var zone: CameraZone3D = CameraDirector.current_zone
 
 	# El orden importa: primero se decide DÓNDE está la cámara y recién después A DÓNDE mira. Así la zona muerta
 	# y el encuadre se miden con la posición final de este cuadro (antes se medía con la del cuadro anterior).
 
-	# --- 1. POSICIÓN (resorte amortiguado hacia el anchor) ---
+	# --- 1. POSICIÓN (dos resortes en cascada hacia el anchor) ---
 	var target_position: Vector3
 	var smoothing: float = default_smoothing
 	if zone and is_instance_valid(zone.camera_anchor):
@@ -133,13 +160,15 @@ func _process(delta: float) -> void:
 	else:
 		target_position = _last_known_anchor_pos
 
-	_position = _smooth_damp(_position, target_position, 0.75 / maxf(smoothing, 0.1), delta)
+	var stage_time: float = 0.75 / maxf(smoothing, 0.1) * travel_stage_scale
+	_lead.step(target_position, stage_time, delta, max_travel_speed)
+	_follow.step(_lead.position, stage_time, delta)
 
-	# --- 2. NO ATRAVESAR A ENEMIGOS NI AL JUGADOR (los orbita) ---
-	_position = _keep_out_of_bodies(_position, target_position, delta)
+	# --- 2. NO ATRAVESAR AL JUGADOR (lo orbita) ---
+	_follow.position = _keep_out_of_player(_follow.position, target_position, delta)
 
-	# --- 3. APLICAR POSICIÓN (sin colisiones con el decorado: se clipea antes que dar tirones) ---
-	global_position = _position
+	# --- 3. APLICAR POSICIÓN (sin colisiones con el decorado ni los enemigos: se clipea antes que dar tirones) ---
+	global_position = _follow.position
 
 	# --- 4. FOCO (a dónde apunta la cámara) ---
 	var has_look_target: bool = zone != null and is_instance_valid(zone.look_target)
@@ -169,8 +198,8 @@ func snap_to_zone(zone: CameraZone3D) -> void:
 
 	var target_position: Vector3 = zone.camera_anchor.global_position
 	_last_known_anchor_pos = target_position
-	_position = target_position
-	_velocity = Vector3.ZERO
+	_lead.reset(target_position)
+	_follow.reset(target_position)
 	global_position = target_position
 
 	var has_look_target: bool = is_instance_valid(zone.look_target)
@@ -215,20 +244,6 @@ func _refresh_player_body() -> void:
 	fallback.feet = player.global_position
 	fallback.head = fallback.feet + Vector3.UP * _player_height
 	_player_body = fallback
-
-
-func _refresh_enemy_list(delta: float) -> void:
-	if not avoid_enemies:
-		return
-	_enemy_refresh_left -= delta
-	if _enemy_refresh_left > 0.0:
-		return
-	_enemy_refresh_left = ENEMY_LIST_REFRESH
-	_enemies.clear()
-	for node in get_tree().get_nodes_in_group("enemies"):
-		var enemy: Node3D = node as Node3D
-		if enemy != null:
-			_enemies.append(enemy)
 
 
 # ---------------------------------------------------------------- PANTALLA
@@ -380,37 +395,7 @@ func _look_at_focus() -> void:
 
 # ---------------------------------------------------------------- MOVIMIENTO
 
-## Resorte críticamente amortiguado (arranca y frena suave, sin rebotar ni depender del framerate).
-func _smooth_damp(from_pos: Vector3, target: Vector3, smooth_time: float, delta: float) -> Vector3:
-	smooth_time = maxf(smooth_time, 0.0001)
-	var omega: float = 2.0 / smooth_time
-	var x: float = omega * delta
-	var decay: float = 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x)
-
-	var change: Vector3 = from_pos - target
-	if max_travel_speed > 0.0:
-		change = change.limit_length(max_travel_speed * smooth_time)
-	var limited_target: Vector3 = from_pos - change
-
-	var temp: Vector3 = (_velocity + omega * change) * delta
-	_velocity = (_velocity - omega * temp) * decay
-	var output: Vector3 = limited_target + (change + temp) * decay
-
-	# Sin sobrepasar el destino
-	if (target - from_pos).dot(output - target) > 0.0:
-		output = target
-		_velocity = Vector3.ZERO
-	return output
-
-
 # ---------------------------------------------------------------- NO ATRAVESAR
-
-## Primero los enemigos y al final el jugador: si la cámara queda entre los dos, el jugador manda.
-func _keep_out_of_bodies(pos: Vector3, anchor: Vector3, delta: float) -> Vector3:
-	if avoid_enemies:
-		pos = _keep_out_of_enemies(pos, anchor, delta)
-	return _keep_out_of_player(pos, anchor, delta)
-
 
 ## Distancia mínima a la que el cuerpo del jugador entra entero en el cuadro (con el margen duro).
 func _framing_distance() -> float:
@@ -439,32 +424,6 @@ func _keep_out_of_player(pos: Vector3, anchor: Vector3, delta: float) -> Vector3
 	return _push_out_of_capsule(pos, anchor, delta, feet, head, radius)
 
 
-## Aparta a la cámara de cada enemigo: su cápsula de colisión engrosada en 'enemy_clearance'.
-func _keep_out_of_enemies(pos: Vector3, anchor: Vector3, delta: float) -> Vector3:
-	for enemy in _enemies:
-		if not is_instance_valid(enemy) or enemy.is_queued_for_deletion():
-			continue
-		var shape_node: CollisionShape3D = enemy.get_node_or_null("CollisionShape3D") as CollisionShape3D
-		if shape_node == null or shape_node.disabled:
-			continue
-		var capsule: BodyCapsule = _capsule_of(shape_node)
-		if capsule == null:
-			continue
-
-		# Segmento central de la cápsula (sin las semiesferas de las puntas, que ya cubre el radio)
-		var core_a: Vector3 = capsule.feet
-		var core_b: Vector3 = capsule.head
-		var axis: Vector3 = capsule.head - capsule.feet
-		var axis_length: float = axis.length()
-		if axis_length > capsule.radius * 2.0:
-			axis /= axis_length
-			core_a = capsule.feet + axis * capsule.radius
-			core_b = capsule.head - axis * capsule.radius
-
-		pos = _push_out_of_capsule(pos, anchor, delta, core_a, core_b, capsule.radius + enemy_clearance)
-	return pos
-
-
 ## Si 'pos' cae dentro del segmento a-b engrosado en 'radius', lo saca hacia afuera y lo hace resbalar
 ## hacia el anchor por el costado (orbita el cuerpo en vez de quedarse pegado).
 func _push_out_of_capsule(pos: Vector3, anchor: Vector3, delta: float, seg_a: Vector3, seg_b: Vector3, radius: float) -> Vector3:
@@ -491,7 +450,7 @@ func _push_out_of_capsule(pos: Vector3, anchor: Vector3, delta: float, seg_a: Ve
 		pushed += tangent.normalized() * radius * 0.5 * delta
 
 	# Sin velocidad hacia adentro del cuerpo
-	var inward_speed: float = _velocity.dot(-outward)
+	var inward_speed: float = _follow.velocity.dot(-outward)
 	if inward_speed > 0.0:
-		_velocity += outward * inward_speed
+		_follow.velocity += outward * inward_speed
 	return pushed

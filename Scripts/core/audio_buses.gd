@@ -9,11 +9,12 @@ class_name AudioBuses
 ##   Master
 ##   ├── Music      música y canciones (la radio, temas del juego)
 ##   └── SFX        efectos de sonido
-##       ├── Ambience   ambiente continuo (lluvia, viento, zumbidos)
+##       ├── Ambience   ambiente continuo (viento, zumbidos)
+##       │   └── Rain   la lluvia; lleva un filtro pasa-bajos que Audio cierra en los interiores
 ##       ├── UI         sonidos de menús e interfaz
 ##       └── Reverb     efectos que necesitan reverberación (farolas)
 ##
-## Los sliders de Opciones controlan Master, Music y SFX; como Ambience, UI y Reverb cuelgan de SFX,
+## Los sliders de Opciones controlan Master, Music y SFX; como Ambience (y Rain, que cuelga de ella), UI y Reverb cuelgan de SFX,
 ## el slider de SFX los escala a todos. Para sumar un bus (ej: Voice): agregarlo en el layout, una
 ## constante acá y, si hace falta, un slider en el menú de opciones.
 
@@ -21,6 +22,7 @@ const MASTER: StringName = &"Master"
 const MUSIC: StringName = &"Music"
 const SFX: StringName = &"SFX"
 const AMBIENCE: StringName = &"Ambience"
+const RAIN: StringName = &"Rain"
 const UI: StringName = &"UI"
 const REVERB: StringName = &"Reverb"
 

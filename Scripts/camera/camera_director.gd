@@ -12,6 +12,8 @@ extends Node
 ##    retoma exactamente la zona que corresponda.
 ##  - Formato 4:3: es el único que decide si hay que mostrar las barras negras
 ##    (zona con 'force_4_3' o modo fusil) y lo anuncia con letterbox_changed.
+##  - Interior: una zona con 'force_4_3' (e 'indoor_audio') cuenta como interior de una construcción; lo anuncia
+##    con indoor_changed y el audio lo usa para alejar y filtrar la lluvia. El modo fusil NO cuenta como interior.
 
 signal zone_changed(previous_zone: CameraZone3D, new_zone: CameraZone3D)
 ## Se emite cada vez que alguien fuerza una zona (cinemática/puzzle), aunque esa
@@ -21,6 +23,8 @@ signal zone_forced(zone: CameraZone3D)
 signal first_person_changed(active: bool)
 ## Única fuente de verdad para las barras 4:3 (la consume LetterboxController).
 signal letterbox_changed(active: bool, duration: float)
+## Se emite al entrar/salir de un interior (zona 4:3 con 'indoor_audio'). La consume Audio.
+signal indoor_changed(active: bool, duration: float)
 
 ## Cámara de primera persona que tiene el control ahora mismo (null = modo normal).
 var first_person_camera: Camera3D = null
@@ -33,6 +37,8 @@ var _letterbox_active: bool = false
 var _letterbox_duration: float = 0.6          # duración con la que se activó; se reutiliza al desactivar
 var _fp_letterbox: bool = false
 var _fp_letterbox_duration: float = 0.6
+var _indoor_active: bool = false
+var _indoor_duration: float = 0.6             # duración con la que se entró; se reutiliza al salir
 
 
 func register_zone_enter(zone: CameraZone3D) -> void:
@@ -107,6 +113,9 @@ func reset() -> void:
 	if _letterbox_active:
 		_letterbox_active = false
 		letterbox_changed.emit(false, 0.0) # barras fuera al instante
+	if _indoor_active:
+		_indoor_active = false
+		indoor_changed.emit(false, 0.0) # lluvia al aire libre al instante
 	if was_first_person:
 		first_person_changed.emit(false)
 
@@ -159,6 +168,11 @@ func is_letterbox_active() -> bool:
 	return _letterbox_active
 
 
+## true mientras la zona actual sea un interior (4:3 con 'indoor_audio').
+func is_indoor() -> bool:
+	return _indoor_active
+
+
 # ---------------------------------------------------------------- INTERNO
 
 func _recompute_current_zone() -> void:
@@ -180,6 +194,7 @@ func _set_current_zone(zone: CameraZone3D) -> void:
 	current_zone = zone
 	zone_changed.emit(previous, zone)
 	_refresh_letterbox()
+	_refresh_indoor()
 
 
 ## Recalcula si corresponden las barras 4:3 y avisa SOLO cuando cambia.
@@ -205,3 +220,14 @@ func _refresh_letterbox() -> void:
 	_letterbox_active = wanted
 	_letterbox_duration = duration
 	letterbox_changed.emit(wanted, duration)
+
+
+## Recalcula si la zona actual es un interior y avisa SOLO cuando cambia.
+func _refresh_indoor() -> void:
+	var wanted: bool = is_instance_valid(current_zone) and current_zone.force_4_3 and current_zone.indoor_audio
+	if wanted == _indoor_active:
+		return
+	_indoor_active = wanted
+	if wanted:
+		_indoor_duration = current_zone.aspect_transition_duration
+	indoor_changed.emit(wanted, _indoor_duration)

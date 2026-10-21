@@ -16,7 +16,7 @@ decide qué suena en ese evento**. Nadie toca el trabajo del otro.
 
 | Pieza | Qué es | Dónde |
 |---|---|---|
-| **Buses** | Mezcla: `Master → Music, SFX → (Ambience, UI, Reverb)`. Los sliders de Opciones controlan Master, Music y SFX. | `Resources/audio/default_bus_layout.tres`, `AudioBuses` |
+| **Buses** | Mezcla: `Master → Music, SFX → (Ambience → Rain, UI, Reverb)`. Los sliders de Opciones controlan Master, Music y SFX. | `Resources/audio/default_bus_layout.tres`, `AudioBuses` |
 | **SoundEvent** | La "ficha" de un sonido: audios, bus, volumen, pitch, 3D, loop, límite de voces. Es un archivo `.tres`. | `Resources/audio/events/<categoria>/<id>.tres` |
 | **SoundIds** | Constantes con los ids (`SoundIds.PLAYER_JUMP`). Evitan errores de tipeo. | `Scripts/audio/sound_ids.gd` |
 | **Audio** | Autoload que reproduce: pool de reproductores, variaciones, cooldown, límite de voces. | `Scripts/audio/audio_manager.gd` |
@@ -91,7 +91,7 @@ Scripts/audio/          audio_manager, sound_event, sound_handle, sound_emitter,
 | Campo | Para qué |
 |---|---|
 | `Streams` | Los audios. Con varios, elige uno al azar cada vez (sin repetir el anterior). |
-| `Bus` | SFX, UI, Ambience, Music o Reverb. Define qué slider lo controla. |
+| `Bus` | SFX, UI, Ambience, Music, Reverb o Rain (solo la lluvia: se aleja y se filtra en interiores). Define qué slider lo controla. |
 | `Volume Db` / `Volume Variation Db` | Volumen base y cuánto varía al azar. |
 | `Pitch` / `Pitch Variation` | Tono base y variación (0.05 = ±5%): hace que repetidos suenen distinto. |
 | `Spatial`, `Max Distance`, `Unit Size`, `Attenuation` | Sonido 3D: a qué distancia se apaga (0 = nunca), qué tan rápido y con qué curva. |
@@ -140,3 +140,12 @@ ajustan en las escenas sino en `Resources/audio/events/`.
 
 **Conectar las llamadas** del resto de los sonidos en los scripts. La columna "Se dispara" de
 `lista_de_sonidos.txt` indica archivo y función de cada una.
+
+## Lluvia en interiores
+
+La lluvia (`amb_rain_loop`) sale por el bus `Rain`, que cuelga de `Ambience` y lleva un filtro pasa-bajos
+apagado. Al entrar a una zona de cámara con `force_4_3` (el 4:3 es la marca visual de "estamos adentro de una
+construcción") el `CameraDirector` emite `indoor_changed` y `Audio` hace un fundido: baja el volumen y cierra el
+filtro para que la lluvia suene lejana y amortiguada; al salir vuelve a la normalidad. Los valores están como
+constantes `RAIN_*` al principio de `audio_manager.gd`. Una zona 4:3 que NO sea un interior (una cinemática al
+aire libre) se marca desmarcando `indoor_audio` en la zona. El modo fusil usa 4:3 pero no cuenta como interior.

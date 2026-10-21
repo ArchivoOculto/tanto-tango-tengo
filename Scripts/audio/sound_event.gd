@@ -19,8 +19,8 @@ class_name SoundEvent
 
 @export_group("Mezcla")
 ## Bus por el que sale (ver AudioBuses). Los sliders de Opciones controlan Master, Music y SFX
-## (Ambience, UI y Reverb cuelgan de SFX).
-@export_enum("SFX", "UI", "Ambience", "Music", "Reverb") var bus: String = "SFX"
+## (Ambience, UI y Reverb cuelgan de SFX; Rain cuelga de Ambience y es solo para la lluvia, que se filtra en interiores).
+@export_enum("SFX", "UI", "Ambience", "Music", "Reverb", "Rain") var bus: String = "SFX"
 @export_range(-40.0, 12.0, 0.1, "suffix:dB") var volume_db: float = 0.0
 ## Variación aleatoria de volumen en cada disparo (± dB).
 @export_range(0.0, 12.0, 0.1, "suffix:dB") var volume_variation_db: float = 0.0

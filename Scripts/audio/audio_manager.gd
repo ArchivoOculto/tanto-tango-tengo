@@ -28,6 +28,13 @@ const POOL_SIZE_2D: int = 12
 const POOL_SIZE_3D: int = 20
 const SILENT_DB: float = -60.0
 
+# LLUVIA EN INTERIORES: al entrar a un interior (zona 4:3, ver CameraDirector.indoor_changed) la lluvia se aleja
+# (baja de volumen) y se apaga el agudo (pasa-bajos), como oída a través de paredes y techo. Valores para tocar:
+const RAIN_INDOOR_VOLUME_DB: float = -10.0 ## cuánto baja la lluvia dentro (dB)
+const RAIN_INDOOR_CUTOFF_HZ: float = 1100.0 ## frecuencia de corte dentro (más baja = más amortiguada)
+const RAIN_OPEN_CUTOFF_HZ: float = 20500.0 ## corte al aire libre (el máximo del filtro: no se nota)
+const RAIN_MIN_FADE: float = 0.4 ## duración mínima del cambio (s), así nunca es un corte seco
+
 ## Muestra en la consola cada sonido que se dispara (útil para depurar qué suena y cuándo).
 @export var debug_log: bool = false
 
@@ -56,12 +63,19 @@ var _music_index: int = 0
 var _music_tween: Tween
 var _music_id: StringName = &""
 
+var _rain_bus: int = -1
+var _rain_filter: AudioEffectLowPassFilter
+var _rain_muffle: float = 0.0 ## 0 = al aire libre, 1 = lluvia de interior
+var _rain_tween: Tween
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS # los sonidos de menú/pausa suenan con el juego en pausa
 	_build_pools()
 	_music_players = [_make_music_player(), _make_music_player()]
 	load_events()
+	_setup_rain_bus()
+	CameraDirector.indoor_changed.connect(_on_indoor_changed)
 
 
 func _process(_delta: float) -> void:
@@ -184,6 +198,49 @@ func stop_music(fade_time: float = 1.0) -> void:
 		for player in _music_players:
 			player.stop()
 	)
+
+
+# ---------------------------------------------------------------- LLUVIA EN INTERIORES
+
+## Pasa la lluvia a "interior" (alejada y filtrada) o al aire libre, con un fundido de 'duration' segundos
+## (mínimo RAIN_MIN_FADE; 0 = al instante). Lo dispara solo el CameraDirector al entrar/salir de un interior,
+## pero se puede llamar a mano (ej: una escena que transcurre adentro sin zona 4:3).
+func set_indoor_mix(indoor: bool, duration: float = 0.8) -> void:
+	if _rain_tween and _rain_tween.is_valid():
+		_rain_tween.kill()
+	var target: float = 1.0 if indoor else 0.0
+	if duration <= 0.0:
+		_apply_rain_muffle(target)
+		return
+	_rain_tween = create_tween()
+	_rain_tween.tween_method(_apply_rain_muffle, _rain_muffle, target, maxf(duration, RAIN_MIN_FADE))
+
+
+func _on_indoor_changed(active: bool, duration: float) -> void:
+	set_indoor_mix(active, duration)
+
+
+func _setup_rain_bus() -> void:
+	_rain_bus = AudioServer.get_bus_index(AudioBuses.RAIN)
+	if _rain_bus < 0:
+		push_warning("Audio: falta el bus 'Rain' en el layout de buses; la lluvia no se filtrará en interiores.")
+		return
+	_rain_filter = AudioServer.get_bus_effect(_rain_bus, 0) as AudioEffectLowPassFilter
+	if _rain_filter == null:
+		push_warning("Audio: el bus 'Rain' debe tener un AudioEffectLowPassFilter como primer efecto.")
+	_apply_rain_muffle(0.0)
+
+
+## 'amount': 0 = aire libre, 1 = interior. El corte se mueve en escala logarítmica (así suena parejo).
+func _apply_rain_muffle(amount: float) -> void:
+	_rain_muffle = amount
+	if _rain_bus < 0:
+		return
+	AudioServer.set_bus_volume_db(_rain_bus, lerpf(0.0, RAIN_INDOOR_VOLUME_DB, amount))
+	if _rain_filter != null:
+		# Al aire libre el filtro se apaga del todo: la lluvia suena exactamente igual que sin él
+		AudioServer.set_bus_effect_enabled(_rain_bus, 0, amount > 0.001)
+		_rain_filter.cutoff_hz = exp(lerpf(log(RAIN_OPEN_CUTOFF_HZ), log(RAIN_INDOOR_CUTOFF_HZ), amount))
 
 
 # ---------------------------------------------------------------- CARGA DE EVENTOS
