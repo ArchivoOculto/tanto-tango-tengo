@@ -153,6 +153,12 @@ func is_first_person() -> bool:
 	return first_person_camera != null
 
 
+## true mientras las barras 4:3 estén puestas (o en camino de ponerse). La GameCamera lo usa para saber
+## qué parte de la imagen se ve de verdad y no dejar al jugador escondido detrás de una barra.
+func is_letterbox_active() -> bool:
+	return _letterbox_active
+
+
 # ---------------------------------------------------------------- INTERNO
 
 func _recompute_current_zone() -> void:
