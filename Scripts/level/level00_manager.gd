@@ -72,7 +72,7 @@ enum ForcedGenre { RANDOM, TANGO, FOLKLORE, ROCK }
 ## RANDOM = se sortea en cada partida. Cualquier otro valor lo fuerza (útil para probar).
 @export var forced_genre: ForcedGenre = ForcedGenre.RANDOM
 ## Segundos de música correcta que hay que completar para terminar el nivel (la barra de carga).
-@export_range(1.0, 600.0, 1.0, "or_greater", "suffix:s") var progress_duration: float = 90.0
+@export_range(1.0, 600.0, 1.0, "or_greater", "suffix:s") var progress_duration: float = 60.0
 
 @export_group("Enemigos")
 ## OBJETO que atacan los enemigos en el estado ATTACK_OBJECT. Vacío = la radio. (Cada enemigo puede tener

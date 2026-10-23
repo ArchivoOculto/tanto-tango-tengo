@@ -28,7 +28,7 @@ var is_open: bool = false
 var viewer: ObjectViewer
 var _selected: int = 0
 var _frozen_player: Node = null
-var _rows: Array[Label] = []
+var _rows: Array[Control] = []
 var _action_rows: Array[Label] = [] ## Filas de las acciones del ítem seleccionado
 var _current_actions: Array[ObjectAction] = []
 var _current_entry: InventoryEntry
@@ -65,28 +65,30 @@ func _ready() -> void:
 	viewer.name = "ObjectViewer"
 	add_child(viewer)
 	viewer.setup(_sub_viewport, _camera, _pivot, _view_3d)
-	_setup_hint_label()
+	_setup_text_column()
 
 	ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cerrar", 2)
 	ButtonPrompt.setup_row(_rotate_hint, _rotate_hint.get_node("Icon"), "rotar objeto", 8)
 
 
-## La descripción pasa a una caja vertical, en el mismo lugar y con el mismo ancho, para que la pista en amarillo
-## quede justo debajo del texto sin importar cuántas líneas ocupe.
-func _setup_hint_label() -> void:
-	var parent: Node = _description_label.get_parent()
-	var index: int = _description_label.get_index()
+## Nombre, descripción y pista pasan a UNA columna que fluye, en el mismo lugar y con el ancho que tenía el
+## nombre. Así un título largo pasa a dos líneas (antes se cortaba contra el borde de la pantalla) y la
+## descripción y la pista siempre quedan justo debajo, sin pisarse, sin importar cuántas líneas ocupen.
+func _setup_text_column() -> void:
+	var parent: Node = _name_label.get_parent()
 	var box := VBoxContainer.new()
-	box.name = "DescriptionBox"
+	box.name = "TextColumn"
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", MenuInfoPanel.TEXT_SEPARATION)
-	box.position = _description_label.position
-	box.size = _description_label.size
+	box.position = _name_label.position
+	box.size = Vector2(_name_label.size.x, 0.0)
 	parent.add_child(box)
-	parent.move_child(box, index)
-	_description_label.reparent(box, false)
-	_description_label.custom_minimum_size = Vector2.ZERO # que mida lo que ocupa el texto, no un alto fijo
-	_description_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.move_child(box, _name_label.get_index())
+	for label: Label in [_name_label, _description_label]:
+		label.reparent(box, false)
+		label.custom_minimum_size = Vector2.ZERO # que mida lo que ocupa el texto, no un alto fijo
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_hint_label = MenuInfoPanel.make_hint_label(_description_label)
 	box.add_child(_hint_label)
 
@@ -266,6 +268,15 @@ func _move_selection(step: int) -> void:
 	_refresh()
 
 
+func _make_row_label(text: String, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 23)
+	label.add_theme_constant_override("outline_size", 10)
+	label.add_theme_color_override("font_color", color)
+	return label
+
+
 ## Reconstruye la lista y la vista previa a partir del Inventory.
 func _refresh() -> void:
 	var entries: Array[InventoryEntry] = _visible_entries()
@@ -276,11 +287,20 @@ func _refresh() -> void:
 	_rows.clear()
 
 	for i in entries.size():
-		var row := Label.new()
-		row.text = ("▸ " if i == _selected else "   ") + entries[i].item.get_label()
-		row.add_theme_font_size_override("font_size", 23)
-		row.add_theme_constant_override("outline_size", 10)
-		row.add_theme_color_override("font_color", COLOR_SELECTED if i == _selected else COLOR_NORMAL)
+		# Flecha + nombre en dos etiquetas: si el nombre es largo pasa a otra línea (en vez de pisar la vista previa)
+		# y esa segunda línea queda alineada con el nombre, no debajo de la flecha.
+		var color: Color = COLOR_SELECTED if i == _selected else COLOR_NORMAL
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 0)
+		var marker := _make_row_label("▸ " if i == _selected else "", color)
+		marker.autowrap_mode = TextServer.AUTOWRAP_OFF
+		marker.size_flags_vertical = Control.SIZE_SHRINK_BEGIN # una línea de alto, arriba: apunta a la primera línea del nombre
+		marker.custom_minimum_size.x = ButtonPrompt.text_width(marker, "▸ ") # mismo hueco con o sin flecha
+		var title := _make_row_label(entries[i].item.get_label(), color)
+		title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(marker)
+		row.add_child(title)
 		_list.add_child(row)
 		_rows.append(row)
 

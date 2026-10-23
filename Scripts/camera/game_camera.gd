@@ -22,6 +22,9 @@ class_name GameCamera
 ##    cuerpo del jugador (ver arriba), que es una cuenta geométrica y no usa la física.
 ##  - SIN SALTOS DE MIRADA: no hay anticipación por velocidad (look-ahead) que mueva la cámara al arrancar
 ##    o frenar, y el foco nunca se "teletransporta" al cambiar de anchor.
+##  - REENFOQUE AL CAMBIAR DE ANCHOR: al pasar a una zona con otro anchor, el foco pasa suavemente al torso del
+##    jugador y se queda CLAVADO ahí (jugador exactamente en el centro) hasta que la cámara termina de llegar al
+##    anchor nuevo; recién entonces vuelve la zona muerta. No se aplica a zonas con 'look_target' ni forzadas.
 ##  - JUGADOR SIEMPRE EN CUADRO: la zona muerta se mide en PANTALLA (a la profundidad real del jugador, no a la del
 ##    foco) y sobre el cuerpo real (cápsula de colisión: pies, torso y cabeza), descontando las barras 4:3. Además hay
 ##    un margen duro ('frame_margin'): si el cuerpo lo pasa, la cámara gira al instante. Se desactiva solo en
@@ -50,6 +53,14 @@ class_name GameCamera
 ## posible del objetivo sin perderlo). Las zonas forzadas (cinemáticas) nunca lo garantizan.
 @export var keep_player_framed_on_look_target: bool = true
 
+@export_group("Reenfoque al cambiar de anchor")
+## Al cambiar de anchor, centra al jugador en pantalla hasta que la cámara llega; después vuelve la zona muerta.
+@export var recenter_on_anchor_change: bool = true
+## Cuánto tarda el foco en pasar de donde estaba al centro del jugador (s). El paso es suave: arranca y termina sin brusquedad.
+@export_range(0.1, 3.0, 0.05, "suffix:s") var recenter_blend_time: float = 0.7
+## Tope de duración del reenfoque (s), por si la cámara nunca llegara a asentarse en el anchor.
+@export_range(1.0, 20.0, 0.5, "suffix:s") var recenter_max_duration: float = 6.0
+
 @export_group("Viaje entre anchors")
 ## Velocidad máxima de la cámara al viajar (m/s). 0 = sin límite.
 @export_range(0.0, 50.0, 0.1, "suffix:m/s") var max_travel_speed: float = 6.0
@@ -71,12 +82,20 @@ const LETTERBOX_ASPECT: float = 4.0 / 3.0 ## mismo valor que LetterboxController
 const NEAR_DEPTH: float = 0.05 ## por debajo de esta profundidad un punto se considera "pegado/detrás" de la cámara
 const MIN_FOCUS_DISTANCE: float = 0.1
 const FRAME_GUARD_ITERATIONS: int = 4
+const ANCHOR_SAME_DISTANCE: float = 0.05 ## dos anchors más cerca que esto cuentan como el mismo (no hay reenfoque)
+const RECENTER_ARRIVE_DISTANCE: float = 0.05 ## a esta distancia del anchor la cámara se considera "llegada"
+const RECENTER_ARRIVE_SPEED: float = 0.02 ## ...o si va más lento que esto (m/s), aunque algo la mantenga apartada
 
 var _player_height: float = 1.8
 var _focus: Vector3 = Vector3.ZERO ## punto al que apunta la cámara (suavizado)
 var _lead: Spring = Spring.new() ## 1.er resorte: va hacia el anchor (con velocidad máxima)
 var _follow: Spring = Spring.new() ## 2.º resorte: la cámara va hacia el 1.º (de acá sale la posición real)
 var _last_known_anchor_pos: Vector3 = Vector3.ZERO
+
+var _tracked_zone_id: int = 0 ## zona del cuadro anterior (para detectar el cambio de anchor)
+var _recentering: bool = false
+var _recenter_time: float = 0.0
+var _recenter_start_focus: Vector3 = Vector3.ZERO
 
 var _player_shape: CollisionShape3D ## cápsula de colisión del jugador (define dónde están sus pies y su cabeza)
 var _player_body: BodyCapsule = BodyCapsule.new() ## cápsula del jugador, recalculada en cada cuadro
@@ -150,6 +169,12 @@ func _process(delta: float) -> void:
 	# El orden importa: primero se decide DÓNDE está la cámara y recién después A DÓNDE mira. Así la zona muerta
 	# y el encuadre se miden con la posición final de este cuadro (antes se medía con la del cuadro anterior).
 
+	# Cambio de zona: se detecta ANTES de actualizar el último anchor conocido, para comparar contra el anterior
+	var zone_id: int = zone.get_instance_id() if zone != null else 0
+	if zone_id != _tracked_zone_id:
+		_tracked_zone_id = zone_id
+		_on_zone_changed(zone)
+
 	# --- 1. POSICIÓN (dos resortes en cascada hacia el anchor) ---
 	var target_position: Vector3
 	var smoothing: float = default_smoothing
@@ -176,6 +201,8 @@ func _process(delta: float) -> void:
 		# Zona con objetivo fijo: gira suavemente hacia él
 		var rate: float = 1.0 - exp(-look_target_speed * delta)
 		_focus = _focus.lerp(zone.look_target.global_position, rate)
+	elif _recentering:
+		_update_recenter(delta, target_position)
 	else:
 		_follow_player_with_deadzone(delta)
 
@@ -201,6 +228,8 @@ func snap_to_zone(zone: CameraZone3D) -> void:
 	_lead.reset(target_position)
 	_follow.reset(target_position)
 	global_position = target_position
+	_tracked_zone_id = zone.get_instance_id()
+	_recentering = false # el warp ya deja al jugador en el centro: no hace falta reenfocar
 
 	var has_look_target: bool = is_instance_valid(zone.look_target)
 	if player:
@@ -302,6 +331,45 @@ func _shift_focus(view: Transform3D, screen_shift: Vector2, tangents: Vector2) -
 	var distance: float = maxf(_focus.distance_to(global_position), MIN_FOCUS_DISTANCE)
 	_focus += view.basis.x * (screen_shift.x * distance * tangents.x)
 	_focus += view.basis.y * (screen_shift.y * distance * tangents.y)
+
+
+# ---------------------------------------------------------------- REENFOQUE
+
+## Se llama una vez al pasar a otra zona (o a ninguna).
+func _on_zone_changed(zone: CameraZone3D) -> void:
+	if zone == null:
+		return # sin zona la cámara sigue yendo al último anchor: si había un reenfoque en curso, continúa
+	if is_instance_valid(zone.look_target):
+		_recentering = false # esta zona mira a un objetivo, no al jugador
+		return
+	if not recenter_on_anchor_change or CameraDirector.has_forced_zone():
+		return # las cinemáticas (zonas forzadas) deciden su propio encuadre
+	if not is_instance_valid(zone.camera_anchor):
+		return
+	if zone.camera_anchor.global_position.distance_to(_last_known_anchor_pos) < ANCHOR_SAME_DISTANCE:
+		return # mismo anchor: la cámara no se mueve, no hay nada que reenfocar
+	_recentering = true
+	_recenter_time = 0.0
+	_recenter_start_focus = _focus # si ya había uno en curso, el nuevo parte desde donde está mirando ahora
+
+
+## Mientras dura el reenfoque el foco ES el torso del jugador (centrado exacto): primero se acerca con una curva
+## suave (sin saltos de giro) y después lo sigue pegado hasta que la cámara llega al anchor. Al terminar el foco ya
+## está en el jugador, así que la zona muerta retoma desde el centro sin ningún salto.
+func _update_recenter(delta: float, anchor_position: Vector3) -> void:
+	_recenter_time += delta
+	var t: float = clampf(_recenter_time / maxf(recenter_blend_time, 0.01), 0.0, 1.0)
+	var weight: float = t * t * (3.0 - 2.0 * t) # smoothstep: velocidad de giro cero al arrancar y al llegar
+	_focus = _recenter_start_focus.lerp(_player_focus_point(), weight)
+
+	if t < 1.0:
+		return
+	# El jugador ya está centrado: se termina cuando la cámara llegó (o se agotó el tope)
+	var lead_arrived: bool = _lead.position.distance_to(anchor_position) < RECENTER_ARRIVE_DISTANCE
+	var follow_arrived: bool = _follow.position.distance_to(_lead.position) < RECENTER_ARRIVE_DISTANCE \
+		or _follow.velocity.length() < RECENTER_ARRIVE_SPEED
+	if (lead_arrived and follow_arrived) or _recenter_time >= recenter_max_duration:
+		_recentering = false
 
 
 # ---------------------------------------------------------------- FOCO

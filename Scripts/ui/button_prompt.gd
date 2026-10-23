@@ -36,3 +36,26 @@ static func place_icon(label: Label, icon: AnimatedSprite2D, frame: int) -> void
 	var width: float = label.offset_right - label.offset_left
 	icon.frame = frame
 	icon.position.x = (width - full) * 0.5 + prefix + blank * 0.5
+
+
+## Como make_text pero con varios huecos seguidos: "(     )(     ) texto" (ej: dos gatillos para un mismo gesto).
+static func make_text_multi(text: String, count: int) -> String:
+	var slots: String = ""
+	for i in count:
+		slots += "(%s)" % BLANK
+	return "%s %s" % [slots, text]
+
+
+## Igual que setup_row pero con varios íconos en la misma fila ('icons' y 'frames' van en el mismo orden).
+static func setup_row_icons(label: Label, icons: Array[AnimatedSprite2D], text: String, frames: Array[int], center_x: float = -20.0) -> void:
+	label.text = make_text_multi(text, icons.size())
+	var full: float = text_width(label, label.text)
+	var width: float = ceilf(full) + 4.0
+	label.offset_left = center_x - width * 0.5
+	label.offset_right = center_x + width * 0.5
+	var prefix: float = text_width(label, "(")
+	var blank: float = text_width(label, BLANK)
+	var slot: float = text_width(label, "(%s)" % BLANK)
+	for i in icons.size():
+		icons[i].frame = frames[i]
+		icons[i].position.x = (width - full) * 0.5 + slot * i + prefix + blank * 0.5

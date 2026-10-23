@@ -22,12 +22,13 @@ const HINT_COLOR: Color = Color(1.0, 0.9, 0.2)
 const VIEWER_SHIFT_X: float = 165.0
 
 # Columna de texto, a la izquierda (relativa al centro de la pantalla; la imagen base mide 845 x 480).
-# Queda DENTRO del área visible con las barras 4:3 (que tapan los ~102 px de cada costado): empieza en x = 112,
-# así los márgenes quedan casi simétricos (112 a la izquierda del texto, 133 a la derecha del visor).
-# Su borde derecho (112 + 330 = 442) deja ~20 px hasta el borde izquierdo del visor (462).
+# Queda DENTRO del área visible con las barras 4:3 (que tapan los ~102 px de cada costado) y con aire a la
+# izquierda: empieza en x = 150, o sea ~48 px de margen contra la barra (y 150 contra el borde en 16:9). El
+# visor deja ~30 px contra la barra derecha, así que los márgenes quedan parejos.
+# Su borde derecho (150 + 276 = 426) deja ~36 px hasta el borde izquierdo del visor (462).
 # Arriba queda alineada con el borde superior del visor (-125).
-const TEXT_OFFSET: Vector2 = Vector2(-310.5, -125.0)
-const TEXT_SIZE: Vector2 = Vector2(330.0, 250.0)
+const TEXT_OFFSET: Vector2 = Vector2(-272.5, -125.0)
+const TEXT_SIZE: Vector2 = Vector2(276.0, 250.0)
 const TEXT_SEPARATION: int = 10 ## espacio entre nombre, descripción y pista
 
 var _name_label: Label
