@@ -5,16 +5,19 @@ extends Node
 ##
 ##  - Volumen por bus (Master, Music, SFX... ver AudioBuses), de 0.0 a 1.0 (lineal).
 ##  - Pantalla completa.
+##  - Filtro CRT (ver ScreenFX).
 ##
-## Los sliders del menú de opciones solo llaman a set_volume() / set_fullscreen().
+## Los controles del menú de opciones solo llaman a set_volume() / set_fullscreen() / set_crt_filter().
 
 signal volume_changed(bus: StringName, linear: float)
+signal crt_filter_changed(enabled: bool)
 
 const SETTINGS_PATH: String = "user://settings.cfg"
 const MUTE_THRESHOLD: float = 0.001
 
 var _volumes: Dictionary = {}
 var _fullscreen: bool = false
+var _crt_filter: bool = true
 
 
 func _ready() -> void:
@@ -47,6 +50,16 @@ func set_fullscreen(enabled: bool) -> void:
 	_save()
 
 
+func is_crt_filter() -> bool:
+	return _crt_filter
+
+
+func set_crt_filter(enabled: bool) -> void:
+	_crt_filter = enabled
+	crt_filter_changed.emit(enabled)
+	_save()
+
+
 func _apply_volume(bus_name: StringName, linear: float) -> void:
 	var bus: int = AudioServer.get_bus_index(bus_name)
 	if bus < 0:
@@ -67,6 +80,7 @@ func _load() -> void:
 	for entry: Array in AudioBuses.OPTION_SLIDERS:
 		_volumes[entry[0]] = float(config.get_value("audio", String(entry[0]), 1.0))
 	_fullscreen = bool(config.get_value("video", "fullscreen", false))
+	_crt_filter = bool(config.get_value("video", "crt_filter", true))
 
 
 func _save() -> void:
@@ -74,4 +88,5 @@ func _save() -> void:
 	for bus: StringName in _volumes:
 		config.set_value("audio", String(bus), _volumes[bus])
 	config.set_value("video", "fullscreen", _fullscreen)
+	config.set_value("video", "crt_filter", _crt_filter)
 	config.save(SETTINGS_PATH)

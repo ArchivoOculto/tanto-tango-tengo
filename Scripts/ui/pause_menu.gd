@@ -59,6 +59,7 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if is_open and is_inside_tree():
 		get_tree().paused = false # nunca dejar el juego trabado en pausa
+		Audio.set_menu_muffle(&"pause", false)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -98,8 +99,10 @@ func open() -> void:
 	_mouse_mode_before = Input.mouse_mode
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	get_tree().paused = true
+	Audio.set_menu_muffle(&"pause", true)
 	_show_panel(InfoPanel.NONE)
 	visible = true
+	UiJuice.pop_in_children(self, [&"Dim"]) # el fondo no se anima: dejaría ver los bordes
 	_continue_button.grab_focus()
 
 
@@ -110,6 +113,7 @@ func close() -> void:
 	_inventory_open = false
 	visible = false
 	get_tree().paused = false
+	Audio.set_menu_muffle(&"pause", false)
 	Input.mouse_mode = _mouse_mode_before
 	# El botón que confirmó "continuar" no debe contar como un ataque o salto al volver al juego
 	GameplayInput.consume_held_actions()

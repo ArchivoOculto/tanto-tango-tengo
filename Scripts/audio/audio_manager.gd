@@ -35,6 +35,14 @@ const RAIN_INDOOR_CUTOFF_HZ: float = 1100.0 ## frecuencia de corte dentro (más 
 const RAIN_OPEN_CUTOFF_HZ: float = 20500.0 ## corte al aire libre (el máximo del filtro: no se nota)
 const RAIN_MIN_FADE: float = 0.4 ## duración mínima del cambio (s), así nunca es un corte seco
 
+# MENÚS (inventario y pausa): mientras alguno está abierto la lluvia se amortigua como en un interior (mismos valores
+# RAIN_INDOOR_*, y gana el efecto más fuerte de los dos) y la música baja y pierde agudos. La música no se toca
+# con el volumen del bus (lo manda el slider de opciones): usa un filtro y un amplificador propios, que se
+# agregan al bus al iniciar.
+const MENU_MUFFLE_FADE: float = 0.25 ## duración del cambio al abrir/cerrar un menú (s)
+const MENU_MUSIC_VOLUME_DB: float = -6.0 ## cuánto baja la música con un menú abierto (dB)
+const MENU_MUSIC_CUTOFF_HZ: float = 1800.0 ## frecuencia de corte de la música con un menú abierto
+
 ## Muestra en la consola cada sonido que se dispara (útil para depurar qué suena y cuándo).
 @export var debug_log: bool = false
 
@@ -68,6 +76,15 @@ var _rain_filter: AudioEffectLowPassFilter
 var _rain_muffle: float = 0.0 ## 0 = al aire libre, 1 = lluvia de interior
 var _rain_tween: Tween
 
+var _menu_sources: Dictionary = {} # StringName -> true: menús abiertos que piden amortiguar
+var _menu_muffle: float = 0.0 ## 0 = juego normal, 1 = con un menú abierto
+var _menu_tween: Tween
+var _music_bus: int = -1
+var _music_filter: AudioEffectLowPassFilter
+var _music_filter_index: int = -1
+var _music_amp: AudioEffectAmplify
+var _music_amp_index: int = -1
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS # los sonidos de menú/pausa suenan con el juego en pausa
@@ -75,7 +92,10 @@ func _ready() -> void:
 	_music_players = [_make_music_player(), _make_music_player()]
 	load_events()
 	_setup_rain_bus()
+	_setup_music_duck()
 	CameraDirector.indoor_changed.connect(_on_indoor_changed)
+	Inventory.menu_opened.connect(set_menu_muffle.bind(&"inventory", true))
+	Inventory.menu_closed.connect(set_menu_muffle.bind(&"inventory", false))
 
 
 func _process(_delta: float) -> void:
@@ -234,13 +254,63 @@ func _setup_rain_bus() -> void:
 ## 'amount': 0 = aire libre, 1 = interior. El corte se mueve en escala logarítmica (así suena parejo).
 func _apply_rain_muffle(amount: float) -> void:
 	_rain_muffle = amount
+	_refresh_rain_bus()
+
+
+## Aplica al bus de lluvia lo más fuerte entre el interior y el menú abierto.
+func _refresh_rain_bus() -> void:
 	if _rain_bus < 0:
 		return
+	var amount: float = maxf(_rain_muffle, _menu_muffle)
 	AudioServer.set_bus_volume_db(_rain_bus, lerpf(0.0, RAIN_INDOOR_VOLUME_DB, amount))
 	if _rain_filter != null:
 		# Al aire libre el filtro se apaga del todo: la lluvia suena exactamente igual que sin él
 		AudioServer.set_bus_effect_enabled(_rain_bus, 0, amount > 0.001)
 		_rain_filter.cutoff_hz = exp(lerpf(log(RAIN_OPEN_CUTOFF_HZ), log(RAIN_INDOOR_CUTOFF_HZ), amount))
+
+
+# ---------------------------------------------------------------- MENÚS ABIERTOS
+
+## Un menú (inventario, pausa...) pide amortiguar el audio o deja de pedirlo. 'source' identifica al menú: el
+## audio vuelve a la normalidad cuando ninguno lo pide, así dos menús abiertos a la vez (pausa + inventario)
+## no se pisan. Lo llaman solos el inventario (ver _ready) y PauseMenu.
+func set_menu_muffle(source: StringName, on: bool) -> void:
+	if on:
+		_menu_sources[source] = true
+	else:
+		_menu_sources.erase(source)
+	var target: float = 1.0 if not _menu_sources.is_empty() else 0.0
+	if _menu_tween and _menu_tween.is_valid():
+		_menu_tween.kill()
+	# Con el juego en pausa el tween tiene que seguir corriendo
+	_menu_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_menu_tween.tween_method(_apply_menu_muffle, _menu_muffle, target, MENU_MUFFLE_FADE)
+
+
+func _apply_menu_muffle(amount: float) -> void:
+	_menu_muffle = amount
+	_refresh_rain_bus()
+	if _music_bus < 0:
+		return
+	var active: bool = amount > 0.001
+	AudioServer.set_bus_effect_enabled(_music_bus, _music_filter_index, active)
+	AudioServer.set_bus_effect_enabled(_music_bus, _music_amp_index, active)
+	_music_filter.cutoff_hz = exp(lerpf(log(RAIN_OPEN_CUTOFF_HZ), log(MENU_MUSIC_CUTOFF_HZ), amount))
+	_music_amp.volume_db = lerpf(0.0, MENU_MUSIC_VOLUME_DB, amount)
+
+
+func _setup_music_duck() -> void:
+	_music_bus = AudioServer.get_bus_index(AudioBuses.MUSIC)
+	if _music_bus < 0:
+		push_warning("Audio: falta el bus 'Music' en el layout de buses; la música no se amortiguará en los menús.")
+		return
+	_music_filter = AudioEffectLowPassFilter.new()
+	_music_amp = AudioEffectAmplify.new()
+	AudioServer.add_bus_effect(_music_bus, _music_filter)
+	_music_filter_index = AudioServer.get_bus_effect_count(_music_bus) - 1
+	AudioServer.add_bus_effect(_music_bus, _music_amp)
+	_music_amp_index = AudioServer.get_bus_effect_count(_music_bus) - 1
+	_apply_menu_muffle(0.0)
 
 
 # ---------------------------------------------------------------- CARGA DE EVENTOS

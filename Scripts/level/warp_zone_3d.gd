@@ -54,6 +54,7 @@ func _on_body_entered(body: Node3D) -> void:
 func _start_warp(player: Node3D) -> void:
 	# Usamos set_deferred para evitar modificar la física durante la emisión de la señal body_entered
 	set_deferred("monitoring", false)
+	ScreenFX.warp_pulse(fade_duration) # el filtro CRT se distorsiona durante el fundido
 
 	if warp_mode == WarpMode.EXTERNAL_SCENE:
 		# La escena (y este nodo) se destruyen al cambiar de escena;

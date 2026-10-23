@@ -96,6 +96,21 @@ enum State { IDLE, ENTERING, AIMING, EXITING }
 @export var knockback_strength: float = 3.0
 @export var knockback_upward: float = 1.0
 
+@export_group("Impacto (game juice)")
+## Temblor al disparar: impulso de velocidad (rad/s) que se le da a un resorte de la cámara. El resorte lo
+## devuelve solo a su sitio (mismo tipo de resorte que GameCamera). Cabeceo hacia arriba, y guiñada y
+## balanceo al azar para que no sea siempre igual. 0 = sin temblor.
+@export var shake_pitch_kick: float = 1.1
+@export var shake_yaw_kick: float = 0.4
+@export var shake_roll_kick: float = 0.5
+## Qué tan rápido vuelve a su sitio (s). Menos = temblor más seco.
+@export var shake_smooth_time: float = 0.14
+## Hit-stop al acertarle a algo que reacciona (enemigo, farolito, radio, calaveras...): el juego casi se
+## congela este tiempo (segundos REALES). 0 = sin hit-stop.
+@export var hit_stop_duration: float = 0.07
+## Velocidad del juego durante el hit-stop (1 = normal, 0 = congelado del todo).
+@export_range(0.0, 1.0, 0.01) var hit_stop_time_scale: float = 0.05
+
 @export_group("Mirilla")
 @export var reticle_color: Color = Color(1, 1, 1, 0.95)
 @export var reticle_outline_color: Color = Color(0, 0, 0, 0.8)
@@ -103,6 +118,8 @@ enum State { IDLE, ENTERING, AIMING, EXITING }
 @export var reticle_gap: float = 3.0
 @export var reticle_tick_length: float = 5.0
 @export var reticle_fade_time: float = 0.2
+## Color al que se enciende la mirilla (y engorda) cuando el disparo acierta a algo que reacciona.
+@export var reticle_hit_color: Color = Color(1.0, 0.85, 0.3, 1.0)
 
 var _player: Player
 var _camera: Camera3D
@@ -120,6 +137,10 @@ var _pitch: float = 0.0
 var _yaw_center: float = 0.0
 var _cooldown_left: float = 0.0
 var _reticle_kick: float = 0.0 ## 0..1, se anima al disparar
+var _reticle_hit: float = 0.0 ## 0..1, se enciende al acertar
+var _shake: GameCamera.Spring = GameCamera.Spring.new() ## desvío de la cámara (cabeceo, guiñada, balanceo) en rad
+var _hit_stop_token: int = 0
+var _hit_stop_active: bool = false
 var _transition_time: float = 0.0
 var _exit_duration_now: float = 0.5
 var _exit_from: Transform3D
@@ -320,6 +341,7 @@ func _finish_enter(target: Transform3D) -> void:
 	_state = State.AIMING
 	_camera.global_transform = target
 	_camera.fov = field_of_view
+	_shake.reset(Vector3.ZERO)
 	_hide_head_props()
 	_show_reticle()
 	_capture_mouse()
@@ -337,9 +359,12 @@ func _process_aiming(delta: float) -> void:
 	if GameplayInput.just_pressed(&"rifle_shoot"):
 		_try_fire()
 
-	if _reticle_kick > 0.0:
+	if _reticle_kick > 0.0 or _reticle_hit > 0.0:
 		_reticle_kick = maxf(_reticle_kick - delta * 6.0, 0.0)
+		_reticle_hit = maxf(_reticle_hit - delta * 4.0, 0.0)
 		_reticle.queue_redraw()
+
+	_apply_shake(delta) # al final: el disparo de arriba usó la cámara limpia, sin el temblor del anterior
 
 
 ## El mouse apunta mientras se mantiene el modo fusil: se captura para poder girar sin límite de pantalla.
@@ -488,6 +513,7 @@ func _on_zone_forced(_zone: CameraZone3D) -> void:
 func _exit_tree() -> void:
 	# Por si el jugador se libera (cambio de escena / warp) con el modo activo.
 	_release_mouse()
+	_end_hit_stop() # nunca dejar el juego en cámara lenta
 	if _state != State.IDLE:
 		_state = State.IDLE
 		CameraDirector.exit_first_person()
@@ -556,6 +582,7 @@ func _try_fire() -> void:
 	_cooldown_left = fire_cooldown
 	_reticle_kick = 1.0
 	_reticle.queue_redraw()
+	_kick_camera()
 
 	var origin: Vector3 = _camera.global_position
 	var direction: Vector3 = -_camera.global_basis.z
@@ -571,17 +598,19 @@ func _try_fire() -> void:
 		return
 
 	var collider: Object = result.collider
-	_apply_hit(collider, direction)
+	if _apply_hit(collider, direction):
+		_on_hit_confirmed()
 	shot_fired.emit(result.position, collider)
 
 
 ## Sube por el árbol hasta encontrar quien sepa recibir daño, igual que WeaponHitbox.
-func _apply_hit(collider: Object, direction: Vector3) -> void:
+## Devuelve true si el disparo le dio a algo que reacciona (una pared no cuenta).
+func _apply_hit(collider: Object, direction: Vector3) -> bool:
 	var target: Node = collider as Node
 	while target and not target.has_method("take_hit") and not target.has_method("take_damage"):
 		target = target.get_parent()
 	if target == null or target.is_in_group("player"):
-		return
+		return false
 
 	if target.has_method("take_hit"):
 		target.take_hit(damage)
@@ -590,6 +619,53 @@ func _apply_hit(collider: Object, direction: Vector3) -> void:
 		var flat: Vector3 = Vector3(direction.x, 0.0, direction.z).normalized()
 		var knockback: Vector3 = flat * knockback_strength + Vector3.UP * knockback_upward
 		target.take_damage(damage, knockback)
+	return true
+
+
+# ---------------------------------------------------------------- GAME JUICE
+
+## Temblor del disparo: un empujón de velocidad al resorte; _apply_shake lo mueve y lo devuelve a su sitio.
+func _kick_camera() -> void:
+	_shake.velocity += Vector3(
+		shake_pitch_kick,
+		randf_range(-1.0, 1.0) * shake_yaw_kick,
+		randf_range(-1.0, 1.0) * shake_roll_kick)
+
+
+## Gira la cámara (ya colocada en la cabeza) según el desvío del resorte.
+func _apply_shake(delta: float) -> void:
+	_shake.step(Vector3.ZERO, shake_smooth_time, delta)
+	if _shake.position.length_squared() > 0.0000001:
+		_camera.global_basis = _camera.global_basis * Basis.from_euler(_shake.position)
+
+
+func _on_hit_confirmed() -> void:
+	_reticle_hit = 1.0
+	_reticle.queue_redraw()
+	_hit_stop()
+
+
+## Casi congela el juego un instante. El temporizador ignora la escala de tiempo (si no, la cámara lenta se
+## alargaría a sí misma). Va conectado, no con await, para que no falle si el nodo se libera a mitad.
+func _hit_stop() -> void:
+	if hit_stop_duration <= 0.0:
+		return
+	_hit_stop_token += 1
+	_hit_stop_active = true
+	Engine.time_scale = hit_stop_time_scale
+	get_tree().create_timer(hit_stop_duration, true, false, true).timeout.connect(
+			_on_hit_stop_timeout.bind(_hit_stop_token))
+
+
+func _on_hit_stop_timeout(token: int) -> void:
+	if token == _hit_stop_token: # si hubo otro impacto mientras tanto, él se encarga de terminar
+		_end_hit_stop()
+
+
+func _end_hit_stop() -> void:
+	if _hit_stop_active:
+		_hit_stop_active = false
+		Engine.time_scale = 1.0
 
 
 # ---------------------------------------------------------------- SETUP INTERNO
@@ -636,15 +712,16 @@ func _draw_reticle() -> void:
 	var spread: float = _reticle_kick * 4.0 # la mirilla "salta" un poco al disparar
 	var radius: float = reticle_radius + spread
 	var gap: float = reticle_gap + spread
-	var tick: float = reticle_tick_length
+	var tick: float = reticle_tick_length * (1.0 + _reticle_hit * 0.6) # al acertar: más brillante y más gruesa
+	var line_color: Color = reticle_color.lerp(reticle_hit_color, _reticle_hit)
 
 	# Contorno oscuro primero (para que se lea sobre fondos claros), luego el trazo claro.
 	for pass_index in 2:
-		var color: Color = reticle_outline_color if pass_index == 0 else reticle_color
-		var width: float = 3.0 if pass_index == 0 else 1.0
+		var color: Color = reticle_outline_color if pass_index == 0 else line_color
+		var width: float = (3.0 if pass_index == 0 else 1.0) + _reticle_hit
 		_reticle.draw_arc(center, radius, 0.0, TAU, 32, color, width, false)
 		for dir in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
 			_reticle.draw_line(center + dir * (radius + gap), center + dir * (radius + gap + tick), color, width)
 
 	_reticle.draw_circle(center, 1.5, reticle_outline_color)
-	_reticle.draw_circle(center, 0.8, reticle_color)
+	_reticle.draw_circle(center, 0.8, line_color)

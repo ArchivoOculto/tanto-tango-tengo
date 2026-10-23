@@ -9,7 +9,9 @@ class_name MenuBase
 ##  - "opciones" y "controles" solo MUESTRAN u OCULTAN su información en el recuadro (apretar el mismo
 ##    botón otra vez la oculta; apretar el otro cambia de panel). ○ / escape cierra el panel abierto.
 ##  - Opciones: un slider de volumen por bus (ver AudioBuses.OPTION_SLIDERS; sumar un bus ahí suma su
-##    slider solo) y pantalla completa. Los guarda GameSettings.
+##    slider solo), pantalla completa y filtro CRT (su fila se arma en código, copiando la de pantalla
+##    completa, así sirve para todos los menús). Los guarda GameSettings.
+##  - Al seleccionar un botón "salta" un poco y el recuadro de la derecha aparece con rebote (ver UiJuice).
 ##  - Controles: tabla acción / teclado y mouse / mando, leída del Input Map (siempre refleja los
 ##    controles reales), con los íconos de botón de los carteles de tutorial.
 ##
@@ -54,6 +56,7 @@ const KEY_NAMES: Dictionary = {
 
 var _current_panel: InfoPanel = InfoPanel.NONE
 var _sliders: Array[HSlider] = []
+var _crt_check: CheckButton
 var _selected_style: StyleBoxFlat
 
 
@@ -63,6 +66,7 @@ func _setup_menu(buttons: Array[Button]) -> void:
 	_build_sliders()
 	_build_controls_grid()
 	_fullscreen_check.set_pressed_no_signal(GameSettings.is_fullscreen())
+	_build_crt_row()
 
 	_options_button.pressed.connect(_toggle_panel.bind(InfoPanel.OPTIONS))
 	_controls_button.pressed.connect(_toggle_panel.bind(InfoPanel.CONTROLS))
@@ -81,6 +85,8 @@ func _show_panel(panel: InfoPanel) -> void:
 	_right_panel.visible = panel != InfoPanel.NONE
 	_options_panel.visible = panel == InfoPanel.OPTIONS
 	_controls_panel.visible = panel == InfoPanel.CONTROLS
+	if panel != InfoPanel.NONE:
+		UiJuice.pop_in(_right_panel, 0.96, 0.18) # el recuadro aparece (o cambia de panel) con un pequeño rebote
 	# Con mando o teclado las opciones se ajustan desde el primer slider
 	if panel == InfoPanel.OPTIONS and not _sliders.is_empty():
 		_sliders[0].grab_focus()
@@ -128,6 +134,22 @@ func _build_sliders() -> void:
 			value_label.text = "%d%%" % roundi(value * 100.0)
 		)
 		_sliders.append(slider)
+
+
+## Fila "filtro crt": copia la fila de pantalla completa (mismo estilo) y la pone justo debajo.
+func _build_crt_row() -> void:
+	var fullscreen_row: Control = _fullscreen_check.get_parent()
+	var row: Control = fullscreen_row.duplicate() as Control
+	row.name = "CrtRow"
+	(row.get_child(0) as Label).text = "filtro crt"
+	_crt_check = row.get_child(1) as CheckButton
+	_crt_check.unique_name_in_owner = false # la copia no debe competir con %FullscreenCheck
+	fullscreen_row.get_parent().add_child(row)
+	fullscreen_row.get_parent().move_child(row, fullscreen_row.get_index() + 1)
+
+	_crt_check.add_theme_stylebox_override("focus", _selected_style)
+	_crt_check.set_pressed_no_signal(GameSettings.is_crt_filter())
+	_crt_check.toggled.connect(GameSettings.set_crt_filter)
 
 
 # ---------------------------------------------------------------- CONTROLES
@@ -216,6 +238,7 @@ func _style_widgets(buttons: Array[Button]) -> void:
 		button.add_theme_constant_override("outline_size", 8)
 		button.add_theme_color_override("font_outline_color", Color.BLACK)
 		button.custom_minimum_size = Vector2(0, 38)
+		button.focus_entered.connect(func() -> void: UiJuice.pop(button, 0.07, Vector2(0.0, 0.5)))
 	_fullscreen_check.add_theme_stylebox_override("focus", _selected_style)
 
 

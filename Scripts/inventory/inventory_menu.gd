@@ -163,6 +163,7 @@ func open(from_pause: bool = false) -> bool:
 	if not Inventory.changed.is_connected(_refresh):
 		Inventory.changed.connect(_refresh)
 	_refresh()
+	_play_open_animation()
 	opened.emit()
 	return true
 
@@ -188,6 +189,7 @@ func open_picker(filter: Callable, title: String, confirm_label: String, confirm
 	if not Inventory.changed.is_connected(_refresh):
 		Inventory.changed.connect(_refresh)
 	_refresh()
+	_play_open_animation()
 	opened.emit()
 	return true
 
@@ -247,6 +249,22 @@ func close(silent: bool = false) -> void:
 			cancelled.call()
 
 
+# ---------------------------------------------------------------- GAME JUICE
+
+## Al abrirse, el contenido (todo menos el fondo oscuro) crece un poco con rebote.
+func _play_open_animation() -> void:
+	UiJuice.pop_in_children($Root, [&"Dim"])
+
+
+## Al cambiar de ítem: la fila elegida "salta" y la vista previa pega un saltito con rebote.
+func _play_select_animation() -> void:
+	if _selected >= 0 and _selected < _rows.size():
+		UiJuice.pop(_rows[_selected], 0.12, Vector2(0.0, 0.5))
+	if _preview.visible:
+		UiJuice.hop(_preview, 8.0)
+		UiJuice.pop(_preview, -0.1)
+
+
 # ---------------------------------------------------------------- LISTA Y VISTA PREVIA
 
 func get_selected_index() -> int:
@@ -266,6 +284,7 @@ func _move_selection(step: int) -> void:
 		return
 	_selected = posmod(_selected + step, count)
 	_refresh()
+	_play_select_animation()
 
 
 func _make_row_label(text: String, color: Color) -> Label:
