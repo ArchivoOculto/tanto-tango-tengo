@@ -29,6 +29,7 @@ Inventory="*res://Scripts/inventory/inventory.gd"
 GameSettings="*res://Scripts/core/game_settings.gd"
 Audio="*res://Scripts/audio/audio_manager.gd"
 ScreenFX="*res://Scripts/core/screen_fx.gd"
+InputDevice="*res://Scripts/ui/input_device.gd"
 
 [display]
 

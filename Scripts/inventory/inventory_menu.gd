@@ -23,6 +23,13 @@ signal closed
 const COLOR_SELECTED: Color = Color(1.0, 0.9, 0.2) ## el mismo amarillo del outline de los objetos
 const COLOR_NORMAL: Color = Color(1.0, 1.0, 1.0, 0.7)
 
+# Pistas de botones bajo el visor (posiciones relativas al centro de la pantalla base de 845 x 480)
+const HINT_STEP: float = 25.0 ## separación entre pistas
+const MIN_HINT_STEP: float = 20.0 ## separación mínima si hay tantas que no entrarían
+const HINT_BOTTOM_LIMIT: float = 238.0 ## borde inferior máximo de la última pista (la pantalla llega a 240)
+const NAV_HINT_LEFT: float = -382.0 ## x de "↑ ↓ elegir": alineado con la lista de ítems (x = 40 en pantalla)
+const NAV_HINT_TOP: float = 212.0 ## y de "↑ ↓ elegir": bajo la lista (y = 452 en pantalla)
+
 var is_open: bool = false
 
 var viewer: ObjectViewer
@@ -54,6 +61,7 @@ var _picker_confirm_row: Label
 @onready var _empty_label: Label = %EmptyLabel
 @onready var _close_hint: Label = %CloseHint
 @onready var _rotate_hint: Label = %RotateHint
+var _zoom_hint: Label ## "(L2)(R2) zoom": copia de la pista de rotar, se arma en código
 @onready var _nav_hint: Label = %NavHint
 @onready var _title_label: Label = $Root/Title
 
@@ -67,8 +75,21 @@ func _ready() -> void:
 	viewer.setup(_sub_viewport, _camera, _pivot, _view_3d)
 	_setup_text_column()
 
-	ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cerrar", 2)
-	ButtonPrompt.setup_row(_rotate_hint, _rotate_hint.get_node("Icon"), "rotar objeto", 8)
+	ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cerrar", InputGlyph.for_action(&"interact"))
+	ButtonPrompt.setup_row(_rotate_hint, _rotate_hint.get_node("Icon"), "rotar objeto", InputGlyph.stick_right())
+	_build_zoom_hint()
+
+
+## Pista de zoom de la vista previa 3D: copia la de rotar (mismo estilo) con dos íconos, y la acompaña en visibilidad.
+func _build_zoom_hint() -> void:
+	_zoom_hint = _rotate_hint.duplicate() as Label
+	_zoom_hint.name = "ZoomHint"
+	var icon_a: AnimatedSprite2D = _zoom_hint.get_node("Icon") as AnimatedSprite2D
+	var icon_b: AnimatedSprite2D = icon_a.duplicate() as AnimatedSprite2D
+	_zoom_hint.add_child(icon_b)
+	_rotate_hint.get_parent().add_child(_zoom_hint)
+	ButtonPrompt.setup_row_icons(_zoom_hint, [icon_a, icon_b], "zoom", InputGlyph.zoom())
+	_zoom_hint.visible = false
 
 
 ## Nombre, descripción y pista pasan a UNA columna que fluye, en el mismo lugar y con el ancho que tenía el
@@ -112,6 +133,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_open:
 		return
 
+	# Rueda del mouse: acerca / aleja la vista previa 3D
+	if event is InputEventMouseButton and _view_3d.visible and viewer.handle_wheel_event(event as InputEventMouseButton):
+		get_viewport().set_input_as_handled()
+		return
+
 	if _picker_active and _current_entry != null and event.is_action_pressed(_picker_confirm_action):
 		_confirm_picker()
 	elif event.is_action_pressed("interact"):
@@ -128,6 +154,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if is_open and _view_3d.visible:
 		viewer.rotate_with_stick(delta)
+		viewer.update_zoom(delta)
 
 
 # ---------------------------------------------------------------- ABRIR / CERRAR
@@ -201,14 +228,15 @@ func _set_picker_mode(active: bool, title: String = "", confirm_label: String = 
 		_picker_confirm_row = null
 	if active:
 		_title_label.text = title
-		ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cancelar", 2)
+		ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cancelar", InputGlyph.for_action(&"interact"))
 		_picker_confirm_row = _close_hint.duplicate() as Label
 		_picker_confirm_row.name = "PickerConfirm"
 		_close_hint.get_parent().add_child(_picker_confirm_row)
-		ButtonPrompt.setup_row(_picker_confirm_row, _picker_confirm_row.get_node("Icon"), confirm_label, confirm_icon_frame)
+		ButtonPrompt.setup_row(_picker_confirm_row, _picker_confirm_row.get_node("Icon"), confirm_label,
+				InputGlyph.for_action(_picker_confirm_action, confirm_icon_frame))
 	else:
 		_title_label.text = "inventario"
-		ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cerrar", 2)
+		ButtonPrompt.setup_row(_close_hint, _close_hint.get_node("Icon"), "cerrar", InputGlyph.for_action(&"interact"))
 		_picker_filter = Callable()
 		_picker_on_picked = Callable()
 		_picker_on_cancelled = Callable()
@@ -354,7 +382,8 @@ func _rebuild_action_rows() -> void:
 		var row: Label = _close_hint.duplicate() as Label
 		row.name = "Action_" + String(action.id)
 		_close_hint.get_parent().add_child(row)
-		ButtonPrompt.setup_row(row, row.get_node("Icon"), action.label, action.icon_frame)
+		ButtonPrompt.setup_row(row, row.get_node("Icon"), action.label,
+				InputGlyph.for_action(action.input_action, action.icon_frame))
 		_action_rows.append(row)
 		_current_actions.append(action)
 
@@ -367,14 +396,26 @@ func _layout_hints() -> void:
 	ordered.append_array(_action_rows)
 	if _rotate_hint.visible:
 		ordered.append(_rotate_hint)
+	_zoom_hint.visible = _rotate_hint.visible # el zoom va con la rotación: solo para objetos 3D
+	if _zoom_hint.visible:
+		ordered.append(_zoom_hint)
 	var y: float = _close_hint.offset_top
+	# Con muchas filas la última no puede salirse de la pantalla: se juntan un poco, sin bajar de MIN_HINT_STEP
+	var step: float = HINT_STEP
+	if ordered.size() > 1:
+		var last_height: float = ordered[-1].offset_bottom - ordered[-1].offset_top
+		step = minf(step, maxf((HINT_BOTTOM_LIMIT - last_height - y) / float(ordered.size() - 1), MIN_HINT_STEP))
 	for row in ordered:
 		var height: float = row.offset_bottom - row.offset_top
 		row.offset_top = y
 		row.offset_bottom = y + height
-		y += 25.0
-	_nav_hint.offset_top = y + 2.0
-	_nav_hint.offset_bottom = y + 30.0
+		y += step
+	# "↑ ↓ elegir" va bajo la lista de ítems (el hueco bajo el visor ya lo ocupan las pistas de arriba)
+	_nav_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_nav_hint.offset_left = NAV_HINT_LEFT
+	_nav_hint.offset_right = NAV_HINT_LEFT + 250.0
+	_nav_hint.offset_top = NAV_HINT_TOP
+	_nav_hint.offset_bottom = NAV_HINT_TOP + 28.0
 
 
 func _trigger_item_action(event: InputEvent) -> bool:

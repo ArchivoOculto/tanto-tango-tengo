@@ -33,6 +33,12 @@ class_name GameCamera
 
 @export var default_smoothing: float = 3.0 ## Suavizado del viaje si no hay zona activa (con zona, manda su 'follow_smoothing')
 
+@export_group("Golpe al recibir daño")
+## Velocidad (m/s) que recibe la cámara al golpear al jugador, en la dirección del empuje. El resorte la devuelve sola.
+@export_range(0.0, 10.0, 0.1, "suffix:m/s") var damage_kick_speed: float = 2.4
+## Cuánto de ese golpe va hacia abajo (fracción de la velocidad), como un cabeceo.
+@export_range(0.0, 1.0, 0.05) var damage_kick_drop: float = 0.35
+
 @export_group("Zona muerta (seguimiento de la mirada)")
 ## Mitad del ancho de la zona muerta, como fracción de la mitad de la pantalla (0 = sigue siempre, 1 = nunca gira).
 @export_range(0.0, 1.0, 0.01) var deadzone_horizontal: float = 0.25
@@ -144,6 +150,7 @@ class BodyCapsule:
 func _ready() -> void:
 	current = true
 	add_to_group("game_camera") # permite que WarpManager la encuentre para hacer snap_to_zone()
+	add_to_group("damage_listeners") # ver on_player_damaged()
 
 	if player:
 		if player.has_method("get_body_height"):
@@ -219,6 +226,13 @@ func _process(delta: float) -> void:
 ## posición actual del jugador. Pensado para usarse justo después de un warp,
 ## mientras la pantalla sigue en negro, para que el fade-in revele la cámara
 ## ya asentada en su lugar final (sin que se la vea deslizar hasta ahí).
+## Golpe de cámara: le da velocidad al 2.º resorte (el de la posición real) en 'direction' y un poco hacia abajo, y el
+## resorte la devuelve a su sitio. Con dirección cero (daño sin empuje) solo cabecea. Lo llama el jugador al recibir daño.
+func on_player_damaged(direction: Vector3, strength: float) -> void:
+	var impulse: Vector3 = direction * damage_kick_speed + Vector3.DOWN * damage_kick_speed * damage_kick_drop
+	_follow.velocity += impulse * strength
+
+
 func snap_to_zone(zone: CameraZone3D) -> void:
 	if zone == null or not is_instance_valid(zone.camera_anchor):
 		return

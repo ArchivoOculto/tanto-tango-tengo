@@ -37,8 +37,12 @@ signal shot_fired(hit_position: Vector3, collider: Object)
 enum State { IDLE, ENTERING, AIMING, EXITING }
 
 # UI del zoom (posiciones relativas al centro de la pantalla base de 845 x 480; las barras 4:3 tapan ~102 px por lado)
-const HINT_ROW_Y: float = 205.0 ## centro de la pista "(L2)(R2) zoom": abajo, con ~20 px de aire
-const ZOOM_LABEL_Y: float = 36.0 ## centro de la lectura "x2.5": justo bajo la mirilla
+const HINT_ROW_Y: float = 205.0 ## centro de las pistas "disparar" y "zoom": abajo, con ~20 px de aire
+const HINT_GAP: float = 40.0 ## espacio entre una pista y la siguiente
+# Golpe de cámara al recibir daño: velocidad (rad/s) que se le da al resorte del temblor, a pleno daño
+const DAMAGE_SHAKE_PITCH: float = 1.6 ## cabeceo hacia abajo
+const DAMAGE_SHAKE_YAW: float = 2.2 ## giro hacia el lado del empuje
+const DAMAGE_SHAKE_ROLL: float = 2.0 ## inclinación hacia el lado del empuje
 const HINT_SHOW_TIME: float = 4.0 ## las pistas se ven a pleno este tiempo (s) al entrar al modo fusil
 const HINT_USE_TIME: float = 1.5 ## y este tiempo después de cada uso del zoom
 const HINT_IDLE_ALPHA: float = 0.4 ## transparencia de las pistas cuando no se usan
@@ -161,8 +165,8 @@ var _reticle_kick: float = 0.0 ## 0..1, se anima al disparar
 var _zoom: float = 1.0 ## zoom actual (suavizado)
 var _zoom_target: float = 1.0 ## zoom pedido
 var _hint_root: Control ## pistas de botones (solo en modo fusil)
-var _zoom_label: Label ## lectura del aumento ("x2.5") bajo la mirilla
-var _zoom_label_text: String = ""
+var _shoot_row: Label ## "(R1) disparar"
+var _zoom_row: Label ## "(L2)(R2) zoom" (null si allow_zoom es false)
 var _hint_timer: float = 0.0 ## mientras > 0 las pistas se ven a pleno; después quedan tenues
 var _hint_alpha: float = 0.0
 var _reticle_hit: float = 0.0 ## 0..1, se enciende al acertar
@@ -199,6 +203,7 @@ func _ready() -> void:
 		set_process_unhandled_input(false)
 		return
 
+	add_to_group("damage_listeners") # ver on_player_damaged()
 	_eye_anchor = get_node_or_null(eye_anchor_path) as Node3D
 	if _eye_anchor == null:
 		push_warning("RifleController: no se encontró el anclaje de la cabeza en '%s'. Se usará la posición del jugador." % eye_anchor_path)
@@ -683,8 +688,7 @@ func _update_zoom(delta: float) -> void:
 	_camera.fov = rad_to_deg(2.0 * atan(tan(deg_to_rad(field_of_view) * 0.5) / _zoom))
 
 
-## Pistas de botones: a pleno al entrar y mientras se usa el zoom, tenues el resto del tiempo. La lectura del
-## aumento ("x2.5") solo se ve con zoom.
+## Pistas de botones: a pleno al entrar y mientras se usa el zoom, tenues el resto del tiempo.
 func _update_zoom_hud(delta: float) -> void:
 	if _hint_root == null:
 		return
@@ -693,16 +697,18 @@ func _update_zoom_hud(delta: float) -> void:
 	_hint_alpha = move_toward(_hint_alpha, target, delta * HINT_FADE_SPEED)
 	_hint_root.modulate.a = _hint_alpha
 
-	var zoomed: bool = _zoom > 1.02
-	_zoom_label.visible = zoomed
-	if zoomed:
-		var text: String = "x%.1f" % _zoom
-		if text != _zoom_label_text:
-			_zoom_label_text = text
-			_zoom_label.text = text
-
 
 # ---------------------------------------------------------------- GAME JUICE
+
+## Golpe de cámara al recibir daño: el mismo resorte del temblor del disparo, pero con la dirección del empuje.
+## El impulso se pasa a coordenadas de la cámara: un empujón hacia la derecha inclina y gira la vista hacia ese lado,
+## y siempre cabecea un poco hacia abajo. Lo llama el jugador (grupo "damage_listeners").
+func on_player_damaged(direction: Vector3, strength: float) -> void:
+	if _state != State.AIMING:
+		return
+	var side: float = (_camera.global_basis.inverse() * direction).x
+	_shake.velocity += Vector3(-DAMAGE_SHAKE_PITCH, -side * DAMAGE_SHAKE_YAW, -side * DAMAGE_SHAKE_ROLL) * strength
+
 
 ## Temblor del disparo: un empujón de velocidad al resorte; _apply_shake lo mueve y lo devuelve a su sitio.
 func _kick_camera() -> void:
@@ -774,38 +780,49 @@ func _build_reticle() -> void:
 	_build_hints()
 
 
-## Pista "(L2)(R2) zoom" abajo y lectura del aumento bajo la mirilla. Cuelgan de la capa de la mirilla: aparecen y
-## desaparecen con ella, por debajo de las barras 4:3 y con el mismo estilo que las filas de los menús.
+## Pistas "(R1) disparar" y "(L2)(R2) zoom" abajo. Cuelgan de la capa de la mirilla: aparecen y desaparecen con ella,
+## por debajo de las barras 4:3 y con el mismo estilo que las filas de los menús. Muestran los íconos del mando o las
+## teclas según el último dispositivo usado (ver ButtonPrompt). El aumento no se muestra con texto: se ve en la imagen.
 func _build_hints() -> void:
-	if not allow_zoom:
-		return
 	_hint_root = Control.new()
 	_hint_root.name = "Hints"
 	_hint_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_hint_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_reticle_layer.add_child(_hint_root)
 
-	var zoom_row: Label = ButtonPrompt.make_row("zoom", [ButtonPrompt.FRAME_L2, ButtonPrompt.FRAME_R2])
-	zoom_row.name = "ZoomHint"
-	zoom_row.offset_top = HINT_ROW_Y - 15.0
-	zoom_row.offset_bottom = HINT_ROW_Y + 15.0
-	_hint_root.add_child(zoom_row)
+	_shoot_row = _make_hint_row("ShootHint", "disparar", [InputGlyph.for_action(&"rifle_shoot")])
+	if allow_zoom:
+		_zoom_row = _make_hint_row("ZoomHint", "zoom", InputGlyph.zoom())
+	_layout_hints()
+	# ButtonPrompt ya rearmó las filas con el dispositivo nuevo (se conectó antes): solo falta volver a acomodarlas
+	InputDevice.changed.connect(func(_gamepad: bool) -> void: _layout_hints())
 
-	_zoom_label = Label.new()
-	_zoom_label.name = "ZoomReadout"
-	_zoom_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_zoom_label.set_anchors_preset(Control.PRESET_CENTER)
-	_zoom_label.offset_left = -40.0
-	_zoom_label.offset_right = 40.0
-	_zoom_label.offset_top = ZOOM_LABEL_Y - 12.0
-	_zoom_label.offset_bottom = ZOOM_LABEL_Y + 12.0
-	_zoom_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_zoom_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_zoom_label.add_theme_font_size_override("font_size", 17)
-	_zoom_label.add_theme_constant_override("outline_size", 8)
-	_zoom_label.add_theme_color_override("font_color", MenuInfoPanel.HINT_COLOR)
-	_zoom_label.visible = false
-	_hint_root.add_child(_zoom_label)
+
+func _make_hint_row(row_name: String, text: String, glyphs: Array) -> Label:
+	var row: Label = ButtonPrompt.make_row(text, glyphs)
+	row.name = row_name
+	row.offset_top = HINT_ROW_Y - 15.0
+	row.offset_bottom = HINT_ROW_Y + 15.0
+	_hint_root.add_child(row)
+	return row
+
+
+## Pone las pistas una al lado de la otra, centradas en la pantalla: "disparar" a la izquierda, "zoom" a la derecha.
+## El ancho de cada una cambia con el dispositivo (íconos del mando o teclas), por eso se vuelve a calcular.
+func _layout_hints() -> void:
+	var rows: Array[Label] = [_shoot_row]
+	if _zoom_row:
+		rows.append(_zoom_row)
+	var total: float = HINT_GAP * float(rows.size() - 1)
+	for row in rows:
+		total += ButtonPrompt.row_width(row)
+	var x: float = -total * 0.5
+	for row in rows:
+		var width: float = ButtonPrompt.row_width(row)
+		var shift: float = (x + width * 0.5) - (row.offset_left + row.offset_right) * 0.5
+		row.offset_left += shift
+		row.offset_right += shift
+		x += width + HINT_GAP
 
 
 func _show_reticle() -> void:

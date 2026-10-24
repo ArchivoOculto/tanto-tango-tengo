@@ -14,6 +14,12 @@ signal closed
 @export var area_3d: Area3D ## Asignar manualmente o dejar vacío para auto-detectar
 @export var outline_color: Color = Color(1.0, 0.9, 0.2, 1.0) ## Color del borde al acercarse
 @export var outline_width: float = 3.0 ## Grosor del borde en píxeles
+## Cuánto "respira" el borde mientras el objeto tiene el foco: varía el grosor y el brillo (0 = fijo).
+@export_range(0.0, 1.0, 0.05) var outline_breathe: float = 0.3
+## Velocidad de la respiración (radianes por segundo: 3 es un ciclo cada 2 s).
+@export_range(0.0, 10.0, 0.1) var outline_breathe_speed: float = 3.0
+## Destello breve (borde más grueso y blanco) la primera vez que recibe el foco.
+@export var outline_flash_on_first_focus: bool = true
 
 @export_group("Zoom y recorrido")
 ## Permite acercar la imagen y recorrerla mientras se inspecciona. Zoom: gatillos R2/L2, teclas E/Q o rueda del mouse.
@@ -33,6 +39,8 @@ var _is_inspecting: bool = false
 var _player_ref: Node = null ## Jugador dentro del Area3D (se anula al salir)
 var _frozen_player: Node = null ## Jugador congelado por la inspección abierta (se libera SIEMPRE al cerrar)
 var _outline_material: ShaderMaterial = null
+var _outline_flashed: bool = false ## ya hizo su destello de primera vez
+var _outline_flash_tween: Tween
 var _canvas: CanvasLayer = null
 var _info_panel: MenuInfoPanel = null
 var _highlighted: bool = false
@@ -230,6 +238,7 @@ func _release_player() -> void:
 
 ## Capa del menú abierto: por ENCIMA de las barras 4:3 (126, LetterboxController) para que no tapen el
 ## texto, y a la par del inventario (127), que nunca está abierto al mismo tiempo.
+const OUTLINE_FLASH_TIME: float = 0.5 ## duración del destello de primera vez (s)
 const ZOOM_RATE: float = 1.6 ## con gatillo o tecla: cambio de zoom por segundo (logarítmico: se siente parejo a cualquier zoom)
 const ZOOM_WHEEL_STEP: float = 1.25 ## factor por cada muesca de la rueda del mouse
 const ZOOM_SMOOTH: float = 14.0 ## qué tan rápido el zoom real alcanza al pedido (1/s)
@@ -279,6 +288,11 @@ func _setup_zoom() -> void:
 	if close_icon == null:
 		return
 
+	# La fila de cerrar de la escena también queda atada al dispositivo (íconos del mando / teclas)
+	var close_text: String = close_row.text.substr(close_row.text.find(")") + 1).strip_edges()
+	ButtonPrompt.setup_row(close_row, close_icon, close_text, InputGlyph.for_action(&"interact"),
+			(close_row.offset_left + close_row.offset_right) * 0.5)
+
 	# Fila "(L2)(R2) zoom"
 	var zoom_row: Label = close_row.duplicate() as Label
 	zoom_row.name = "ZoomRow"
@@ -288,7 +302,7 @@ func _setup_zoom() -> void:
 	zoom_row.add_child(zoom_icon_b)
 	zoom_row.offset_top += HINT_ROW_STEP
 	zoom_row.offset_bottom += HINT_ROW_STEP
-	ButtonPrompt.setup_row_icons(zoom_row, [zoom_icon_a, zoom_icon_b], "zoom", [5, 7], 0.0)
+	ButtonPrompt.setup_row_icons(zoom_row, [zoom_icon_a, zoom_icon_b], "zoom", InputGlyph.zoom(), 0.0)
 
 	# Fila "(R) recorrer" (solo visible con la imagen acercada)
 	_pan_row = close_row.duplicate() as Label
@@ -297,7 +311,7 @@ func _setup_zoom() -> void:
 	var pan_icon: AnimatedSprite2D = _pan_row.get_node("AnimatedSprite2D") as AnimatedSprite2D
 	_pan_row.offset_top += HINT_ROW_STEP * 2.0
 	_pan_row.offset_bottom += HINT_ROW_STEP * 2.0
-	ButtonPrompt.setup_row(_pan_row, pan_icon, "recorrer", 8, 0.0)
+	ButtonPrompt.setup_row(_pan_row, pan_icon, "recorrer", InputGlyph.stick_right(), 0.0)
 	_pan_row.visible = false
 
 
@@ -373,10 +387,37 @@ func _show_outline() -> void:
 		if _outline_material:
 			_outline_material.set_shader_parameter("outline_color", outline_color)
 			_outline_material.set_shader_parameter("width", outline_width)
+			_outline_material.set_shader_parameter("breathe", outline_breathe)
+			_outline_material.set_shader_parameter("breathe_speed", outline_breathe_speed)
+			if outline_flash_on_first_focus and not _outline_flashed:
+				_flash_outline()
 		sprite_3d.material_override = _outline_material
 
 
+## Destello de primera vez: el borde sale grueso y blanco y vuelve a la normalidad en medio segundo.
+func _flash_outline() -> void:
+	_outline_flashed = true
+	if _outline_flash_tween and _outline_flash_tween.is_valid():
+		_outline_flash_tween.kill()
+	_outline_material.set_shader_parameter("flash", 1.0)
+	_outline_flash_tween = create_tween()
+	_outline_flash_tween.tween_method(_set_outline_flash, 1.0, 0.0, OUTLINE_FLASH_TIME) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+
+func _set_outline_flash(amount: float) -> void:
+	if _outline_material:
+		_outline_material.set_shader_parameter("flash", amount)
+
+
+func _stop_outline_flash() -> void:
+	if _outline_flash_tween and _outline_flash_tween.is_valid():
+		_outline_flash_tween.kill()
+	_set_outline_flash(0.0)
+
+
 func _hide_outline() -> void:
+	_stop_outline_flash()
 	if sprite_3d:
 		sprite_3d.material_override = null
 
@@ -390,19 +431,24 @@ func _init_outline_material() -> void:
 	uniform sampler2D tex : source_color, filter_linear_mipmap;
 	uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 	uniform float width : hint_range(0.0, 10.0) = 2.5;
+	uniform float breathe : hint_range(0.0, 1.0) = 0.0;
+	uniform float breathe_speed = 3.0;
+	uniform float flash : hint_range(0.0, 1.0) = 0.0;
 
 	void fragment() {
 		vec4 col = texture(tex, UV);
 		if (col.a < 0.1) {
 			vec2 size = vec2(textureSize(tex, 0));
-			vec2 px = width / size;
+			float live_width = width * (1.0 + breathe * sin(TIME * breathe_speed)) + flash * width * 1.5;
+			vec2 px = live_width / size;
 			float a = 0.0;
 			a += texture(tex, UV + vec2(px.x, 0.0)).a;
 			a += texture(tex, UV + vec2(-px.x, 0.0)).a;
 			a += texture(tex, UV + vec2(0.0, px.y)).a;
 			a += texture(tex, UV + vec2(0.0, -px.y)).a;
 			if (a > 0.05) {
-				ALBEDO = outline_color.rgb;
+				float glow = 1.0 + 0.2 * breathe * sin(TIME * breathe_speed);
+				ALBEDO = mix(outline_color.rgb * glow, vec3(1.0), flash * 0.75);
 				ALPHA = 1.0;
 			} else {
 				discard;

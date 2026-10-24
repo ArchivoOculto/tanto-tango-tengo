@@ -58,6 +58,12 @@ signal action_triggered(action: ObjectAction, consumed: InventoryEntry)
 @export_group("Outline")
 @export var outline_color: Color = Color(1.0, 0.9, 0.2, 1.0) ## Color del borde al acercarse
 @export_range(0.0, 10.0, 0.1, "suffix:px") var outline_width: float = 3.0 ## Grosor del borde en píxeles de pantalla
+## Cuánto "respira" el borde mientras el objeto tiene el foco: varía el grosor y el brillo (0 = fijo).
+@export_range(0.0, 1.0, 0.05) var outline_breathe: float = 0.3
+## Velocidad de la respiración (radianes por segundo: 3 es un ciclo cada 2 s).
+@export_range(0.0, 10.0, 0.1) var outline_breathe_speed: float = 3.0
+## Destello breve (borde más grueso y blanco) la primera vez que recibe el foco.
+@export var outline_flash_on_first_focus: bool = true
 
 @export_group("Visor 3D")
 ## Velocidad de rotación con el stick al máximo (grados/seg).
@@ -112,14 +118,18 @@ var _player_ref: Node = null ## Jugador dentro del Area3D (se anula al salir)
 var _frozen_player: Node = null ## Jugador congelado por la inspección abierta (se libera SIEMPRE al cerrar)
 var _canvas: CanvasLayer = null
 var _info_panel: MenuInfoPanel = null
+var _viewer_image: TextureRect ## la imagen del visor 3D (es lo que "salta" al abrirse y al actuar)
 var _outline_material: ShaderMaterial = null
 var _outlined: Dictionary = {} ## MeshInstance3D -> material_overlay que tenía antes del outline
+var _outline_flashed: bool = false ## ya hizo su destello de primera vez
+var _outline_flash_tween: Tween
 var _highlighted: bool = false
 var _drop_area: Area3D = null
 var _drop_tween: Tween = null
 
 # Filas del menú
 const ROW_STEP_DEFAULT: float = 25.0
+const OUTLINE_FLASH_TIME: float = 0.5 ## duración del destello de primera vez (s)
 const MIN_ROW_STEP: float = 20.0 ## separación mínima entre filas cuando hay muchas
 const MENU_BOTTOM_LIMIT: float = 236.0 ## borde inferior máximo de la última fila (la pantalla base mide 480: y = 240 desde el centro)
 var _ui_menu: Control
@@ -163,6 +173,7 @@ func _ready() -> void:
 		view_camera = object_on_screen.find_child("SubView Camera", true, false) as Camera3D
 		pivot = object_on_screen.find_child("ObjectPivot", true, false) as Node3D
 		texture_rect = object_on_screen.find_child("TextureRect", true, false) as TextureRect
+		_viewer_image = texture_rect
 		_ui_menu = object_on_screen.find_child("UI Menu", true, false) as Control
 
 	for ui_control in [object_on_screen, object_closed]:
@@ -340,6 +351,7 @@ func _open_inspection() -> void:
 		_info_panel.set_info(get_menu_title(), get_menu_description(), get_menu_hint())
 		_info_panel.visible = true
 	_rebuild_menu_rows()
+	_play_open_animation()
 
 	if animation_player and animation_player.has_animation("floating"):
 		animation_player.play("floating")
@@ -414,6 +426,10 @@ func _setup_menu_rows() -> void:
 	_close_row = _ui_menu.get_node_or_null("CloseText") as Label
 	_save_row = _ui_menu.get_node_or_null("GuardarText") as Label
 	_rotate_row = _ui_menu.get_node_or_null("RotateText") as Label
+	# Las filas de la escena quedan atadas al dispositivo (íconos del mando / teclas), igual que las de acciones
+	_bind_scene_row(_close_row, InputGlyph.for_action(&"interact"))
+	_bind_scene_row(_save_row, InputGlyph.for_action(&"object_save"))
+	_bind_scene_row(_rotate_row, InputGlyph.stick_right())
 	_zoom_row = _make_zoom_row()
 
 	# Una fila por acción, clonando el estilo de "GuardarText" (mismo tamaño, contorno y marco de botón)
@@ -422,6 +438,21 @@ func _setup_menu_rows() -> void:
 		push_warning("InteractableObject: falta 'GuardarText' en UI Menu, se usa como modelo de las filas de acciones.")
 	for action in actions:
 		_action_rows.append(_make_action_row(action))
+
+
+## Ata una fila de la escena ("(     ) texto" con su ícono) a ButtonPrompt, conservando su centro y su texto.
+func _bind_scene_row(row: Label, glyph: Dictionary) -> void:
+	if row == null:
+		return
+	var icon: AnimatedSprite2D = null
+	for child in row.get_children():
+		if child is AnimatedSprite2D:
+			icon = child as AnimatedSprite2D
+			break
+	if icon == null:
+		return
+	var text: String = row.text.substr(row.text.find(")") + 1).strip_edges()
+	ButtonPrompt.setup_row(row, icon, text, glyph, (row.offset_left + row.offset_right) * 0.5)
 
 
 ## Fila "(L2)(R2) zoom": copia la de rotar (mismo estilo) con dos íconos. Va debajo de ella en el menú.
@@ -433,7 +464,7 @@ func _make_zoom_row() -> Label:
 	var icon_a: AnimatedSprite2D = row.get_child(0) as AnimatedSprite2D
 	var icon_b: AnimatedSprite2D = icon_a.duplicate() as AnimatedSprite2D
 	row.add_child(icon_b)
-	ButtonPrompt.setup_row_icons(row, [icon_a, icon_b], "zoom", [ButtonPrompt.FRAME_L2, ButtonPrompt.FRAME_R2])
+	ButtonPrompt.setup_row_icons(row, [icon_a, icon_b], "zoom", InputGlyph.zoom())
 	row.visible = false
 	_ui_menu.add_child(row)
 	return row
@@ -445,7 +476,7 @@ func _make_action_row(action: ObjectAction) -> Label:
 	var row: Label = _save_row.duplicate() as Label
 	row.name = "Action_" + String(action.id)
 	var icon := row.get_child(0) as AnimatedSprite2D
-	ButtonPrompt.setup_row(row, icon, action.label, action.icon_frame)
+	ButtonPrompt.setup_row(row, icon, action.label, InputGlyph.for_action(action.input_action, action.icon_frame))
 	row.visible = false
 	_ui_menu.add_child(row)
 	return row
@@ -562,7 +593,22 @@ func _finish_action(action: ObjectAction, chosen: InventoryEntry) -> void:
 		consumed = Inventory.remove_entry(chosen)
 	if action.close_menu_on_trigger and _is_inspecting:
 		_close_inspection()
+	elif _is_inspecting and _viewer_image:
+		UiJuice.pop(_viewer_image, 0.08) # el menú sigue abierto: el objeto "responde" a la acción
 	action_triggered.emit(action, consumed)
+
+
+## Al abrirse el visor el objeto "salta" y pega un rebote (el mismo efecto que al recorrer el inventario) y las filas
+## del menú aparecen creciendo. En las filas solo se anima la escala, no la transparencia: algunas (acciones bloqueadas)
+## se muestran atenuadas a propósito.
+func _play_open_animation() -> void:
+	if _viewer_image:
+		UiJuice.hop(_viewer_image, 8.0)
+		UiJuice.pop(_viewer_image, -0.1)
+	if _ui_menu:
+		for row in _ui_menu.get_children():
+			if row is Label and (row as Label).visible:
+				UiJuice.pop(row as Label, -0.08)
 
 
 ## Cierra el menú del objeto y abre el inventario filtrado. Al cancelar vuelve al menú del objeto.
@@ -703,13 +749,40 @@ func _show_outline() -> void:
 		return
 	_outline_material.set_shader_parameter("outline_color", outline_color)
 	_outline_material.set_shader_parameter("width", outline_width)
+	_outline_material.set_shader_parameter("breathe", outline_breathe)
+	_outline_material.set_shader_parameter("breathe_speed", outline_breathe_speed)
+	if outline_flash_on_first_focus and not _outline_flashed:
+		_flash_outline()
 	for mesh in _outline_targets():
 		if not _outlined.has(mesh):
 			_outlined[mesh] = mesh.material_overlay # se restaura tal cual al salir
 		mesh.material_overlay = _outline_material
 
 
+## Destello de primera vez: el borde sale grueso y blanco y vuelve a la normalidad en medio segundo.
+func _flash_outline() -> void:
+	_outline_flashed = true
+	if _outline_flash_tween and _outline_flash_tween.is_valid():
+		_outline_flash_tween.kill()
+	_outline_material.set_shader_parameter("flash", 1.0)
+	_outline_flash_tween = create_tween()
+	_outline_flash_tween.tween_method(_set_outline_flash, 1.0, 0.0, OUTLINE_FLASH_TIME) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+
+func _set_outline_flash(amount: float) -> void:
+	if _outline_material:
+		_outline_material.set_shader_parameter("flash", amount)
+
+
+func _stop_outline_flash() -> void:
+	if _outline_flash_tween and _outline_flash_tween.is_valid():
+		_outline_flash_tween.kill()
+	_set_outline_flash(0.0)
+
+
 func _hide_outline() -> void:
+	_stop_outline_flash()
 	for mesh in _outlined.keys():
 		if is_instance_valid(mesh):
 			(mesh as MeshInstance3D).material_overlay = _outlined[mesh]
@@ -727,6 +800,9 @@ func _init_outline_material() -> void:
 
 	uniform vec4 outline_color : source_color = vec4(1.0, 0.9, 0.2, 1.0);
 	uniform float width : hint_range(0.0, 10.0) = 3.0;
+	uniform float breathe : hint_range(0.0, 1.0) = 0.0;
+	uniform float breathe_speed = 3.0;
+	uniform float flash : hint_range(0.0, 1.0) = 0.0;
 
 	void vertex() {
 		vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
@@ -735,12 +811,14 @@ func _init_outline_material() -> void:
 		if (length(direction) > 0.0001) {
 			direction = normalize(direction);
 		}
-		clip.xy += direction * width * clip.w * 2.0 / VIEWPORT_SIZE;
+		float live_width = width * (1.0 + breathe * sin(TIME * breathe_speed)) + flash * width * 1.2;
+		clip.xy += direction * live_width * clip.w * 2.0 / VIEWPORT_SIZE;
 		POSITION = clip;
 	}
 
 	void fragment() {
-		ALBEDO = outline_color.rgb;
+		float glow = 1.0 + 0.2 * breathe * sin(TIME * breathe_speed);
+		ALBEDO = mix(outline_color.rgb * glow, vec3(1.0), flash * 0.75);
 	}
 	"""
 	_outline_material = ShaderMaterial.new()

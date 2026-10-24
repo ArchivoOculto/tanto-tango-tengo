@@ -4,8 +4,9 @@ class_name MainMenu
 ## Pantalla de inicio (escena principal del juego): nueva partida, opciones, controles y salir.
 ## Los paneles de opciones y controles, y el estilo, vienen de MenuBase (los comparte con el menú de pausa).
 ##
-##  - "nueva partida" carga el nivel (terrain.tscn).
-##  - "salir" cierra el juego (no aparece en la versión web, donde no hay nada que cerrar).
+##  - "nueva partida" pierde la señal del tubo CRT (glitch) y carga el nivel (terrain.tscn).
+##  - "salir" apaga el tubo como un televisor viejo y cierra el juego (no aparece en la versión web).
+##  Ambos efectos los hace ScreenFX; con el filtro CRT apagado en opciones son un fundido a negro común.
 ##
 ## Se maneja con teclado, mando o mouse. ○ / escape cierra el panel abierto.
 
@@ -13,7 +14,9 @@ class_name MainMenu
 const GAME_SCENE: String = "res://Scenes/levels/terrain.tscn"
 
 @export var fade_in_duration: float = 1.2
-@export var fade_out_duration: float = 0.8
+@export var fade_out_duration: float = 0.8 ## Duración del apagado al salir
+## Duración del glitch de "nueva partida".
+@export var new_game_glitch_duration: float = 0.9
 
 @onready var _new_game_button: Button = %NewGameButton
 @onready var _quit_button: Button = %QuitButton
@@ -42,13 +45,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_new_game_pressed() -> void:
 	if _begin_exit():
-		await WarpManager.fade_out(fade_out_duration)
+		await ScreenFX.glitch_out(new_game_glitch_duration)
 		get_tree().change_scene_to_file(GAME_SCENE)
+		# El cambio de escena ocurre al final del cuadro: se espera un instante para devolver el tubo a su estado
+		# normal. El nivel arranca en negro (WarpManager), así que no se ve.
+		ScreenFX.power_on(0.0, 0.3)
 
 
 func _on_quit_pressed() -> void:
 	if _begin_exit():
-		await WarpManager.fade_out(fade_out_duration)
+		await ScreenFX.power_off(fade_out_duration)
 		get_tree().quit()
 
 

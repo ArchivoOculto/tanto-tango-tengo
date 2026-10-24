@@ -39,11 +39,8 @@ const CONTROL_ROWS: Array = [
 
 ## Botón del mando (índice de Godot) -> cuadro del atlas de íconos (Resources/ui/ui_buttons_frames.tres).
 ## 0 △  1 □  2 ○  3 ✕  4 L1  5 L2  6 R1  7 R2  8 stick der.  9 stick izq.  10 select  11 start
-const PAD_FRAMES: Dictionary = {0: 3, 1: 2, 2: 1, 3: 0, 4: 10, 6: 11, 9: 4, 10: 6}
-const MOUSE_NAMES: Dictionary = {1: "clic izq.", 2: "clic der.", 3: "clic medio"}
-const KEY_NAMES: Dictionary = {
-	"Left": "←", "Right": "→", "Up": "↑", "Down": "↓", "Space": "espacio", "Escape": "esc",
-}
+const PAD_FRAMES: Dictionary = InputGlyph.PAD_BUTTON_FRAMES
+const MOUSE_NAMES: Dictionary = InputGlyph.MOUSE_NAMES
 
 @onready var _options_button: Button = %OptionsButton
 @onready var _controls_button: Button = %ControlsButton
@@ -190,9 +187,7 @@ func _build_controls_grid() -> void:
 
 
 func _key_text(event: InputEventKey) -> String:
-	var code: Key = event.physical_keycode if event.physical_keycode != KEY_NONE else event.keycode
-	var text: String = OS.get_keycode_string(code)
-	return KEY_NAMES.get(text, text)
+	return InputGlyph.key_label(event)
 
 
 ## Fila de íconos de botón (los mismos del atlas de los carteles de tutorial).

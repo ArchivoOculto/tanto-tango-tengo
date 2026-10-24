@@ -70,6 +70,7 @@ func take_damage(amount: float, knockback_impulse: Vector3 = Vector3.ZERO) -> vo
 		return
 
 	current_health -= amount
+	_play_damage_feedback(amount, knockback_impulse)
 
 	# Cualquier daño cierra los menús abiertos (inventario, objetos, cuadros). Va ANTES del empuje:
 	# al cerrarse devuelven el control al jugador y no deben pisar el knockback.
@@ -85,6 +86,16 @@ func take_damage(amount: float, knockback_impulse: Vector3 = Vector3.ZERO) -> vo
 
 	_flash_red()
 	_start_invulnerability()
+
+
+## Viñeta roja y aberración cromática en pantalla, y golpe de cámara en la dirección del empuje. Las cámaras
+## (GameCamera y la del fusil) escuchan por el grupo "damage_listeners": el jugador no necesita conocerlas.
+func _play_damage_feedback(amount: float, knockback_impulse: Vector3) -> void:
+	var strength: float = clampf(0.4 + amount / maxf(max_health, 1.0) * 3.0, 0.4, 1.0)
+	var push := Vector3(knockback_impulse.x, 0.0, knockback_impulse.z)
+	var direction: Vector3 = push.normalized() if push.length_squared() > 0.0001 else Vector3.ZERO
+	ScreenFX.damage_flash(strength)
+	get_tree().call_group("damage_listeners", "on_player_damaged", direction, strength)
 
 
 func _close_open_menus() -> void:
