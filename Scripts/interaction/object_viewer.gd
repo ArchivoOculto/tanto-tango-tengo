@@ -14,6 +14,11 @@ class_name ObjectViewer
 var rotation_speed_degrees: float = 140.0 ## Velocidad con el stick al máximo (grados/seg)
 var rotation_response_curve: float = 1.5 ## 1 = lineal; más alto = más fino cerca del centro
 var invert_y: bool = false
+var allow_zoom: bool = true ## Permite acercar el objeto (ver update_zoom)
+var max_zoom: float = 3.0 ## Zoom máximo (1 = encuadre normal)
+var zoom_rate: float = 1.6 ## Con gatillo o tecla: cambio de zoom por segundo (logarítmico: se siente parejo a cualquier zoom)
+var zoom_wheel_step: float = 1.25 ## Factor por cada muesca de la rueda del mouse
+var zoom_smooth: float = 14.0 ## Qué tan rápido el zoom real alcanza al pedido (1/s)
 var drag_degrees_per_pixel: float = 0.45 ## Giro con el mouse: grados por píxel arrastrado
 var auto_fit: bool = true ## Escala y centra el clon para que entre aunque se lo rote
 var fit_fraction: float = 0.9 ## Cuánto del campo visual puede ocupar como máximo (0.1 a 1.0)
@@ -31,6 +36,9 @@ var _current_template: Node3D ## Plantilla armada por show_source(), todavía en
 var _current_bounds: AABB = AABB()
 var _ready_ok: bool = false
 var _fitted_radius: float = 0.0
+var _base_fov: float = 0.0 ## FOV de la cámara sin zoom (el encuadre se calcula con este)
+var _zoom: float = 1.0
+var _zoom_target: float = 1.0
 
 
 ## Prepara el SubViewport: mundo propio (sin esto el visor mostraría el nivel entero y el clon se
@@ -41,6 +49,7 @@ func setup(p_viewport: SubViewport, p_camera: Camera3D, p_pivot: Node3D, texture
 	viewport = p_viewport
 	camera = p_camera
 	pivot = p_pivot
+	_base_fov = camera.fov
 
 	viewport.own_world_3d = true
 	viewport.transparent_bg = true
@@ -91,6 +100,7 @@ func set_active(active: bool) -> void:
 func show_template(template: Node3D, bounds: AABB) -> void:
 	if not _ready_ok or template == null:
 		return
+	reset_zoom() # el encuadre se calcula con el FOV sin zoom
 	_free_stage()
 	_stage = Node3D.new()
 	_stage.name = "ObjectClone"
@@ -140,6 +150,7 @@ func take_template() -> Dictionary:
 
 
 func clear() -> void:
+	reset_zoom()
 	_free_stage()
 	_free_current_template()
 
@@ -154,6 +165,59 @@ func _free_current_template() -> void:
 	if is_instance_valid(_current_template):
 		_current_template.free()
 	_current_template = null
+
+
+# ---------------------------------------------------------------- ZOOM
+
+## Zoom del visor. No escala ni mueve el objeto (la rotación lo re-ortonormaliza y el encuadre depende de su
+## tamaño): cierra el campo visual de la cámara, que es lo que hace una lente. Se pide con los gatillos
+## (acciones image_zoom_in / image_zoom_out: R2 / L2, o las teclas E / Q) y con la rueda del mouse
+## (handle_wheel_event). Con zoom la rotación se hace más lenta, para poder girar con precisión.
+## Llamar cada cuadro mientras el visor está abierto.
+func update_zoom(delta: float) -> void:
+	if not _ready_ok or not allow_zoom or _base_fov <= 0.0:
+		return
+	var zoom_input: float = Input.get_action_strength("image_zoom_in") - Input.get_action_strength("image_zoom_out")
+	if zoom_input != 0.0:
+		_zoom_target = clampf(_zoom_target * exp(zoom_input * zoom_rate * delta), 1.0, max_zoom)
+	_zoom = lerpf(_zoom, _zoom_target, 1.0 - exp(-zoom_smooth * delta))
+	if absf(_zoom - _zoom_target) < 0.001:
+		_zoom = _zoom_target
+	_apply_zoom()
+
+
+## Rueda del mouse: acerca o aleja. Devuelve true si el evento se usó.
+func handle_wheel_event(event: InputEventMouseButton) -> bool:
+	if not allow_zoom or not event.pressed:
+		return false
+	if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		_zoom_target = minf(_zoom_target * zoom_wheel_step, max_zoom)
+		return true
+	if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		_zoom_target = maxf(_zoom_target / zoom_wheel_step, 1.0)
+		return true
+	return false
+
+
+func reset_zoom() -> void:
+	_zoom = 1.0
+	_zoom_target = 1.0
+	if camera and _base_fov > 0.0:
+		camera.fov = _base_fov
+
+
+func get_zoom() -> float:
+	return _zoom
+
+
+func _apply_zoom() -> void:
+	# Con zoom Z se ve 1/Z del ancho de la escena: de ahí la tangente (el FOV no es lineal con el aumento)
+	camera.fov = rad_to_deg(2.0 * atan(tan(deg_to_rad(_base_fov) * 0.5) / _zoom))
+
+
+## Rotación más lenta cuanto más zoom (a 4x gira la mitad de rápido).
+func _zoom_damping() -> float:
+	return 1.0 / sqrt(_zoom)
 
 
 # ---------------------------------------------------------------- ROTACIÓN
@@ -174,7 +238,7 @@ func rotate_with_stick(delta: float) -> void:
 
 	var strength: float = pow(stick.length(), rotation_response_curve)
 	var dir: Vector2 = stick.normalized() * strength
-	var step: float = deg_to_rad(rotation_speed_degrees) * delta
+	var step: float = deg_to_rad(rotation_speed_degrees) * delta * _zoom_damping()
 
 	var yaw: float = dir.x * step # stick a la derecha => la cara frontal gira hacia la derecha
 	var pitch: float = dir.y * step * (-1.0 if invert_y else 1.0) # stick arriba => la cara frontal sube
@@ -187,7 +251,7 @@ func rotate_with_stick(delta: float) -> void:
 func rotate_by_drag(relative: Vector2) -> void:
 	if pivot == null or relative == Vector2.ZERO:
 		return
-	var per_pixel: float = deg_to_rad(drag_degrees_per_pixel)
+	var per_pixel: float = deg_to_rad(drag_degrees_per_pixel) * _zoom_damping()
 	var yaw: float = relative.x * per_pixel
 	var pitch: float = relative.y * per_pixel * (-1.0 if invert_y else 1.0)
 	var rotation_step: Basis = Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch)
@@ -207,7 +271,7 @@ func _fit(bounds: AABB) -> void:
 	var fit_scale: float = scale_multiplier
 	if auto_fit and radius > 0.0001:
 		var distance: float = camera.transform.origin.distance_to(pivot.transform.origin)
-		var half_fov: float = deg_to_rad(camera.fov) * 0.5
+		var half_fov: float = deg_to_rad(_base_fov if _base_fov > 0.0 else camera.fov) * 0.5
 		var target_radius: float = distance * sin(half_fov * fit_fraction)
 		fit_scale = (target_radius / radius) * scale_multiplier
 

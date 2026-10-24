@@ -36,6 +36,14 @@ signal shot_fired(hit_position: Vector3, collider: Object)
 
 enum State { IDLE, ENTERING, AIMING, EXITING }
 
+# UI del zoom (posiciones relativas al centro de la pantalla base de 845 x 480; las barras 4:3 tapan ~102 px por lado)
+const HINT_ROW_Y: float = 205.0 ## centro de la pista "(L2)(R2) zoom": abajo, con ~20 px de aire
+const ZOOM_LABEL_Y: float = 36.0 ## centro de la lectura "x2.5": justo bajo la mirilla
+const HINT_SHOW_TIME: float = 4.0 ## las pistas se ven a pleno este tiempo (s) al entrar al modo fusil
+const HINT_USE_TIME: float = 1.5 ## y este tiempo después de cada uso del zoom
+const HINT_IDLE_ALPHA: float = 0.4 ## transparencia de las pistas cuando no se usan
+const HINT_FADE_SPEED: float = 2.5 ## cambio de transparencia por segundo
+
 @export_group("Activación")
 @export var hold_to_aim: bool = true ## true = mantener el botón; false = un toque entra, otro toque sale
 
@@ -96,6 +104,19 @@ enum State { IDLE, ENTERING, AIMING, EXITING }
 @export var knockback_strength: float = 3.0
 @export var knockback_upward: float = 1.0
 
+@export_group("Zoom")
+## Permite acercar la mira, como un sniper: gatillos R2 (acercar) y L2 (alejar), teclas E / Q o rueda del mouse.
+## Con zoom la mira gira más lento (proporcional al aumento) para poder apuntar con precisión.
+@export var allow_zoom: bool = true
+## Zoom máximo (1 = sin acercar).
+@export_range(1.0, 8.0, 0.1, "suffix:x") var max_zoom: float = 3.0
+## Con gatillo o tecla: cambio de zoom por segundo (logarítmico: se siente parejo a cualquier zoom).
+@export var zoom_rate: float = 1.6
+## Factor por cada muesca de la rueda del mouse.
+@export var zoom_wheel_step: float = 1.25
+## Qué tan rápido el zoom real alcanza al pedido (1/s).
+@export var zoom_smooth: float = 14.0
+
 @export_group("Impacto (game juice)")
 ## Temblor al disparar: impulso de velocidad (rad/s) que se le da a un resorte de la cámara. El resorte lo
 ## devuelve solo a su sitio (mismo tipo de resorte que GameCamera). Cabeceo hacia arriba, y guiñada y
@@ -137,6 +158,13 @@ var _pitch: float = 0.0
 var _yaw_center: float = 0.0
 var _cooldown_left: float = 0.0
 var _reticle_kick: float = 0.0 ## 0..1, se anima al disparar
+var _zoom: float = 1.0 ## zoom actual (suavizado)
+var _zoom_target: float = 1.0 ## zoom pedido
+var _hint_root: Control ## pistas de botones (solo en modo fusil)
+var _zoom_label: Label ## lectura del aumento ("x2.5") bajo la mirilla
+var _zoom_label_text: String = ""
+var _hint_timer: float = 0.0 ## mientras > 0 las pistas se ven a pleno; después quedan tenues
+var _hint_alpha: float = 0.0
 var _reticle_hit: float = 0.0 ## 0..1, se enciende al acertar
 var _shake: GameCamera.Spring = GameCamera.Spring.new() ## desvío de la cámara (cabeceo, guiñada, balanceo) en rad
 var _hit_stop_token: int = 0
@@ -185,6 +213,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _state == State.AIMING and mouse_sensitivity_degrees > 0.0:
 			_mouse_delta += (event as InputEventMouseMotion).relative
 		return
+	# Rueda del mouse: acerca / aleja la mira
+	if event is InputEventMouseButton and event.pressed and _state == State.AIMING and allow_zoom:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_target = minf(_zoom_target * zoom_wheel_step, max_zoom)
+			_hint_timer = HINT_USE_TIME
+			get_viewport().set_input_as_handled()
+			return
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_target = maxf(_zoom_target / zoom_wheel_step, 1.0)
+			_hint_timer = HINT_USE_TIME
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("rifle_toggle"):
 		if _state == State.IDLE or _state == State.EXITING:
 			enter_rifle_mode()
@@ -341,6 +381,8 @@ func _finish_enter(target: Transform3D) -> void:
 	_state = State.AIMING
 	_camera.global_transform = target
 	_camera.fov = field_of_view
+	_zoom = 1.0
+	_zoom_target = 1.0
 	_shake.reset(Vector3.ZERO)
 	_hide_head_props()
 	_show_reticle()
@@ -352,6 +394,7 @@ func _finish_enter(target: Transform3D) -> void:
 
 func _process_aiming(delta: float) -> void:
 	_cooldown_left = maxf(_cooldown_left - delta, 0.0)
+	_update_zoom(delta) # antes de apuntar: la sensibilidad depende del zoom
 	_update_aim(delta)
 	_camera.global_transform = _head_transform()
 	_set_body_yaw(_yaw) # el cuerpo acompaña el giro horizontal
@@ -365,6 +408,7 @@ func _process_aiming(delta: float) -> void:
 		_reticle.queue_redraw()
 
 	_apply_shake(delta) # al final: el disparo de arriba usó la cámara limpia, sin el temblor del anterior
+	_update_zoom_hud(delta)
 
 
 ## El mouse apunta mientras se mantiene el modo fusil: se captura para poder girar sin límite de pantalla.
@@ -400,7 +444,7 @@ func _rotate_aim(right: float, down: float) -> void:
 func _update_aim(delta: float) -> void:
 	# Mouse: movimiento acumulado desde el último cuadro
 	if _mouse_delta != Vector2.ZERO:
-		var per_pixel: float = deg_to_rad(mouse_sensitivity_degrees)
+		var per_pixel: float = deg_to_rad(mouse_sensitivity_degrees) / _zoom
 		_rotate_aim(_mouse_delta.x * per_pixel, _mouse_delta.y * per_pixel)
 		_mouse_delta = Vector2.ZERO
 
@@ -412,7 +456,7 @@ func _update_aim(delta: float) -> void:
 	# Curva de respuesta: da precisión fina cerca del centro sin perder velocidad al tope.
 	var strength: float = pow(stick.length(), aim_response_curve)
 	var dir: Vector2 = stick.normalized() * strength
-	var step: float = deg_to_rad(aim_speed_degrees) * delta
+	var step: float = deg_to_rad(aim_speed_degrees) * delta / _zoom # con zoom, la mira gira más lento
 
 	_rotate_aim(dir.x * step, dir.y * step)
 
@@ -622,14 +666,51 @@ func _apply_hit(collider: Object, direction: Vector3) -> bool:
 	return true
 
 
+# ---------------------------------------------------------------- ZOOM
+
+## Zoom de la mira: gatillos (R2 acerca, L2 aleja; acciones image_zoom_in / image_zoom_out, también E / Q) o
+## rueda del mouse. Cierra el campo visual (FOV): con zoom Z se ve 1/Z del ancho, de ahí la tangente.
+func _update_zoom(delta: float) -> void:
+	if not allow_zoom:
+		return
+	var zoom_input: float = Input.get_action_strength("image_zoom_in") - Input.get_action_strength("image_zoom_out")
+	if zoom_input != 0.0:
+		_zoom_target = clampf(_zoom_target * exp(zoom_input * zoom_rate * delta), 1.0, max_zoom)
+		_hint_timer = HINT_USE_TIME
+	_zoom = lerpf(_zoom, _zoom_target, 1.0 - exp(-zoom_smooth * delta))
+	if absf(_zoom - _zoom_target) < 0.001:
+		_zoom = _zoom_target
+	_camera.fov = rad_to_deg(2.0 * atan(tan(deg_to_rad(field_of_view) * 0.5) / _zoom))
+
+
+## Pistas de botones: a pleno al entrar y mientras se usa el zoom, tenues el resto del tiempo. La lectura del
+## aumento ("x2.5") solo se ve con zoom.
+func _update_zoom_hud(delta: float) -> void:
+	if _hint_root == null:
+		return
+	_hint_timer = maxf(_hint_timer - delta, 0.0)
+	var target: float = 1.0 if _hint_timer > 0.0 else HINT_IDLE_ALPHA
+	_hint_alpha = move_toward(_hint_alpha, target, delta * HINT_FADE_SPEED)
+	_hint_root.modulate.a = _hint_alpha
+
+	var zoomed: bool = _zoom > 1.02
+	_zoom_label.visible = zoomed
+	if zoomed:
+		var text: String = "x%.1f" % _zoom
+		if text != _zoom_label_text:
+			_zoom_label_text = text
+			_zoom_label.text = text
+
+
 # ---------------------------------------------------------------- GAME JUICE
 
 ## Temblor del disparo: un empujón de velocidad al resorte; _apply_shake lo mueve y lo devuelve a su sitio.
 func _kick_camera() -> void:
+	# Con zoom el mismo giro se ve más grande en pantalla: el temblor se atenúa (raíz del aumento)
 	_shake.velocity += Vector3(
 		shake_pitch_kick,
 		randf_range(-1.0, 1.0) * shake_yaw_kick,
-		randf_range(-1.0, 1.0) * shake_roll_kick)
+		randf_range(-1.0, 1.0) * shake_roll_kick) / sqrt(_zoom)
 
 
 ## Gira la cámara (ya colocada en la cabeza) según el desvío del resorte.
@@ -690,12 +771,51 @@ func _build_reticle() -> void:
 	_reticle.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_reticle.draw.connect(_draw_reticle)
 	_reticle_layer.add_child(_reticle)
+	_build_hints()
+
+
+## Pista "(L2)(R2) zoom" abajo y lectura del aumento bajo la mirilla. Cuelgan de la capa de la mirilla: aparecen y
+## desaparecen con ella, por debajo de las barras 4:3 y con el mismo estilo que las filas de los menús.
+func _build_hints() -> void:
+	if not allow_zoom:
+		return
+	_hint_root = Control.new()
+	_hint_root.name = "Hints"
+	_hint_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hint_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_reticle_layer.add_child(_hint_root)
+
+	var zoom_row: Label = ButtonPrompt.make_row("zoom", [ButtonPrompt.FRAME_L2, ButtonPrompt.FRAME_R2])
+	zoom_row.name = "ZoomHint"
+	zoom_row.offset_top = HINT_ROW_Y - 15.0
+	zoom_row.offset_bottom = HINT_ROW_Y + 15.0
+	_hint_root.add_child(zoom_row)
+
+	_zoom_label = Label.new()
+	_zoom_label.name = "ZoomReadout"
+	_zoom_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_zoom_label.set_anchors_preset(Control.PRESET_CENTER)
+	_zoom_label.offset_left = -40.0
+	_zoom_label.offset_right = 40.0
+	_zoom_label.offset_top = ZOOM_LABEL_Y - 12.0
+	_zoom_label.offset_bottom = ZOOM_LABEL_Y + 12.0
+	_zoom_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_zoom_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_zoom_label.add_theme_font_size_override("font_size", 17)
+	_zoom_label.add_theme_constant_override("outline_size", 8)
+	_zoom_label.add_theme_color_override("font_color", MenuInfoPanel.HINT_COLOR)
+	_zoom_label.visible = false
+	_hint_root.add_child(_zoom_label)
 
 
 func _show_reticle() -> void:
 	if _reticle_tween and _reticle_tween.is_valid():
 		_reticle_tween.kill()
 	_reticle.modulate.a = 0.0
+	_hint_timer = HINT_SHOW_TIME
+	_hint_alpha = 0.0
+	if _hint_root:
+		_hint_root.modulate.a = 0.0
 	_reticle_layer.visible = true
 	_reticle_tween = create_tween()
 	_reticle_tween.tween_property(_reticle, "modulate:a", 1.0, reticle_fade_time)

@@ -74,6 +74,11 @@ signal action_triggered(action: ObjectAction, consumed: InventoryEntry)
 @export var viewer_light_energy: float = 1.3
 @export var viewer_ambient_color: Color = Color(1.0, 1.0, 1.0)
 @export var viewer_ambient_energy: float = 0.55
+## Permite acercar el objeto mientras se inspecciona. Zoom: gatillos R2/L2, teclas E/Q o rueda del mouse.
+## Con zoom la rotación se hace más lenta para poder girar con precisión. Agrega la fila "zoom" al menú.
+@export var allow_zoom: bool = true
+## Zoom máximo (1 = encuadre normal, sin acercar).
+@export_range(1.0, 6.0, 0.1, "suffix:x") var max_zoom: float = 3.0
 
 @onready var object_on_screen: Control = get_node_or_null("ObjectOnScreen") ## Visor, visible solo mientras se inspecciona
 @onready var object_closed: Control = get_node_or_null("ObjectClosed") ## Aviso para abrir, visible solo al estar cerca y sin inspeccionar
@@ -115,10 +120,13 @@ var _drop_tween: Tween = null
 
 # Filas del menú
 const ROW_STEP_DEFAULT: float = 25.0
+const MIN_ROW_STEP: float = 20.0 ## separación mínima entre filas cuando hay muchas
+const MENU_BOTTOM_LIMIT: float = 236.0 ## borde inferior máximo de la última fila (la pantalla base mide 480: y = 240 desde el centro)
 var _ui_menu: Control
 var _close_row: Label
 var _save_row: Label
 var _rotate_row: Label
+var _zoom_row: Label ## "(L2)(R2) zoom": copia de la fila de rotar, se arma en código
 var _action_rows: Array[Label] = [] ## Una fila por cada elemento de 'actions' (mismo orden)
 var _available_actions: Array[ObjectAction] = [] ## Acciones desbloqueadas en el menú abierto
 
@@ -178,6 +186,8 @@ func _ready() -> void:
 	viewer.light_energy = viewer_light_energy
 	viewer.ambient_color = viewer_ambient_color
 	viewer.ambient_energy = viewer_ambient_energy
+	viewer.allow_zoom = allow_zoom
+	viewer.max_zoom = max_zoom
 	add_child(viewer)
 	if not viewer.setup(sub_viewport, view_camera, pivot, texture_rect):
 		push_warning("InteractableObject: faltan SubViewport, 'SubView Camera' u ObjectPivot dentro de ObjectOnScreen.")
@@ -203,6 +213,7 @@ func _exit_tree() -> void:
 func _process(delta: float) -> void:
 	if _is_inspecting:
 		viewer.rotate_with_stick(delta)
+		viewer.update_zoom(delta)
 	elif _is_player_inside or _highlighted:
 		_refresh_visuals() # el foco puede pasar a otro objeto cercano, o el modo fusil/inventario puede abrirse
 
@@ -215,6 +226,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Mouse: arrastrar con el botón izquierdo rota el objeto
 		if event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
 			viewer.rotate_by_drag((event as InputEventMouseMotion).relative)
+			get_viewport().set_input_as_handled()
+		# Rueda del mouse: acerca / aleja
+		elif event is InputEventMouseButton and viewer.handle_wheel_event(event as InputEventMouseButton):
 			get_viewport().set_input_as_handled()
 		elif _handle_menu_input(event):
 			get_viewport().set_input_as_handled()
@@ -400,6 +414,7 @@ func _setup_menu_rows() -> void:
 	_close_row = _ui_menu.get_node_or_null("CloseText") as Label
 	_save_row = _ui_menu.get_node_or_null("GuardarText") as Label
 	_rotate_row = _ui_menu.get_node_or_null("RotateText") as Label
+	_zoom_row = _make_zoom_row()
 
 	# Una fila por acción, clonando el estilo de "GuardarText" (mismo tamaño, contorno y marco de botón)
 	_action_rows.clear()
@@ -407,6 +422,21 @@ func _setup_menu_rows() -> void:
 		push_warning("InteractableObject: falta 'GuardarText' en UI Menu, se usa como modelo de las filas de acciones.")
 	for action in actions:
 		_action_rows.append(_make_action_row(action))
+
+
+## Fila "(L2)(R2) zoom": copia la de rotar (mismo estilo) con dos íconos. Va debajo de ella en el menú.
+func _make_zoom_row() -> Label:
+	if _rotate_row == null or not allow_zoom:
+		return null
+	var row: Label = _rotate_row.duplicate() as Label
+	row.name = "ZoomText"
+	var icon_a: AnimatedSprite2D = row.get_child(0) as AnimatedSprite2D
+	var icon_b: AnimatedSprite2D = icon_a.duplicate() as AnimatedSprite2D
+	row.add_child(icon_b)
+	ButtonPrompt.setup_row_icons(row, [icon_a, icon_b], "zoom", [ButtonPrompt.FRAME_L2, ButtonPrompt.FRAME_R2])
+	row.visible = false
+	_ui_menu.add_child(row)
+	return row
 
 
 func _make_action_row(action: ObjectAction) -> Label:
@@ -465,6 +495,10 @@ func _rebuild_menu_rows() -> void:
 		_rotate_row.visible = viewer.is_ready_to_show()
 		if _rotate_row.visible:
 			ordered.append(_rotate_row)
+	if _zoom_row:
+		_zoom_row.visible = viewer.is_ready_to_show()
+		if _zoom_row.visible:
+			ordered.append(_zoom_row)
 
 	var top: float = _close_row.offset_top if _close_row else 109.0
 	var step: float = ROW_STEP_DEFAULT
@@ -472,6 +506,12 @@ func _rebuild_menu_rows() -> void:
 		step = absf(_save_row.offset_top - _close_row.offset_top)
 		if step < 1.0:
 			step = ROW_STEP_DEFAULT
+	# Con muchas filas (cerrar, guardar, acciones, rotar, zoom) la última no puede salirse de la pantalla:
+	# se juntan un poco, sin bajar de MIN_ROW_STEP.
+	if ordered.size() > 1:
+		var last_height: float = ordered[-1].offset_bottom - ordered[-1].offset_top
+		var fit_step: float = (MENU_BOTTOM_LIMIT - last_height - top) / float(ordered.size() - 1)
+		step = minf(step, maxf(fit_step, MIN_ROW_STEP))
 	for row in ordered:
 		var height: float = row.offset_bottom - row.offset_top
 		row.offset_top = top

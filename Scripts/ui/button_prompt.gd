@@ -6,6 +6,45 @@ class_name ButtonPrompt
 ## para cualquier texto (las acciones de los objetos son datos y su texto no se conoce de antemano).
 
 const BLANK: String = "     "
+const ICON_FRAMES: SpriteFrames = preload("res://Resources/ui/ui_buttons_frames.tres")
+
+## Frames de la hoja de íconos (Assets/2D/UI_PS2_Buttons.png).
+const FRAME_TRIANGLE: int = 0
+const FRAME_SQUARE: int = 1
+const FRAME_CIRCLE: int = 2
+const FRAME_CROSS: int = 3
+const FRAME_L1: int = 4
+const FRAME_L2: int = 5
+const FRAME_R1: int = 6
+const FRAME_R2: int = 7
+const FRAME_STICK_R: int = 8
+const FRAME_STICK_L: int = 9
+
+
+## Arma por código una fila "(ícono)(ícono) texto" con el mismo aspecto que las de los menús (tamaño 21, contorno 10,
+## íconos al 80 %), para HUD que no viven en una escena. Queda centrada en 'center_x' y en y = 0, con anclas al centro:
+## el llamador solo mueve offset_top / offset_bottom para ubicarla.
+static func make_row(text: String, frames: Array[int], center_x: float = 0.0, font_size: int = 21, outline_size: int = 10) -> Label:
+	var label := Label.new()
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_constant_override("outline_size", outline_size)
+	label.set_anchors_preset(Control.PRESET_CENTER)
+	label.offset_top = -15.0
+	label.offset_bottom = 15.0
+	var icons: Array[AnimatedSprite2D] = []
+	for i in frames.size():
+		var icon := AnimatedSprite2D.new()
+		icon.sprite_frames = ICON_FRAMES
+		icon.animation = &"buttons"
+		icon.scale = Vector2(0.8, 0.8)
+		icon.position.y = 18.0
+		label.add_child(icon)
+		icons.append(icon)
+	setup_row_icons(label, icons, text, frames, center_x)
+	return label
 
 
 static func make_text(text: String) -> String:
