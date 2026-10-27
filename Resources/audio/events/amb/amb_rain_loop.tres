@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SoundEvent" format=3]
 
 [ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
-[ext_resource type="AudioStream" uid="uid://c7no06wkl6pcb" path="res://Assets/Audio/rain_sound.wav" id="2_rain"]
+[ext_resource type="AudioStream" uid="uid://bppgnjja3mx1p" path="res://Assets/Audio/rain_sound.ogg" id="2_rain"]
 
 [resource]
 script = ExtResource("1_event")
@@ -11,4 +11,4 @@ bus = "Rain"
 volume_db = 0.0
 loop = true
 max_voices = 1
-description = "Lluvia constante del nivel (plana: suena igual en todo el nivel).\nBus Rain: en los interiores (zona 4:3 con 'indoor_audio') Audio la aleja y la filtra con un pasa-bajos.\nArchivo actual: Assets/Audio/rain_sound.wav (MIGRADO; ya viene con loop en la importación).\nSe dispara desde: nodo SoundEmitter 'RainSound' en Scenes/levels/terrain.tscn (autoplay)"
+description = "Lluvia constante del nivel (plana: suena igual en todo el nivel).\nBus Rain: en los interiores (zona 4:3 con 'indoor_audio') Audio la aleja y la filtra con un pasa-bajos.\nArchivo actual: Assets/Audio/rain_sound.ogg (Vorbis q4, con loop en la importación; el maestro sin comprimir está en Sources/Audio/rain_sound.wav).\nSe dispara desde: nodo SoundEmitter 'RainSound' en Scenes/levels/terrain.tscn (autoplay)"

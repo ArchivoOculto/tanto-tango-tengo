@@ -1,0 +1,259 @@
+[gd_scene format=3 uid="uid://bwhjfxd5hmnvv"]
+
+[ext_resource type="Script" uid="uid://d2vwlx8st32x" path="res://Scripts/audio/sound_emitter.gd" id="3_hdifp"]
+[ext_resource type="Script" uid="uid://r5iago2khjre" path="res://Scripts/camera/game_camera.gd" id="4_q6eg0"]
+[ext_resource type="PackedScene" uid="uid://w204nbya3vcs" path="res://Scenes/characters/player.tscn" id="5_3kgbd"]
+[ext_resource type="Texture2D" uid="uid://dvnyr2cfbt0sn" path="res://Assets/3D/Cassette/CassetteCovers/b+a+.jpg" id="8_5267s"]
+[ext_resource type="AudioStream" uid="uid://cdoe6i0gdoi56" path="res://Assets/Audio/Cassette tracks/metrovias.mp3" id="8_tujku"]
+[ext_resource type="Texture2D" uid="uid://c8d0vdojolnca" path="res://Assets/2D/TANTO TANGO TENGO.png" id="10_60k10"]
+[ext_resource type="PackedScene" uid="uid://crufdju3qkiab" path="res://Scenes/interaction/interactable_picture.tscn" id="11_60k10"]
+[ext_resource type="Texture2D" uid="uid://2y26yrbp6mh8" path="res://Assets/2D/data.png" id="12_qhvbi"]
+[ext_resource type="PackedScene" uid="uid://bsa6e7nt867h4" path="res://Scenes/props/farolito.tscn" id="15_qa14i"]
+[ext_resource type="PackedScene" uid="uid://j01yus61pcn3" path="res://Scenes/props/Radio_Prefab.tscn" id="17_qlh5q"]
+[ext_resource type="Texture2D" uid="uid://c18g1tneohyow" path="res://Assets/2D/256x256/Brick/Horror_Brick_06-256x256.png" id="18_q5yxs"]
+[ext_resource type="PackedScene" uid="uid://djpcrt3q7qbxu" path="res://Scenes/props/alambrado.tscn" id="19_svrsl"]
+[ext_resource type="Texture2D" uid="uid://bnvhcvakoqsrf" path="res://Assets/2D/256x256/Brick/Horror_Brick_07-256x256.png" id="22_srbrt"]
+[ext_resource type="Script" uid="uid://c7kiqweremmgy" path="res://Scripts/camera/camera_zone_3d.gd" id="29_b4yic"]
+[ext_resource type="PackedScene" uid="uid://lrbh4p4114u4" path="res://Scenes/props/Cassette_Prefab.tscn" id="34_75rmu"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_62tj5"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_pmkc2"]
+sky_material = SubResource("ProceduralSkyMaterial_62tj5")
+
+[sub_resource type="Environment" id="Environment_hvvm8"]
+background_mode = 2
+sky = SubResource("Sky_pmkc2")
+ambient_light_sky_contribution = 0.7
+fog_enabled = true
+fog_light_energy = 1.5
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.06
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sehdd"]
+emission_shape_scale = Vector3(1.5, 1, 1.5)
+emission_shape = 3
+emission_box_extents = Vector3(3, 1, 3)
+direction = Vector3(0, -1, 0)
+spread = 5.0
+initial_velocity_max = 10.0
+collision_mode = 1
+collision_friction = 0.0
+collision_bounce = 0.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sehdd"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.8, 0.8, 0.8, 0.039215688)
+
+[sub_resource type="RibbonTrailMesh" id="RibbonTrailMesh_gml2b"]
+material = SubResource("StandardMaterial3D_sehdd")
+shape = 0
+size = 0.005
+sections = 2
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kfsa1"]
+size = Vector3(0.25, 0.25, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tsagk"]
+albedo_texture = ExtResource("18_q5yxs")
+uv1_scale = Vector3(5, 5, 5)
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_5ftdt"]
+material = SubResource("StandardMaterial3D_tsagk")
+size = Vector3(0.25, 0.25, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qhvbi"]
+size = Vector3(0.45635986, 0.52490234, 0.31799316)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mqean"]
+size = Vector3(1, 0.1, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ph32v"]
+albedo_texture = ExtResource("22_srbrt")
+uv1_scale = Vector3(4, 4, 4)
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_rxs28"]
+material = SubResource("StandardMaterial3D_ph32v")
+size = Vector3(1, 0.1, 0.8)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_rxs28"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hvvm8"]
+size = Vector3(2, 0.9, 1.6)
+
+[node name="Level_0" type="Node3D" unique_id=851549258]
+
+[node name="Enviroment" type="Node3D" parent="." unique_id=1603349986]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Enviroment" unique_id=1830182651]
+environment = SubResource("Environment_hvvm8")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Enviroment" unique_id=904046338]
+transform = Transform3D(1, 0, 0, 0, 0.03489931, 0.99939084, 0, -0.99939084, 0.03489931, 0, 4.260251, 0)
+light_color = Color(0.012617188, 0.012617188, 0.012617188, 1)
+light_energy = 0.75
+light_cull_mask = 4294966783
+shadow_enabled = true
+shadow_caster_mask = 4294966783
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="Enviroment" unique_id=1286893355]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.7106104, 3.1812925, -0.8086641)
+amount = 150
+lifetime = 0.2
+randomness = 1.0
+visibility_aabb = AABB(-4.02, -3, -4, 8, 8, 8)
+trail_enabled = true
+trail_lifetime = 0.1
+process_material = SubResource("ParticleProcessMaterial_sehdd")
+draw_pass_1 = SubResource("RibbonTrailMesh_gml2b")
+
+[node name="RainSound" type="Node3D" parent="Enviroment" unique_id=400223615]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2189108, 0, -0.856882)
+script = ExtResource("3_hdifp")
+event_id = &"amb_rain_loop"
+autoplay = true
+
+[node name="GameCamara" type="Camera3D" parent="." unique_id=2072088570]
+transform = Transform3D(0.32538348, -0.58481115, 0.7430488, -1.28155095e-08, 0.78581095, 0.6184668, -0.94558215, -0.20123889, 0.2556899, 0.41103256, 0.6, -3.753883)
+current = true
+script = ExtResource("4_q6eg0")
+deadzone_vertical = 0.2
+
+[node name="Player" parent="." unique_id=2045517250 instance=ExtResource("5_3kgbd")]
+transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, -0.10505593, 0.60013705, -3.3759835)
+
+[node name="InteractiveProps" type="Node3D" parent="." unique_id=1539688944]
+
+[node name="Farolito01" parent="InteractiveProps" unique_id=100758714 instance=ExtResource("15_qa14i")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.63160306, 0.09548479, -3.2026272)
+initial_state = 0
+
+[node name="RadioShit" parent="InteractiveProps" unique_id=1201380270 instance=ExtResource("17_qlh5q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4713645, 0.35440406, -3.8875558)
+
+[node name="RadioAltar" type="CollisionShape3D" parent="InteractiveProps/RadioShit" unique_id=948099745]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0005162, -0.12461278, -0.0057805)
+shape = SubResource("BoxShape3D_kfsa1")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="InteractiveProps/RadioShit/RadioAltar" unique_id=953193764]
+mesh = SubResource("BoxMesh_5ftdt")
+
+[node name="B+A+" parent="InteractiveProps" unique_id=1933570437 instance=ExtResource("34_75rmu")]
+transform = Transform3D(-0.07695584, 0.9854814, -0.15134151, -4.3204892e-08, 0.15179163, 0.9884126, 0.9970346, 0.07606412, -0.01168121, 0.43883002, 0.15064284, -2.7906308)
+track = ExtResource("8_tujku")
+title = "B+A+"
+description = "Una extraña cinta, de un extraño álbum."
+genre = 1
+
+[node name="Cover" parent="InteractiveProps/B+A+" index="0" unique_id=875973469]
+transform = Transform3D(0.008529317, -1.7462298e-10, 3.6379788e-11, 0, 0.008332175, 1.8553692e-10, 2.1827873e-11, 6.366463e-12, 0.00794926, 0, -4.4703484e-08, 0.002729565)
+texture = ExtResource("8_5267s")
+
+[node name="Poster" type="Sprite3D" parent="InteractiveProps" unique_id=1393859870]
+transform = Transform3D(-0.01308689, -0.030238904, 0.9994572, -0.00039591326, 0.99954283, 0.030236311, -0.9999146, 9.0221886e-10, -0.0130928755, -0.90032816, 0.49907383, -3.2079272)
+pixel_size = 0.0005
+texture = ExtResource("10_60k10")
+
+[node name="interactable_picture" parent="InteractiveProps/Poster" unique_id=203141606 instance=ExtResource("11_60k10")]
+display_name = "Afiche"
+description = "Esto es solo una demo, para que puedas controlar a Garúa.
+
+Porfavor descarga la version completa para jugar el juego."
+
+[node name="Area3D" type="Area3D" parent="InteractiveProps/Poster" unique_id=1349576786]
+transform = Transform3D(1, 4.718892e-12, 0, -1.1633522e-10, 1, 3.7130967e-09, 0, -3.7374233e-09, 1, -0.0696466, 0, -0.00091195107)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractiveProps/Poster/Area3D" unique_id=1033850986]
+transform = Transform3D(1.0000145, -1.4842954e-09, -2.9522926e-07, -1.4551915e-10, 1.0000099, 7.636845e-08, 2.7939677e-07, -2.477318e-07, 1.0000145, 0.030551195, -0.053955168, 0.1581378)
+shape = SubResource("BoxShape3D_qhvbi")
+debug_color = Color(0, 1, 0.70000815, 0.42000002)
+
+[node name="Poster2" type="Sprite3D" parent="InteractiveProps" unique_id=1330578401]
+transform = Transform3D(0.9999146, 2.309521e-09, 0.013092831, -0.00039591338, 0.99954295, 0.030236319, -0.013086846, -0.030238908, 0.9994572, -0.2928055, 0.49907383, -4.014675)
+pixel_size = 0.0005
+texture = ExtResource("12_qhvbi")
+
+[node name="interactable_picture" parent="InteractiveProps/Poster2" unique_id=1956520829 instance=ExtResource("11_60k10")]
+display_name = "Controles"
+description = "Controles del juego, tanto para joystick como para mouse y teclado."
+
+[node name="Area3D" type="Area3D" parent="InteractiveProps/Poster2" unique_id=1713064045]
+transform = Transform3D(1, 4.718892e-12, 0, -1.1633522e-10, 1, 3.7130967e-09, 0, -3.7374233e-09, 1, -0.0696466, 0, -0.00091195107)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractiveProps/Poster2/Area3D" unique_id=1803000246]
+transform = Transform3D(1.0000145, -1.4842954e-09, -2.9522926e-07, -1.4551915e-10, 1.0000099, 7.636845e-08, 2.7939677e-07, -2.477318e-07, 1.0000145, 0.030551195, -0.053955168, 0.1581378)
+shape = SubResource("BoxShape3D_qhvbi")
+debug_color = Color(0, 1, 0.70000815, 0.42000002)
+
+[node name="Area 001" type="Node3D" parent="." unique_id=1829755813]
+
+[node name="Area001Collisions" type="StaticBody3D" parent="Area 001" unique_id=801164919]
+
+[node name="Alambrado19" parent="Area 001/Area001Collisions" unique_id=1529000031 instance=ExtResource("19_svrsl")]
+transform = Transform3D(-0.9, 0, 7.86805e-08, 0, 0.9, 0, -7.86805e-08, 0, -0.9, 0.525728, 0.6665517, -4.0209923)
+
+[node name="Alambrado20" parent="Area 001/Area001Collisions" unique_id=1317907355 instance=ExtResource("19_svrsl")]
+transform = Transform3D(-0.9, 0, 7.86805e-08, 0, 0.9, 0, -7.86805e-08, 0, -0.9, -0.4158283, 0.6665517, -4.0209923)
+
+[node name="Alambrado21" parent="Area 001/Area001Collisions" unique_id=1733210675 instance=ExtResource("19_svrsl")]
+transform = Transform3D(-0.9, 0, 7.86805e-08, 0, 0.9, 0, -7.86805e-08, 0, -0.9, 0.525728, 0.6665517, -2.4772425)
+
+[node name="Alambrado22" parent="Area 001/Area001Collisions" unique_id=1036778327 instance=ExtResource("19_svrsl")]
+transform = Transform3D(-0.9, 0, 7.86805e-08, 0, 0.9, 0, -7.86805e-08, 0, -0.9, -0.4158283, 0.6665517, -2.4772425)
+
+[node name="Alambrado23" parent="Area 001/Area001Collisions" unique_id=210233736 instance=ExtResource("19_svrsl")]
+transform = Transform3D(2.101754e-15, 5.404205e-08, 1.1, 1.1, -5.404205e-08, 0, 4.8082526e-08, 1.2363381, -4.8082526e-08, -0.9701848, 0.6546172, -3.2421708)
+
+[node name="Base" type="CollisionShape3D" parent="Area 001/Area001Collisions" unique_id=1300406603]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0.0017213523, 0, -3.25)
+shape = SubResource("BoxShape3D_mqean")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Area 001/Area001Collisions/Base" unique_id=762880531]
+mesh = SubResource("BoxMesh_rxs28")
+
+[node name="WorldLimit" type="CollisionShape3D" parent="Area 001/Area001Collisions" unique_id=724137295]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, -1, 0)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit2" type="CollisionShape3D" parent="Area 001/Area001Collisions" unique_id=2131335426]
+transform = Transform3D(-4.371139e-08, -1, -4.371139e-08, 0, -4.371139e-08, 1, -1, 4.371139e-08, 1.9106855e-15, 0.9999999, -0.5, 0)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit3" type="CollisionShape3D" parent="Area 001/Area001Collisions" unique_id=923186497]
+transform = Transform3D(-4.371139e-08, 1, 4.371139e-08, 0, -4.371139e-08, 1, 1, 4.371139e-08, 1.9106855e-15, -0.99999994, 0, 0)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit4" type="CollisionShape3D" parent="Area 001/Area001Collisions" unique_id=1455761521]
+transform = Transform3D(-1, -8.742278e-08, -3.821371e-15, 0, -4.371139e-08, 1, -8.742278e-08, 1, 4.371139e-08, 0, 0, -4.051185)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="WorldLimit5" type="CollisionShape3D" parent="Area 001/Area001Collisions" unique_id=531820928]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -2.4425163)
+shape = SubResource("WorldBoundaryShape3D_rxs28")
+
+[node name="CamZone_01" type="Area3D" parent="." unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5965986, 0, -2.117569)
+script = ExtResource("29_b4yic")
+camera_anchor = NodePath("CamAnchor")
+follow_smoothing = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CamZone_01" unique_id=284652046]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.60142833, 0.5590488, -1.1660521)
+shape = SubResource("BoxShape3D_hvvm8")
+debug_color = Color(17.395544, 18.892157, 0, 0.12156863)
+
+[node name="CamAnchor" type="Marker3D" parent="CamZone_01" unique_id=565556295]
+transform = Transform3D(0.98935246, 0, -0.14553927, 0, 1, 0, 0.14553927, 0, 0.98935246, 1.65, 0.70000005, -1.1225607)
+
+[editable path="InteractiveProps/B+A+"]
