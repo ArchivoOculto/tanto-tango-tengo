@@ -1771,6 +1771,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3761296, 0.38530362, -1.56
 shape = SubResource("BoxShape3D_2xxps")
 
 [node name="CamZones" type="Node3D" parent="." unique_id=1262713312]
+visible = false
 
 [node name="CamZone_01" type="Area3D" parent="CamZones" unique_id=1667022222 node_paths=PackedStringArray("camera_anchor")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14150238, 0, -2.117569)
