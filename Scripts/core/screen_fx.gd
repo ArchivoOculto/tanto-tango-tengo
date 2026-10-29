@@ -51,6 +51,10 @@ func _ready() -> void:
 
 	_material = ShaderMaterial.new()
 	_material.shader = SHADER
+	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
+		# Web (y PC sin Vulkan/D3D12): la franja de color de 0.6 px apenas se ve y le ahorra al filtro dos lecturas de
+		# pantalla por píxel. Los efectos de daño y glitch la siguen usando.
+		_material.set_shader_parameter("chroma_px", 0.0)
 
 	_rect = ColorRect.new()
 	_rect.set_anchors_preset(Control.PRESET_FULL_RECT)

@@ -32,6 +32,9 @@ class_name CassettePrefab
 @export var genre: CassetteItem.Genre = CassetteItem.Genre.NONE
 ## Opcional: un CassetteItem armado a mano que reemplaza a los datos de arriba.
 @export var item_override: CassetteItem
+## El cassette ya está en el inventario del jugador al empezar el nivel (no aparece tirado en el mundo). Sigue siendo
+## el mismo objeto: si el jugador lo suelta, vuelve a aparecer.
+@export var starts_in_inventory: bool = false
 
 @export_group("Apariencia")
 ## Arte de la tapa. Vacío = textura placeholder del modelo.
@@ -58,6 +61,9 @@ func _ready() -> void:
 	item = item_override if item_override != null else _build_item()
 	interactable.item = item
 	_apply_cover()
+	if starts_in_inventory:
+		# Diferido: hasta que termine el cuadro todos los nodos del nivel (inventario, visor del objeto) terminan de armarse
+		interactable.store_in_inventory_now.call_deferred()
 
 
 ## Cambia la tapa en tiempo de ejecución (null = vuelve al placeholder).

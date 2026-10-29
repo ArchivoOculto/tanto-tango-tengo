@@ -12,6 +12,7 @@ config_version=5
 
 config/name="TantoTangoTengo"
 run/main_scene="res://Scenes/ui/main_menu.tscn"
+run/main_scene.web="res://Scenes/levels/WebLevel.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/stretch_mode=0

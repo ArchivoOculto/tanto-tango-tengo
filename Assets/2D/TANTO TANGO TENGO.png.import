@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c8d0vdojolnca"
-path.s3tc="res://.godot/imported/TANTO TANGO TENGO.png-379330a1cb3e13a6ddf0e6f49a6e3054.s3tc.ctex"
+path="res://.godot/imported/TANTO TANGO TENGO.png-379330a1cb3e13a6ddf0e6f49a6e3054.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/2D/TANTO TANGO TENGO.png"
-dest_files=["res://.godot/imported/TANTO TANGO TENGO.png-379330a1cb3e13a6ddf0e6f49a6e3054.s3tc.ctex"]
+dest_files=["res://.godot/imported/TANTO TANGO TENGO.png-379330a1cb3e13a6ddf0e6f49a6e3054.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

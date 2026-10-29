@@ -42,7 +42,9 @@ void fragment() {
 	float curv = mix(curvature, curvature * 0.4, pulse);
 	vec2 warp = c.yx / curv;
 	vec2 w = c + c * warp * warp;
-	w.x += sin(w.y * 38.0 + TIME * 30.0) * 0.006 * pulse;
+	if (pulse > 0.001) {
+		w.x += sin(w.y * 38.0 + TIME * 30.0) * 0.006 * pulse;
+	}
 	float inside = step(abs(w.x), 1.0) * step(abs(w.y), 1.0);
 	float wy = w.y; // sin aplastar: las líneas de barrido y la viñeta no deben depender del apagado
 
@@ -55,24 +57,34 @@ void fragment() {
 
 	// Glitch: desgarro por bandas (cada banda se desplaza o no, al azar, 24 veces por segundo) y rodillo vertical
 	float tick = floor(TIME * 24.0);
-	float row = floor(c.y * 18.0);
-	float torn = step(1.0 - glitch * 0.6, hash(vec2(row, tick)));
-	w.x += torn * (hash(vec2(row, tick + 7.0)) - 0.5) * 0.4 * glitch;
-	w.y += sin(TIME * 9.0) * glitch * glitch * 0.3;
+	if (glitch > 0.001) {
+		float row = floor(c.y * 18.0);
+		float torn = step(1.0 - glitch * 0.6, hash(vec2(row, tick)));
+		w.x += torn * (hash(vec2(row, tick + 7.0)) - 0.5) * 0.4 * glitch;
+		w.y += sin(TIME * 9.0) * glitch * glitch * 0.3;
+	}
 	vec2 uv = view_rect.xy + (w + 1.0) * 0.5 * view_rect.zw;
 
-	// aberración cromática: crece hacia los bordes (y se desfasa en horizontal con el glitch)
-	vec2 texel = 1.0 / vec2(textureSize(screen_texture, 0));
+	// aberración cromática: crece hacia los bordes (y se desfasa en horizontal con el glitch).
+	// Con chroma_px en 0 (la web lo hace) y sin efectos activos es UNA sola lectura de pantalla en vez de tres.
 	float chroma = chroma_px * (1.0 + pulse * 5.0) + chroma_boost + glitch * 6.0;
-	vec2 off = c * chroma * texel + vec2(glitch * 3.0 * texel.x, 0.0);
-	vec3 col = vec3(
-		texture(screen_texture, uv + off).r,
-		texture(screen_texture, uv).g,
-		texture(screen_texture, uv - off).b);
+	vec3 col;
+	if (chroma > 0.001) {
+		vec2 texel = 1.0 / vec2(textureSize(screen_texture, 0));
+		vec2 off = c * chroma * texel + vec2(glitch * 3.0 * texel.x, 0.0);
+		col = vec3(
+			textureLod(screen_texture, uv + off, 0.0).r,
+			textureLod(screen_texture, uv, 0.0).g,
+			textureLod(screen_texture, uv - off, 0.0).b);
+	} else {
+		col = textureLod(screen_texture, uv, 0.0).rgb;
+	}
 
 	// glitch: nieve y parpadeo
-	col += (hash(local * vec2(845.0, 480.0) + fract(TIME)) - 0.5) * glitch * 0.7;
-	col *= 1.0 + (hash(vec2(tick, 3.0)) - 0.5) * glitch * 0.5;
+	if (glitch > 0.001) {
+		col += (hash(local * vec2(845.0, 480.0) + fract(TIME)) - 0.5) * glitch * 0.7;
+		col *= 1.0 + (hash(vec2(tick, 3.0)) - 0.5) * glitch * 0.5;
+	}
 
 	// la franja que queda al apagar es incandescente, y el punto final se apaga
 	float collapse = 1.0 - vy;
@@ -82,10 +94,13 @@ void fragment() {
 	// la densidad de líneas se mantiene aunque la ventana sea más baja que la pantalla
 	float scan_str = scanline_strength * (1.0 + pulse * 2.0);
 	float scan = 1.0 - scan_str * (0.5 + 0.5 * sin(wy * scanline_count * view_rect.w * 3.14159265));
-	float vig = (pow(abs(c.x), 4.0) + pow(abs(c.y), 4.0)) * 0.5;
+	vec2 c2 = c * c;
+	float vig = (c2.x * c2.x + c2.y * c2.y) * 0.5;
 	col *= scan * (1.0 - vignette_strength * vig) * inside * on_mask * (1.0 + pulse * 0.25);
 
 	// fuera de la ventana (bajo las barras 4:3) la imagen pasa sin filtrar, salvo que el tubo esté apagado
-	vec3 plain = texture(screen_texture, SCREEN_UV).rgb * step(0.999, power);
-	COLOR = vec4(mix(plain, col, in_rect), 1.0);
+	if (in_rect < 0.5) {
+		col = textureLod(screen_texture, SCREEN_UV, 0.0).rgb * step(0.999, power);
+	}
+	COLOR = vec4(col, 1.0);
 }

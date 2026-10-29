@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SoundEvent" format=3]
+
+[ext_resource type="Script" path="res://Scripts/audio/sound_event.gd" id="1_event"]
+[ext_resource type="AudioStream" uid="uid://chds1pnuejx7o" path="res://Assets/Audio/Web/rain_sound_web.ogg" id="2_rain"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"amb_rain_loop_web"
+streams = Array[AudioStream]([ExtResource("2_rain")])
+bus = "Rain"
+volume_db = 0.0
+loop = true
+max_voices = 1
+description = "Lluvia de la versión WEB (Scenes/levels/WebLevel.tscn): la misma grabación que amb_rain_loop pero en mono a 32 kHz, 2.2 MB en vez de 5.7 MB. Suena desde un emisor 3D, que de todos modos la mezcla a mono.\nBus Rain: igual que amb_rain_loop.\nSe dispara desde: nodo SoundEmitter 'RainSound' en Scenes/levels/WebLevel.tscn (autoplay)"

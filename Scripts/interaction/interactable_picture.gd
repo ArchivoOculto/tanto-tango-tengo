@@ -51,6 +51,7 @@ var _zoom: float = 1.0 ## zoom actual (suavizado)
 var _zoom_target: float = 1.0 ## zoom pedido
 var _view: Vector2 = Vector2.ZERO ## punto de la imagen (px, desde su centro) que está en el centro de la ventana
 var _sprite_scale: float = 1.0 ## escala final del Sprite2D (zoom x respiración)
+var _fit_scale: float = 1.0 ## escala que mete la imagen entera en la ventana de vista previa (ver _update_fit_scale)
 var _pan_row: Label ## pista "recorrer": solo se ve con la imagen acercada
 
 
@@ -270,16 +271,16 @@ func _can_zoom() -> bool:
 ## y pisaría el zoom), y agrega bajo la imagen las pistas de zoom y recorrido.
 func _setup_zoom() -> void:
 	_background = sprite_on_screen.find_child("Background", true, false) as Control
-	if not _can_zoom():
-		return
-	_sprite_center = sprite_2d.position
-
-	if animation_player:
+	if sprite_2d and animation_player:
 		var floating: Animation = animation_player.get_animation("floating")
 		if floating:
 			for i in floating.get_track_count():
 				if floating.track_get_path(i) == NodePath(".:scale"):
-					floating.track_set_enabled(i, false) # la respiración la hace _breathing() (mismo movimiento)
+					floating.track_set_enabled(i, false) # la escala la maneja el script: respiración (_breathing) x ajuste a la ventana
+	if sprite_2d:
+		_sprite_center = sprite_2d.position
+	if not _can_zoom():
+		return
 
 	var close_row: Label = sprite_on_screen.get_node_or_null("Label") as Label
 	if close_row == null:
@@ -321,8 +322,9 @@ func _reset_zoom() -> void:
 	_zoom_target = 1.0
 	_view = Vector2.ZERO
 	_sprite_scale = 1.0
+	if sprite_2d:
+		sprite_2d.scale = Vector2.ONE * _fit_scale
 	if _can_zoom():
-		sprite_2d.scale = Vector2.ONE
 		sprite_2d.position = _sprite_center
 		_background.clip_contents = false
 		if _pan_row:
@@ -338,7 +340,10 @@ func _breathing() -> float:
 
 
 func _update_zoom(delta: float) -> void:
+	if sprite_2d == null:
+		return
 	if not _can_zoom():
+		sprite_2d.scale = Vector2.ONE * _breathing() * _fit_scale # sin zoom: solo la respiración de siempre
 		return
 	# Zoom: logarítmico, así acercar y alejar se sienten iguales. La rueda del mouse mueve '_zoom_target' por evento.
 	var zoom_input: float = Input.get_action_strength("image_zoom_in") - Input.get_action_strength("image_zoom_out")
@@ -355,21 +360,35 @@ func _update_zoom(delta: float) -> void:
 	# Recorrer: stick (o flechas). La velocidad en pantalla es la misma a cualquier zoom.
 	var pan: Vector2 = Input.get_vector("aim_left", "aim_right", "aim_up", "aim_down")
 	if pan != Vector2.ZERO and _zoom > ZOOM_EPSILON:
-		_view += pan * PAN_SPEED * delta / _sprite_scale
+		_view += pan * PAN_SPEED * delta / (_sprite_scale * _fit_scale)
 	if _zoom <= ZOOM_EPSILON:
 		_view *= exp(-8.0 * delta) # sin acercar, la imagen vuelve sola al centro
 
 	# La vista nunca sale de la imagen: no se ve nada fuera de sus bordes
 	if sprite_2d.texture:
-		var limit: Vector2 = (sprite_2d.texture.get_size() * 0.5 - _background.size * 0.5 / _sprite_scale).max(Vector2.ZERO)
+		var limit: Vector2 = (sprite_2d.texture.get_size() * 0.5 - _background.size * 0.5 / (_sprite_scale * _fit_scale)).max(Vector2.ZERO)
 		_view = _view.clamp(-limit, limit)
 
-	sprite_2d.scale = Vector2.ONE * _sprite_scale
-	sprite_2d.position = _sprite_center - _view * _sprite_scale
+	sprite_2d.scale = Vector2.ONE * _sprite_scale * _fit_scale
+	sprite_2d.position = _sprite_center - _view * _sprite_scale * _fit_scale
 	# Recortar a la ventana solo cuando hay zoom: sin acercar la imagen se ve entera, como siempre
 	_background.clip_contents = _zoom > 1.001
 	if _pan_row:
 		_pan_row.visible = _zoom > ZOOM_EPSILON + 0.01
+
+
+## La ventana de vista previa mide ~250 px y la imagen del cuadro puede ser mucho más grande (un poster de 854 x 480 se veía
+## 3.5 veces más grande que la ventana): se calcula la escala que la mete ENTERA, con su proporción. Nunca agranda:
+## una imagen más chica que la ventana se ve a su tamaño. El zoom se aplica encima de esta escala (a 4x una imagen
+## grande llega a verse en su tamaño real).
+func _update_fit_scale() -> void:
+	_fit_scale = 1.0
+	if sprite_2d == null or sprite_2d.texture == null or _background == null:
+		return
+	var texture_size: Vector2 = sprite_2d.texture.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	_fit_scale = minf(1.0, minf(_background.size.x / texture_size.x, _background.size.y / texture_size.y))
 
 
 func _sync_texture_from_parent() -> void:
@@ -377,6 +396,7 @@ func _sync_texture_from_parent() -> void:
 		return
 	if sprite_2d:
 		sprite_2d.texture = sprite_3d.texture
+		_update_fit_scale()
 	if _outline_material:
 		_outline_material.set_shader_parameter("tex", sprite_3d.texture)
 
